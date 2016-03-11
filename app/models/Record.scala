@@ -172,7 +172,6 @@ object Record {
         rs.stringOpt(24 + loc * 2)
       }
 
-    Logger.debug(rs.toString())
     SixSecRecord(Monitor.withName(rs.string(1)), rs.timestamp(2), windSpeed, windSpeed_stat, windDir, windDir_stat)
   }
 
