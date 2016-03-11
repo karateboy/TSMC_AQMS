@@ -1,0 +1,539 @@
+@* monitorManagement Template File *@
+@(monitor: Monitor.Value, hightlightEquip:Boolean = false)
+<div class="row">
+    <div class="col-lg-12">
+		<div class="ibox float-e-margins">
+			<div class="ibox-title">
+				<label class="control-label">選擇測站:</label>				
+					<div class="btn-group" data-toggle="buttons">
+        				@for(m<-Monitor.mvList){
+      					@if(m == monitor){
+      						<label class="btn btn-outline btn-primary dim active">
+      						<input type="radio" name="monitor" id="@m" checked>@Monitor.getDisplayName(m)</label>	
+      					}else{
+      						<label class="btn btn-outline btn-primary dim">
+      						<input type="radio" name="monitor" id="@m" >@Monitor.getDisplayName(m)</label>	
+      					}			
+          			}
+			</div>
+	</div>
+	<div class="ibox-content">
+	<ul class="nav nav-tabs">		
+		<li @if(!hightlightEquip){class="active"}>
+			<a data-toggle="tab" href="#monitorTypeTab"> <span class="glyphicons glyphicons-hotspot"></span>監測項目</a>
+		</li>
+		<li>
+			<a data-toggle="tab" href="#stdInternalTab"> <span class="glyphicons glyphicons-hotspot"></span>內控值</a>
+		</li> 							
+		<li>
+			<a data-toggle="tab" href="#imgUrlTab"> <span class="glyphicons glyphicons-hotspot"></span>影像位址</a>
+		</li>
+		<li @if(hightlightEquip){class="active"}>
+			<a data-toggle="tab" href="#equipmentTab"> <span class="glyphicons glyphicons-hotspot"></span>設備</a>
+		</li>
+		<li>
+			<a data-toggle="tab" href="#monitorBiosTab"> <span class="glyphicons glyphicons-hotspot"></span>測站基本資料</a>
+		</li>		
+	</ul>
+	<div class="tab-content">
+		<div id="monitorTypeTab" class="tab-pane @if(!hightlightEquip){active}">	
+			<br/>				
+			<form id="monitorTypesForm" class="form-horizontal">
+				<input name='monitor' type="hidden" class="form-control" value="@monitor">
+				<div class="form-group">
+					<label class="col-lg-1 control-label">測項</label>
+					<div class="col-lg-11">
+						<div id="mTypes" class="btn-group" data-toggle="buttons">
+          					@for(mt<-MonitorType.mtvAllList){
+          						<label class="btn btn-outline btn-primary dim">
+							<input type="checkbox" name="monitorType" id="@mt">@MonitorType.map(mt).desp</label>		
+          					}
+          					</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-lg-1 col-lg-offset-1">
+						<button class="btn btn-primary" type="submit">確認</button>
+					</div>							
+				</div>
+				</form>					
+		</div>
+		<div id="stdInternalTab" class="tab-pane">
+			<br/>
+			<form id="stdInternalForm" class="form-horizontal">
+				<input name='monitor' type="hidden" class="form-control" value="@monitor">
+				<div class="form-group">
+					<label class="col-lg-1 control-label">測項</label>
+					<div class="col-lg-11">
+						<div class="btn-group" data-toggle="buttons">
+          					@for(mt<-MonitorType.mtvAllList){
+          						@if(mt == MonitorType.mtvAllList.head){
+          							<label class="btn btn-outline btn-primary dim active">
+								<input type="radio" name="monitorType" id="@mt" checked>@MonitorType.map(mt).desp</label>	
+          						}else{
+          							<label class="btn btn-outline btn-primary dim">
+								<input type="radio" name="monitorType" id="@mt">@MonitorType.map(mt).desp</label>
+          						}
+          								
+          					}
+          					</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-lg-1 control-label">內控值</label>
+					<input class="col-lg-1" id="stdInternal">
+					<label class="col-lg-1">單位</label>														
+				</div>
+				<div class="form-group">
+					<div class="col-lg-1 col-lg-offset-1">
+						<button class="btn btn-primary" type="submit">確認</button>								
+					</div>																											
+				</div>
+			</form>
+		</div>
+		<div id="imgUrlTab" class="tab-pane">
+			<form id="imgUrlForm" class="form-horizontal">
+				<br/>
+				<input name='monitor' type="hidden" class="form-control" value="@monitor">
+						<div class="form-group">
+							<label class="col-lg-1 control-label">影像位址</label>
+							<input class="col-lg-5" id="imgUrl">																				
+						</div>
+						<div class="form-group">
+							<div class="col-lg-1 col-lg-offset-1">
+								<button class="btn btn-primary" type="submit">確認</button>								
+							</div>													
+						</div>
+					</form>
+				</div>
+				<div id="equipmentTab" class="tab-pane @if(hightlightEquip){active}">
+					<br/>
+						<div class="col-lg-1 col-lg-offset-1">
+							<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newEquipModal">新增</button>							
+						</div>
+						<div class="col-lg-1">							
+							<button type="button" class="btn btn-primary" id="deleteEquipment">刪除</button>
+						</div>
+  						<div class="modal fade" id="newEquipModal" role="dialog">
+    						<div class="modal-dialog">
+      							<div class="modal-content">
+        						<div class="modal-header">
+          							<button type="button" class="close" data-dismiss="modal">&times;</button>
+          							<h4 class="modal-title">新增設備</h4>
+        						</div>        						
+        						<div class="modal-body">
+          							<form class="form-horizontal">
+          								<div class="form-group">
+											<label class="col-lg-3 control-label">代號</label>
+											<div class="col-lg-3">
+												<input type="text" id="equipID" class="form-control" required>
+											</div>																												
+										</div>
+										<div class="form-group">
+											<label class="col-lg-3 control-label">名稱</label>
+											<div class="col-lg-3">
+											<input type="text" id="equipName" class="form-control" required>
+											</div>																		
+										</div>
+										<div class="form-group">
+											<label class="col-lg-3 control-label">廠牌</label>
+											<div class="col-lg-3">
+												<input type="text" id="equipBrand" class="form-control" required>
+											</div>
+																													
+										</div>
+										<div class="form-group">
+											<label class="col-lg-3 control-label">型號</label>
+											<div class="col-lg-3">
+												<input type="text" id="equipModel" class="form-control" required>
+											</div>																													
+										</div>
+										<div class="form-group">
+											<label class="col-lg-3 control-label">序號</label>
+											<div class="col-lg-3">
+												<input type="text" id="equipSerial" class="form-control" required>
+											</div>																		
+										</div>
+										<div class="form-group">
+											<label class="col-lg-3 control-label">購入日期</label>
+											<div class="col-lg-3">
+												<input type="text" id="equipBought" class="form-control" required>
+											</div>																		
+										</div>
+          							</form>
+        						</div>
+        						<div class="modal-footer">
+        							<button id="newEquipment" class="btn btn-primary" data-dismiss="modal">新增</button>
+									<button id="cancelEquipment" class="btn btn-primary" data-dismiss="modal">取消</button>        							          							
+        						</div>        						
+      							</div>
+    						</div>
+  						</div>							
+						<table id="equipmentTable" class="table table-bordered table-hover" cellspacing="0" width="100%">
+            			<thead>
+            				<tr>
+            					<th>代號</th>
+            					<th>名稱</th>
+            					<th>廠牌</th>
+            					<th>型號</th>
+            					<th>序號</th>
+            					<th>購入日期</th>
+            				</tr>
+            			</thead>
+            			<tbody>
+            			</tbody>
+            			</table>					
+				</div>
+				<div id="monitorBiosTab" class="tab-pane">
+					<div id="monitorBiosDiv"></div>
+				</div>
+			</div>
+			</div>
+        </div>    
+	</div>
+</div>
+<script>
+var dataTableL10N = '@routes.Assets.at("localization/zh_tw.json")';
+</script>
+<script>
+$(document).ready(
+function() {
+	var oTable = $('#equipmentTable').dataTable({
+		language : {
+			url : dataTableL10N,
+		},
+		searching : false,
+		paging : false
+	});
+
+	$('#equipmentTable tbody').on('click', 'tr',
+			function() {
+        		if ( $(this).hasClass('selected') ) {
+            		$(this).removeClass('selected');
+        		}
+        		else {
+        			oTable.$('tr.selected').removeClass('selected');
+            		$(this).addClass('selected');
+        		}
+			});
+
+	var activeMonitor = $('#monitorTypesForm :input[name="monitor"]').val();
+	var monitorInfo = {};
+	function updateUI(monitor) {
+		var mInfo = monitorInfo[monitor];
+		var mTypes = mInfo.mt;
+		var $TypeLabels = $('#mTypes').children();
+		for (var i = 0; i < $TypeLabels.length; i++) {
+			var $label = $TypeLabels.eq(i);
+			var $checkbox = $label.children();
+			if (mTypes.indexOf($checkbox.prop('id')) == -1) {
+				$checkbox.prop('checked', false);
+				$label.removeClass('active');
+			} else {
+				$checkbox.prop('checked', true);
+				$label.addClass('active');
+			}
+		}
+
+		$("#imgUrl").val(mInfo.imgUrl);
+		updateEquipment(mInfo.equipments);
+		$("#monitorBiosDiv").load("/MonitorBios/"+monitor);
+	}
+
+	function updateEquipment(equipments) {
+		var api = oTable.api();
+		api.clear();
+		for (var i = 0; i < equipments.length; i++) {
+			var equip = equipments[i];
+			var rowNode = api.row.add(
+					[ equip.id, equip.name, equip.brand,
+							equip.model, equip.serial,
+							equip.bought ]).node();
+
+			$(rowNode).prop('id', activeMonitor + ":" + equip.id);
+			var $cols = $(rowNode).children();
+
+			for (var j = 1; j < $cols.length; j++) {
+				var $td = $cols.eq(j);
+				$td.attr('editable', true);
+			}
+
+			$cols.eq(0).attr('col', 'id');
+			$cols.eq(1).attr('col', 'name');
+			$cols.eq(2).attr('col', 'brand');
+			$cols.eq(3).attr('col', 'model');
+			$cols.eq(4).attr('col', 'serial');
+			$cols.eq(5).attr('col', 'bought');
+
+		}
+		api.draw();
+
+		oTable.$("td").filter("[editable='true']").editable(
+						'/Equipment',
+						{
+							indicator : '儲存中...',
+							tooltip : '點擊該項目加以編輯...',
+							cancel : '取消',
+							submit : '確認',
+							name : 'data',
+							submitdata : function(value,
+									settings) {
+								var $me = $(this);
+								return {
+									id : $me.parent().attr("id")+ ":"+ $me.attr("col")
+								};
+							},
+
+							"width" : "90%",
+							"height" : "100%"
+						});
+	}
+
+	function refreshMonitorInfo(monitor) {
+		monitorInfo[monitor] = {};
+		$.ajax({
+					url : "/MonitorInfo/" + monitor,
+					data : "",
+					contentType : "application/json; charset=utf-8",
+					method : "GET",
+					cache:false,
+					dataType : "json",
+					success : function(info) {
+						monitorInfo[monitor] = info;
+						updateUI(monitor);
+					},
+					error : function(xhr, status,
+							errorThrown) {
+						alert("失敗:" + errorThrown);
+					},
+					complete : function(xhr, status) {
+					}
+				});
+	}
+
+	refreshMonitorInfo(activeMonitor);
+
+	$("input[name='monitor']").change(
+		function() {
+			var me = $(this)
+			refreshMonitorInfo(me.attr('id'));
+			activeMonitor = me.attr('id');
+			$('#monitorTypesForm :input[name="monitor"]').val(activeMonitor);
+			$("#stdInternalForm :input[name='monitorType']").change();
+		});
+
+	$('#monitorTypesForm').submit(
+		function(event) {
+			activeMonitor = $(
+					'#monitorTypesForm :input[name="monitor"]')
+					.val();
+
+			var $monitorTypes = $("#monitorTypesForm :input[name='monitorType']:checked");
+			var mt = [];
+			for (var i = 0; i < $monitorTypes.length; i++) {
+				mt.push($monitorTypes[i].id);
+			}
+
+			$.ajax({
+				url : "/MonitorTypes/"
+						+ activeMonitor,
+				data : JSON
+						.stringify(mt),
+				contentType : "application/json; charset=utf-8",
+				method : "POST",
+				dataType : "json",
+				success : function(result) {
+					alert("成功");
+				},
+				error : function(xhr, status, errorThrown) {
+					alert("失敗:"+ errorThrown);
+				},
+
+				complete : function(xhr, status) {
+				}});
+			event.preventDefault();
+		});
+
+	$("#stdInternalForm :input[name='monitorType']").change(
+			function() {
+				//var me = $(this)
+				var me = $("#stdInternalForm :input[name='monitorType']:checked");
+				var url = "/InternalStd/" + activeMonitor + "/" + me.prop("id");
+				$.ajax({
+					url : url,
+					data : "",
+					contentType : "application/json; charset=utf-8",
+					method : "GET",
+					cache:false,
+					dataType : "json",
+					success : function(result) {
+						$("#stdInternal").val(result.std);
+					},
+					error : function(xhr, status, errorThrown) {
+						console.log("失敗:"+ errorThrown);
+					},
+
+					complete : function(xhr, status) {
+					}});
+						
+			});
+
+	$("#stdInternalForm :input[name='monitorType']").change();
+	
+	$("#stdInternalForm").submit(function(event) {
+		activeMonitor = $('#monitorTypesForm :input[name="monitor"]').val();
+
+		var mt = $("#stdInternalForm :input[name='monitorType']:checked").prop("id");
+		var std = $("#stdInternal").val();
+		
+		var url = "/InternalStd/" + activeMonitor + "/" + mt + "/" + std;
+		$.ajax({
+			url : url,
+			data : JSON.stringify(std),
+			contentType : "application/json; charset=utf-8",
+			method : "POST",
+			dataType : "json",
+			success : function(result) {
+				alert("成功");
+			},
+			error : function(xhr, status, errorThrown) {
+				alert("失敗:"+ errorThrown);
+			},
+
+			complete : function(xhr, status) {
+			}});
+		event.preventDefault();
+	});
+
+	var equipmentModalCanHide = true;	
+	$("#newEquipModal").on('hide.bs.modal',function(e){		   
+		   if(!equipmentModalCanHide){			   
+		      e.preventDefault();
+		   }
+		});
+
+	function equipChecker(obj, selector){
+		if(obj.length == 0){
+			$(selector).parent().parent().addClass("has-error");
+			return false;
+		}else{
+			$(selector).parent().parent().removeClass("has-error");
+			return true;
+		}		
+	}
+	
+	$("#newEquipment").click(function(event) {
+		equipmentModalCanHide = false;
+		var id, name, brand, model, serial, bought;
+		id = $("#equipID").val();
+		if(!equipChecker(id, "#equipID"))
+			return;
+		
+		name = $("#equipName").val();
+		if(!equipChecker(name, "#equipName"))
+			return;
+		
+		brand = $("#equipBrand").val();
+		if(!equipChecker(brand, "#equipBrand"))
+			return;
+		
+		model = $("#equipModel").val();
+		if(!equipChecker(model, "#equipModel"))
+			return;
+		
+		serial = $("#equipSerial").val();
+		if(!equipChecker(serial, "#equipSerial"))
+			return;
+		
+		bought = $("#equipBought").val();
+		if(!equipChecker(bought, "#equipBought"))
+			return;
+
+		var equip={
+			monitor:activeMonitor,
+			id:id,
+			name:name,
+			brand:brand,
+			model:model,
+			serial:serial,
+			bought:bought
+		};
+		
+		$.ajax({
+			url : "/Equipment",
+			data : JSON.stringify(equip),
+			contentType : "application/json; charset=utf-8",
+			method : "PUT",
+			dataType : "json",
+			success : function(result) {
+				alert("成功");
+				refreshMonitorInfo(activeMonitor);
+			},
+			error : function(xhr,status,errorThrown) {
+				alert("失敗:"+ errorThrown);
+			},
+
+			complete : function(xhr, status) {
+				equipmentModalCanHide = true;
+			}
+		});		
+	});
+	
+	$("#cancelEquipment").click(function(event) {
+		equipmentModalCanHide = true; 
+	});
+
+	$("#deleteEquipment").click(function(event) {
+		var api = oTable.api();
+		if(api.rows('.selected').data().length == 0){
+			alert("請點擊選取要刪除的設備");
+		}else{
+			var $trs = api.rows('.selected').data();
+		    var values={};
+		    values['id']=activeMonitor + ":" + $trs[0][0]; 
+				
+			$.ajax({
+				url : "/Equipment/" + activeMonitor + ":" + $trs[0][0],
+				data : JSON.stringify(values),
+				contentType : "application/json; charset=utf-8",
+				method : "DELETE",
+				dataType : "json",
+				success : function(result) {
+					alert("成功");
+					api.rows('.selected').remove().draw( false );
+				},
+				error : function(xhr,status,errorThrown) {
+					alert("失敗:"+ errorThrown);
+				},
+
+				complete : function(xhr, status) {
+				}
+			});				
+		}
+
+		event.preventDefault();
+	});
+
+	$("#imgUrlForm").submit(
+		function(event) {
+				var imgUrl = $("#imgUrl").val();
+				$.ajax({
+							url : "/MonitorImgUrl/" + activeMonitor,
+							data : JSON.stringify(imgUrl),
+							contentType : "application/json; charset=utf-8",
+							method : "POST",
+							dataType : "json",
+							success : function(result) {
+								alert("成功");
+							},
+							error : function(xhr,status,errorThrown) {
+								alert("失敗:"+ errorThrown);
+							},
+
+							complete : function(xhr, status) {
+							}
+						});
+			});
+
+});
+</script>

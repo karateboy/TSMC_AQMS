@@ -1,0 +1,187 @@
+@* trendReport Template File *@
+@import com.github.nscala_time.time.Imports._
+@(privilege: Privilege)
+<div class="row">
+   	<div class="col-lg-12">
+        	<div class="panel panel-primary" id="paramPanel">
+            	<div class="panel-heading panel-title" >
+            		<a data-toggle="collapse" data-parent="#accordion" href="#reportParam">查詢參數</a>	
+                </div>
+            	<div class="panel-body panel-collapse in" id="reportParam">
+            		<form class="form-horizontal">
+            			<div class="form-group">
+	            			<label class="col-lg-1 control-label">測站</label>
+	            			<div class="col-lg-11">
+	            				<div class="btn-group" data-toggle="buttons">	            					            				
+	            					@for(m<-Monitor.myMvList(privilege)){
+	            						@if(m == Monitor.myMvList(privilege).head){
+	            							<label class="btn btn-outline btn-primary dim active">
+											<input type="radio" name="monitor" id="@m" checked>@Monitor.getDisplayName(m)</label>	
+	            						}else{
+	            							<label class="btn btn-outline btn-primary dim">
+											<input type="radio" name="monitor" id="@m">@Monitor.getDisplayName(m)</label>
+	            						}	            						
+	            					}
+	            				</div>
+	            			</div>	            			            		
+	                    </div>
+            			<div class="form-group">
+	            			<label class="col-lg-1 control-label">測項</label>
+	            			<div class="col-lg-11">
+	            				<div class="btn-group" data-toggle="buttons">	            				
+	            				@for(mt<-MonitorType.myMtvList(privilege)){
+	            					@if(mt == MonitorType.myMtvList(privilege).head){
+	            						<label class="btn btn-outline btn-primary dim active">
+										<input type="radio" name="monitorType" id="@mt" checked>@MonitorType.map(mt).desp</label>	
+	            					}else{
+	            						<label class="btn btn-outline btn-primary dim">
+										<input type="radio" name="monitorType" id="@mt">@MonitorType.map(mt).desp</label>
+	            					}	            					
+	            				}
+	            				</div>
+	            			</div>	            			            		
+	                    </div>
+	                    <div class="form-group">
+	            			<label class="col-lg-1 control-label">查詢區間</label>	
+	            			<div class="col-lg-5">
+	            				<div class="input-daterange input-group" id="datepicker">
+                    				<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" class="input-sm form-control" name="start" id="reportStart" value='@((DateTime.now-1.month).toString("YYYY-MM-dd"))' required/>
+                       				<span class="input-group-addon">至</span>
+                        			<input type="text" class="input-sm form-control" name="end" id="reportEnd" value='@(DateTime.now.toString("YYYY-MM-dd"))' required/>                        
+                    			</div>                        
+                    		</div>
+	            		</div>
+	            		<div class="form-group">
+	            			<label class="col-lg-1 control-label">圖表類型</label>						
+	            			<div class="col-lg-11 btn-group" data-toggle="buttons">
+           						<label class="btn btn-outline btn-primary dim active">
+									<input type="radio" name="chartType" id="line" checked>折線圖</label>
+								<label class="btn btn-outline btn-primary dim">
+									<input type="radio" name="chartType" id="spline">曲線圖</label>
+								<label class="btn btn-outline btn-primary dim">
+									<input type="radio" name="chartType" id="area">面積圖</label>	
+								<label class="btn btn-outline btn-primary dim">
+									<input type="radio" name="chartType" id="areaspline">曲線面積圖</label>		
+								<label class="btn btn-outline btn-primary dim">
+									<input type="radio" name="chartType" id="column">柱狀圖</label>
+								<label class="btn btn-outline btn-primary dim">
+									<input type="radio" name="chartType" id="scatter">點圖</label>			
+	            			</div>            		
+	                    </div>
+	            		
+	            		<div class="form-group">
+							<div class="col-lg-1 col-lg-offset-1">
+								<button type="button" class="btn btn-primary" id="queryReport">查詢</button>
+							</div>							
+						</div>
+            		</form>
+             	</div>
+        	</div>
+        	<div class="panel panel-success" style="display:none" id="reportPanel">
+            	<div class="panel-body panel-collapse" id="monitorReport">
+					<div id="reportDiv" align="center" style="width:99%">
+					            		
+            		</div>
+            	</div>
+        	</div>
+	</div>
+</div>
+<script>
+$( document ).ready(function() {
+	
+	$('#datepicker').datepicker({
+		format: 'yyyy-mm-dd',
+	    todayBtn: "linked",
+	    language: "zh-TW"
+	});
+
+
+	var monitor, monitorType, reportStart, reportEnd;
+	
+	function validate(){
+		monitor = $("input[name='monitor']:checked").attr('id');
+
+		if (!monitor) {
+			alert("請選擇測站");
+			return false;
+		}
+
+
+		monitorType = $("input[name='monitorType']:checked").attr('id');
+		if(!monitorType) {
+			alert('請選擇測項');
+			return false;
+		}
+		
+		reportStart = $('#reportStart').val();
+		if(reportStart.length === 0){
+			alert('請選擇開始日期');
+			return false;
+		}
+		
+		reportEnd = $('#reportEnd').val();
+		if(reportStart.length === 0){
+			alert('請選擇結束日期');
+			return false;
+		}
+
+		return true;
+	}
+	
+	$('#queryReport').click(function(){
+		if(!validate())
+			return;
+			
+		$("#reportPanel").css('display','block');		
+		$("#reportPanel").collapse('show');
+
+		$('#reportDiv').html('');
+		$("body").css("cursor", "progress");
+
+		var chartType = $("input[name='chartType']:checked").attr('id');
+		var url = "/JSON/CompareLastYearChart/" + monitor + "/" + monitorType + "/" + reportStart + "/" + reportEnd;
+		
+		$.ajax({
+			url : url,
+			data : "",
+			contentType : "application/json; charset=utf-8",
+			type : "GET",
+			cache:false,
+			dataType : "json",
+			success : function(result) {
+				result.chart = {
+						type: chartType,
+						height: chartHeight
+					};
+				result.colors=[
+				'#7CB5EC','#434348','#90ED7D','#F7A35C','#8085E9','#F15C80',
+				'#E4D354','#2B908F','#FB9FA8','#91E8E1','#7CB5EC','#80C535','#969696'];
+				result.tooltip ={
+	            	valueDecimals: 2};
+	            result.legend={enabled:true};
+				result.credits={
+					enabled:false,
+					href:'http://www.wecc.com.tw/'
+				};
+				result.xAxis.type = "datetime";
+				result.xAxis.dateTimeLabelFormats = {
+	                day: '%b%e日',
+	                week: '%b%e日',
+	            	month: '%y年%b',
+	            };
+				
+				$('#reportDiv').highcharts(result);
+			},
+			error : function(xhr, status, errorThrown) {
+				alert("錯誤訊息:無各年期歷史資料");
+			},
+
+			complete : function(xhr, status) {
+				$("body").css("cursor", "default");
+			}
+		});
+	});
+});
+</script>
+
+

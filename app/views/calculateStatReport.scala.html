@@ -1,0 +1,53 @@
+@* historyReport Template File *@
+@import com.github.nscala_time.time.Imports._
+@import Query._
+@(monitorType:MonitorType.Value, start:DateTime, end:DateTime, map:Map[Monitor.Value, Query.PeriodStat])
+
+<H3>測項:@MonitorType.map(monitorType).desp (@MonitorType.map(monitorType).unit)</H3>
+<H5>開始:@start.toString("YYYY-MM-dd") 結束(不含):@end.toString("YYYY-MM-dd")</H5>
+
+<table id="historyReport" class="table">
+<thead>
+	<tr>
+		<th>測站</th>
+		<th>平均</th>
+		<th>最小</th>
+		<th>最大</th>
+		<th>標準差</th>
+	</tr>
+</thead>
+<tbody>
+	@for(r <- map){
+		<tr>
+			<th>@Monitor.map(r._1).name</th>
+			@if(r._2.avg.isNaN){
+				<td>-</td>
+				<td>-</td>
+				<td>-</td>
+				<td>-</td>
+			}else{
+				<td>@MonitorType.format(monitorType, Some(r._2.avg))</td>
+				<td>@MonitorType.format(monitorType, Some(r._2.min)) (@r._2.minDate.toString("YYYY-MM-d HH:mm"))</td>
+				<td>@MonitorType.format(monitorType, Some(r._2.max)) (@r._2.maxDate.toString("YYYY-MM-d HH:mm"))</td>
+				<td>@MonitorType.format(monitorType, Some(r._2.sd))</td>
+			}
+		</tr>
+	}
+</tbody>
+</table>
+<script>
+$( document ).ready(function() {
+	$('#historyReport').dataTable( {
+		responsive: true,
+		"dom": 'T&lt'+'clear'+'&gtlfrtip',
+		language: {
+			url: '@routes.Assets.at("localization/zh_tw.json")',							
+		},
+		"tableTools": {
+        	"sSwfPath": "@routes.Assets.at("js/plugins/dataTables/swf/copy_csv_xls_pdf.swf")"
+        },
+        "searching": false,
+        paging:false
+	} );
+});
+</script>

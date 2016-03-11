@@ -1,0 +1,51 @@
+@* yearlyReport Template File *@
+@import com.github.nscala_time.time.Imports._
+@import Report._
+@import Record._
+@(monitorType: MonitorType.Value, reportDate:DateTime, rateList:List[MonitorTypeEffectiveRate], statMap: Map[Monitor.Value, Stat], privilege: Privilege)
+<h3>有效率年報表</h3>
+<h4>測項:@MonitorType.map(monitorType).desp</h4>
+<h4>日期:@reportDate.toString("yyyy年")</h4>
+<table id="reportTable" class="table" cellspacing="0" width="100%">
+	<thead>
+		<tr>
+			<th>月</th>
+			@for(m<-Monitor.mvList){
+				<td>@Monitor.map(m).name</td>
+			}
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+			<td>平均%</td>
+			@for(m<-privilege.allowedMonitors){
+				<td>@MonitorType.formatAvg(statMap(m).avg)</td>	
+			}
+		</tr>
+		<tr>
+			<td>最大%</td>
+			@for(m<-privilege.allowedMonitors){
+				<td>@MonitorType.formatAvg(statMap(m).max)</td>
+			}
+		</tr>
+		<tr>
+			<td>最小%</td>
+			@for(m<-privilege.allowedMonitors){
+				<td>@MonitorType.formatAvg(statMap(m).min)</td>
+			}
+		</tr>
+	</tfoot>
+	<tbody>
+		@for(i<-0 to 11){
+			<tr>
+			<th>@(i+1)</th>
+			@for(m<-privilege.allowedMonitors){
+				<td>@("%.0f".format(rateList(i).rateMap(m)*100))</td>	
+			}
+			</tr>
+		}
+	</tbody>
+</table>            		
+ 
+
+

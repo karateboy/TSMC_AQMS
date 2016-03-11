@@ -1,0 +1,67 @@
+@* yearlyReport Template File *@
+@import com.github.nscala_time.time.Imports._
+@import Report._
+@(monitor: Monitor.Value, reportDate:DateTime, report:IntervalReport)
+<h3>監測年報表</h3>
+<h4>監測站:@Monitor.map(monitor).name</h4>
+<h4>日期:@reportDate.toString("yyyy年")</h4>
+<div class="col-lg-offset-10 col-lg-2">
+<table class="table">
+<tbody>
+<tr>
+	<td class="col-lg-1" style="color:black"><strong>標示說明:</strong></td>
+	<td class="col-lg-1" style="color:black;background-color:red">無效數據</td>
+</tr>
+</tbody>
+</table>
+</div>
+<table id="reportTable" class="table" cellspacing="0" width="100%">
+	<thead>
+		<tr>
+			<th>月</th>
+			@for(t<-report.typeArray if Monitor.map(monitor).monitorTypes.contains(t.monitorType)){
+				<td>@MonitorType.map(t.monitorType).desp</td>
+			}
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+			<td>平均</td>
+			@for(t<-report.typeArray if Monitor.map(monitor).monitorTypes.contains(t.monitorType)){
+					<td>@MonitorType.format(t.monitorType, t.stat.avg)</td>
+			}
+		</tr>
+		<tr>
+			<td>最大</td>
+			@for(t<-report.typeArray if Monitor.map(monitor).monitorTypes.contains(t.monitorType)){
+				<td>@MonitorType.format(t.monitorType, t.stat.max)</td>
+			}
+		</tr>
+		<tr>
+			<td>最小</td>
+			@for(t<-report.typeArray if Monitor.map(monitor).monitorTypes.contains(t.monitorType)){
+				<td>@MonitorType.format(t.monitorType, t.stat.min)</td>
+			}
+		</tr>
+		<tr>
+			<td>有效率(%)</td>
+			@for(t<-report.typeArray if Monitor.map(monitor).monitorTypes.contains(t.monitorType)){
+				<td>@MonitorType.format(t.monitorType, t.stat.effectPercent)</td>
+			}
+		</tr>
+	</tfoot>
+	<tbody>
+		@for(i<-0 to 11){
+			<tr>
+			<th>@(i+1)</th>
+			@for(t<-report.typeArray if Monitor.map(monitor).monitorTypes.contains(t.monitorType)){
+					@if(t.dataList(i).effectPercent.isDefined && t.dataList(i).effectPercent.get >= 0.75){
+						<td>@MonitorType.format(t.monitorType, t.dataList(i).avg)</td>
+					}else{
+						<td style="color:black;background-color:red">@MonitorType.format(t.monitorType, t.dataList(i).avg)</td>
+					}					
+			}
+			</tr>
+		}
+	</tbody>
+</table>            		
