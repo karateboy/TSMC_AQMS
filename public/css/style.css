@@ -160,8 +160,8 @@ h5 {
   font-size: 12px;
 }
 .nav-header {
-  padding: 33px 25px;
-  background: url("patterns/header-profile.png") no-repeat;
+  /* padding: 0px 25px; */  
+  background-color: white;
 }
 .pace-done .nav-header {
   transition: all 0.5s;

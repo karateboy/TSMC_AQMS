@@ -133,22 +133,11 @@
     <div class="sidebar-collapse">
         <ul class="nav" id="side-menu">
             <li class="nav-header">
-                <div class="dropdown profile-element"> <span>
-                             <img alt="image" class="img-circle" src='@routes.Assets.at("images/logo.jpg")' height='80%' width='80%' />
-                             </span>
-                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <span class="clear"> <span class="block m-t-xs">
-                             </span> <span class="text-muted text-xs block">@user.name<b class="caret"></b></span> </span> </a>
-                    <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                    	@if(user.isAdmin){
-                        	<li><a href="#" onClick="loadPage('/UserManagement','系統管理','使用者管理')">使用者設定</a></li>
-                        	<li class="divider"></li>
-                        }
-                        <li><a href="/logout">登出</a></li>
-                    </ul>
-                </div>
-                <div class="logo-element">
-                    
+                <span>
+                	<img alt="image" class="img-responsive" src='@routes.Assets.at("images/TSMC_logo.png")' />
+                </span>
+                <div class="text-center" style="padding: 5px 5px; background-color: Crimson; color: white;">
+                	<h3><strong>@user.name</strong></h3>
                 </div>
             </li>
             @if(privilege.allowedMenuRights.contains(MenuRight.RealtimeInfo)){
