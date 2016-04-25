@@ -9,8 +9,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.github.nscala_time.time.Imports._
 import play.api.libs.ws.WS
 import play.api.Play.current
+import java.sql.Timestamp
 
 object DataLoggerCollector {
+  import models.ModelHelper._
+
   var count = 0
   def start(host: String)(implicit context: ActorContext) = {
     val actorName = s"DataLoggerCollector_${count}"
@@ -27,8 +30,77 @@ object DataLoggerCollector {
   case class CollectAlarm(start: Long)
   case class CollectCalibration(start: Long)
 
-  case class MtRecord(mtName: String, value: Double, status: String)
-  case class RecordList(time: DateTime, mtDataList: Seq[MtRecord])
+  case class MtRecord(mtName: String, value: Float, status: String)
+  case class RecordList(time: DateTime, mtDataList: Seq[MtRecord]){
+    def toHourRecord(monitor:Monitor.Value)={
+      val hr = Record.HourRecord(monitor.toString(), getSqlTimestamp(time))
+      for(data <- mtDataList){
+        data.mtName match {
+          case "SO2"=>
+            hr.so2 = Some(data.value)
+            hr.so2_stat = Some(data.status)
+          case "NOx"=>
+            hr.nox = Some(data.value)
+            hr.nox_stat = Some(data.status)
+          case "NO2"=>
+            hr.no2 = Some(data.value)
+            hr.no2_stat = Some(data.status)
+          case "NO"=>
+            hr.no = Some(data.value)
+            hr.no_stat = Some(data.status)
+          case "CO"=>
+            hr.co = Some(data.value)
+            hr.co_stat = Some(data.status)
+          case "O3"=>
+            hr.o3 = Some(data.value)
+            hr.o3_stat = Some(data.status)
+          case "THC"=>
+            hr.thc = Some(data.value)
+            hr.thc_stat = Some(data.status)
+          case "TS"=>
+            hr.s = Some(data.value)
+            hr.s_stat = Some(data.status)
+          case "CH4"=>
+            hr.ch4 = Some(data.value)
+            hr.ch4_stat = Some(data.status)            
+          case "NMHC"=>
+            hr.nmhc = Some(data.value)
+            hr.nmhc_stat = Some(data.status)              
+          case "NH3"=>
+            hr.nh3 = Some(data.value)
+            hr.nh3_stat = Some(data.status)            
+          case "TSP"=>
+            hr.tsp = Some(data.value)
+            hr.tsp_stat = Some(data.status)            
+          case "PM10"=>
+            hr.pm10 = Some(data.value)
+            hr.pm10_stat = Some(data.status)
+          case "PM25"=>
+            hr.pm25 = Some(data.value)
+            hr.pm25_stat = Some(data.status)
+          case "WD_SPEED"=>
+            hr.wind_speed = Some(data.value)
+            hr.wind_speed_stat = Some(data.status)
+          case "WD_DIR"=>
+            hr.wind_dir = Some(data.value)
+            hr.wind_dir_stat = Some(data.status)
+          case "TEMP"=>
+            hr.temp = Some(data.value)
+            hr.temp_stat = Some(data.status)
+          case "HUMID"=>
+            hr.humid = Some(data.value)
+            hr.humid_stat = Some(data.status)
+          case "PRESS"=>
+            hr.air_pressure = Some(data.value)
+            hr.air_pressure_stat = Some(data.status)
+          case "RAIN"=>
+            hr.rain = Some(data.value)
+            hr.rain_stat = Some(data.status)
+        }
+      }
+      hr
+    }
+  }
 
   implicit val mtRecordReads = Json.reads[MtRecord]
   implicit val recordListReads = Json.reads[RecordList]
@@ -91,7 +163,12 @@ class DataLoggerCollector(host: String) extends Actor {
             import scala.concurrent.duration._
             Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectMinData(start))
           },
-          data => {
+          dataList => {
+            for(data <- dataList){
+              val hr = data.toHourRecord(Monitor.withName("A013"))
+              hr.save(TableType.Min)
+            }
+
             import scala.concurrent.duration._
             Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectMinData(start))
           })
@@ -117,7 +194,11 @@ class DataLoggerCollector(host: String) extends Actor {
             import scala.concurrent.duration._
             Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectHourData(start))
           },
-          data => {
+          dataList => {
+            for(data <- dataList){
+              val hr = data.toHourRecord(Monitor.withName("A013"))
+              hr.save(TableType.Hour)
+            }
             import scala.concurrent.duration._
             Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectHourData(start))
           })

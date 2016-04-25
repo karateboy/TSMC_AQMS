@@ -14,8 +14,8 @@ case class Stat(
     count: Int,
     total: Int,
     overCount: Int) {
-  val effectPercent = if(total != 0) Some(count.toFloat*100 / total) else None
-  val overPercent = if(total != 0) Some(overCount.toFloat*100 / total) else None
+  val effectPercent = if (total != 0) Some(count.toFloat * 100 / total) else None
+  val overPercent = if (total != 0) Some(overCount.toFloat * 100 / total) else None
 }
 
 case class MonitorTypeRecord(monitorType: MonitorType.Value, dataList: List[(Timestamp, Option[Float], Option[String])], stat: Stat)
@@ -31,75 +31,304 @@ object TableType extends Enumeration {
 
 object Record {
   case class HourRecord(
-    name: String,
-    date: Timestamp,
-    var chk: Option[String] = None,
-    var tsp: Option[Float] = None,
-    var tsp_stat: Option[String] = None,
-    var pm10: Option[Float] = None,
-    var pm10_stat: Option[String] = None,
-    var pm25: Option[Float] = None,
-    var pm25_stat: Option[String] = None,
-    var s: Option[Float] = None,
-    var s_stat: Option[String] = None,
-    var so2: Option[Float] = None,
-    var so2_stat: Option[String] = None,
-    var nox: Option[Float] = None,
-    var nox_stat: Option[String] = None,
-    var co: Option[Float] = None,
-    var co_stat: Option[String] = None,
-    var o3: Option[Float] = None,
-    var o3_stat: Option[String] = None,
-    var thc: Option[Float] = None,
-    var thc_stat: Option[String] = None,
-    var ammonia: Option[Float] = None,
-    var ammonia_stat: Option[String] = None,
-    var noy: Option[Float] = None,
-    var noy_stat: Option[String] = None,
-    var noy_no: Option[Float] = None,
-    var noy_no_stat: Option[String] = None,
-    var nh3: Option[Float] = None,
-    var nh3_stat: Option[String] = None,
-    var no: Option[Float] = None,
-    var no_stat: Option[String] = None,
-    var ch4: Option[Float] = None,
-    var ch4_stat: Option[String] = None,
-    var monitor_humid: Option[Float] = None,
-    var monitor_humid_stat: Option[String] = None,
-    var monitor_temp: Option[Float] = None,
-    var monitor_temp_stat: Option[String] = None,
-    var no2: Option[Float] = None,
-    var no2_stat: Option[String] = None,
-    var nmhc: Option[Float] = None,
-    var nmhc_stat: Option[String] = None,
-    var wind_speed: Option[Float] = None,
-    var wind_speed_stat: Option[String] = None,
-    var wind_dir: Option[Float] = None,
-    var wind_dir_stat: Option[String] = None,
-    var rain: Option[Float] = None,
-    var rain_stat: Option[String] = None,
-    var temp: Option[Float] = None,
-    var temp_stat: Option[String] = None,
-    var humid: Option[Float] = None,
-    var humid_stat: Option[String] = None,
-    var air_pressure: Option[Float] = None,
-    var air_pressure_stat: Option[String] = None,
-    var noy_dif: Option[Float] = None,
-    var noy_dif_stat: Option[String] = None,
-    var nh3_nt: Option[Float] = None,
-    var nh3_nt_stat: Option[String] = None,
-    var nh3_nox: Option[Float] = None,
-    var nh3_nox_stat: Option[String] = None,
-    var nh3_no: Option[Float] = None,
-    var nh3_no_stat: Option[String] = None,
-    var nh3_no2: Option[Float] = None,
-    var nh3_no2_stat: Option[String] = None,
-    var h2s_cs: Option[Float] = None,
-    var h2s_cs_stat: Option[String] = None,
-    var h2s_so2: Option[Float] = None,
-    var h2s_so2_stat: Option[String] = None,
-    var h2s: Option[Float] = None,
-    var h2s_stat: Option[String] = None)
+      name: String,
+      date: Timestamp,
+      var chk: Option[String] = None,
+      var tsp: Option[Float] = None,
+      var tsp_stat: Option[String] = None,
+      var pm10: Option[Float] = None,
+      var pm10_stat: Option[String] = None,
+      var pm25: Option[Float] = None,
+      var pm25_stat: Option[String] = None,
+      var s: Option[Float] = None,
+      var s_stat: Option[String] = None,
+      var so2: Option[Float] = None,
+      var so2_stat: Option[String] = None,
+      var nox: Option[Float] = None,
+      var nox_stat: Option[String] = None,
+      var co: Option[Float] = None,
+      var co_stat: Option[String] = None,
+      var o3: Option[Float] = None,
+      var o3_stat: Option[String] = None,
+      var thc: Option[Float] = None,
+      var thc_stat: Option[String] = None,
+      var ammonia: Option[Float] = None,
+      var ammonia_stat: Option[String] = None,
+      var noy: Option[Float] = None,
+      var noy_stat: Option[String] = None,
+      var noy_no: Option[Float] = None,
+      var noy_no_stat: Option[String] = None,
+      var nh3: Option[Float] = None,
+      var nh3_stat: Option[String] = None,
+      var no: Option[Float] = None,
+      var no_stat: Option[String] = None,
+      var ch4: Option[Float] = None,
+      var ch4_stat: Option[String] = None,
+      var monitor_humid: Option[Float] = None,
+      var monitor_humid_stat: Option[String] = None,
+      var monitor_temp: Option[Float] = None,
+      var monitor_temp_stat: Option[String] = None,
+      var no2: Option[Float] = None,
+      var no2_stat: Option[String] = None,
+      var nmhc: Option[Float] = None,
+      var nmhc_stat: Option[String] = None,
+      var wind_speed: Option[Float] = None,
+      var wind_speed_stat: Option[String] = None,
+      var wind_dir: Option[Float] = None,
+      var wind_dir_stat: Option[String] = None,
+      var rain: Option[Float] = None,
+      var rain_stat: Option[String] = None,
+      var temp: Option[Float] = None,
+      var temp_stat: Option[String] = None,
+      var humid: Option[Float] = None,
+      var humid_stat: Option[String] = None,
+      var air_pressure: Option[Float] = None,
+      var air_pressure_stat: Option[String] = None,
+      var noy_dif: Option[Float] = None,
+      var noy_dif_stat: Option[String] = None,
+      var nh3_nt: Option[Float] = None,
+      var nh3_nt_stat: Option[String] = None,
+      var nh3_nox: Option[Float] = None,
+      var nh3_nox_stat: Option[String] = None,
+      var nh3_no: Option[Float] = None,
+      var nh3_no_stat: Option[String] = None,
+      var nh3_no2: Option[Float] = None,
+      var nh3_no2_stat: Option[String] = None,
+      var h2s_cs: Option[Float] = None,
+      var h2s_cs_stat: Option[String] = None,
+      var h2s_so2: Option[Float] = None,
+      var h2s_so2_stat: Option[String] = None,
+      var h2s: Option[Float] = None,
+      var h2s_stat: Option[String] = None) {
+
+    def save(tab: TableType.Value)(implicit session: DBSession = AutoSession) {
+      val tab_name = Record.getTabName(tab, date.toDateTime().getYear)
+
+      if (tab == TableType.Hour) {
+        sql"""
+          INSERT INTO $tab
+           ([DP_NO]
+           ,[M_DateTime]
+           ,[CHK]
+           ,[A513V]
+           ,[A513S]
+           ,[A514V]
+           ,[A514S]
+           ,[A515V]
+           ,[A515S]
+           ,[A521V]
+           ,[A521S]
+           ,[A522V]
+           ,[A522S]
+           ,[A523V]
+           ,[A523S]
+           ,[A524V]
+           ,[A524S]
+           ,[A525V]
+           ,[A525S]
+           ,[A526V]
+           ,[A526S]
+           ,[A529V]
+           ,[A529S]
+           ,[A532V]
+           ,[A532S]
+           ,[A533V]
+           ,[A533S]
+           ,[A535V]
+           ,[A535S]
+           ,[A583V]
+           ,[A583S]
+           ,[A586V]
+           ,[A586S]
+           ,[A588V]
+           ,[A588S]
+           ,[A589V]
+           ,[A589S]
+           ,[A593V]
+           ,[A593S]
+           ,[A596V]
+           ,[A596S]
+           ,[C511V]
+           ,[C511S]
+           ,[C512V]
+           ,[C512S]
+           ,[C513V]
+           ,[C513S]
+           ,[C514V]
+           ,[C514S]
+           ,[C515V]
+           ,[C515S]
+           ,[C516V]
+           ,[C516S])
+     VALUES
+           ($name
+           ,$date
+           ,$chk
+           ,$tsp
+           ,$tsp_stat
+           ,$pm10
+           ,$pm10_stat
+           ,$pm25
+           ,$pm25_stat
+           ,$s
+           ,$s_stat
+           ,$so2
+           ,$so2_stat
+           ,$nox
+           ,$nox_stat
+           ,$co
+           ,$co_stat
+           ,$o3
+           ,$o3_stat
+           ,$thc
+           ,$thc_stat
+           ,$ammonia
+           ,$ammonia_stat
+           ,$noy
+           ,$noy_stat
+           ,$noy_no
+           ,$noy_no_stat
+           ,$nh3
+           ,$nh3_stat
+           ,$no
+           ,$no_stat
+           ,$ch4
+           ,$ch4_stat
+           ,$monitor_humid
+           ,$monitor_humid_stat
+           ,$monitor_temp
+           ,$monitor_temp_stat
+           ,$no2
+           ,$no2_stat
+           ,$nmhc
+           ,$nmhc_stat
+           ,$wind_speed
+           ,$wind_speed_stat
+           ,$wind_dir
+           ,$wind_dir_stat
+           ,$rain
+           ,$rain_stat
+           ,$temp
+           ,$temp_stat
+           ,$humid
+           ,$humid_stat
+           ,$air_pressure
+           ,$air_pressure_stat)
+            """.update.apply
+      } else {
+        sql"""
+          INSERT INTO $tab
+           ([DP_NO]
+           ,[M_DateTime]
+           ,[CHK]
+           ,[A213V]
+           ,[A213S]
+           ,[A214V]
+           ,[A214S]
+           ,[A215V]
+           ,[A215S]
+           ,[A221V]
+           ,[A221S]
+           ,[A222V]
+           ,[A222S]
+           ,[A223V]
+           ,[A223S]
+           ,[A224V]
+           ,[A224S]
+           ,[A225V]
+           ,[A225S]
+           ,[A226V]
+           ,[A226S]
+           ,[A229V]
+           ,[A229S]
+           ,[A232V]
+           ,[A232S]
+           ,[A233V]
+           ,[A233S]
+           ,[A235V]
+           ,[A235S]
+           ,[A283V]
+           ,[A283S]
+           ,[A286V]
+           ,[A286S]
+           ,[A288V]
+           ,[A288S]
+           ,[A289V]
+           ,[A289S]
+           ,[A293V]
+           ,[A293S]
+           ,[A296V]
+           ,[A296S]
+           ,[C211V]
+           ,[C211S]
+           ,[C212V]
+           ,[C212S]
+           ,[C213V]
+           ,[C213S]
+           ,[C214V]
+           ,[C214S]
+           ,[C215V]
+           ,[C215S]
+           ,[C216V]
+           ,[C216S])
+     VALUES
+           ($name
+           ,$date
+           ,$chk
+           ,$tsp
+           ,$tsp_stat
+           ,$pm10
+           ,$pm10_stat
+           ,$pm25
+           ,$pm25_stat
+           ,$s
+           ,$s_stat
+           ,$so2
+           ,$so2_stat
+           ,$nox
+           ,$nox_stat
+           ,$co
+           ,$co_stat
+           ,$o3
+           ,$o3_stat
+           ,$thc
+           ,$thc_stat
+           ,$ammonia
+           ,$ammonia_stat
+           ,$noy
+           ,$noy_stat
+           ,$noy_no
+           ,$noy_no_stat
+           ,$nh3
+           ,$nh3_stat
+           ,$no
+           ,$no_stat
+           ,$ch4
+           ,$ch4_stat
+           ,$monitor_humid
+           ,$monitor_humid_stat
+           ,$monitor_temp
+           ,$monitor_temp_stat
+           ,$no2
+           ,$no2_stat
+           ,$nmhc
+           ,$nmhc_stat
+           ,$wind_speed
+           ,$wind_speed_stat
+           ,$wind_dir
+           ,$wind_dir_stat
+           ,$rain
+           ,$rain_stat
+           ,$temp
+           ,$temp_stat
+           ,$humid
+           ,$humid_stat
+           ,$air_pressure
+           ,$air_pressure_stat)
+            """.update.apply
+      }
+    }
+  }
 
   case class SixSecRecord(
     monitor: Monitor.Value,
