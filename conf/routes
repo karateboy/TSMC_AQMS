@@ -202,3 +202,13 @@ GET		/MaintanceSchedule		controllers.Maintance.maintanceSchedule
 GET		/MinMonthlyReportSocket		controllers.Report.getMinMonthlySocket
 GET		/DownloadMinMonthlyReport/:n	controllers.Report.downloadMinMontlyReport(n: Int)
 GET		/AlarmNotificationSocket	controllers.Realtime.alarmNofificationSocket
+
+# Data Logger
+GET		/HourRecordRange/:monitor		controllers.DataLogger.getHourRecordRange(monitor)
+PUT		/HourRecord/:monitor			controllers.DataLogger.insertHourRecord(monitor)
+GET		/MinRecordRange/:monitor		controllers.DataLogger.getMinRecordRange(monitor)
+PUT		/MinRecord/:monitor				controllers.DataLogger.insertMinRecord(monitor)						
+GET 	/CalibrationRecordRange/:monitor	controllers.DataLogger.getCalibrationRange(monitor)
+PUT		/CalibrationRecord/:monitor			controllers.DataLogger.insertCalibrationRecord(monitor)
+#GET 	/AlertRecordRange/:monitor 		controllers.DataLogger.getAlertRecordRange(monitor)
+#PUT		/AlertRecord/:monitor			controllers.DataLogger.insertAlertRecord(monitor)

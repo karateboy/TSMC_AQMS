@@ -9,17 +9,16 @@ import com.github.nscala_time.time._
 import models.ModelHelper._
 
 object Calibration {
-  
-  case class CalibrationItem(monitor:Monitor.Value, monitorType:MonitorType.Value,
-        startTime:DateTime, endTime:DateTime, span:Float, z_std:Float, z_val:Float, 
-        zd_val:Float, zd_pnt:Float,
-        s_std:Float, s_sval:Float, sd_val:Float, sd_pnt:Float
-      )
+
+  case class CalibrationItem(monitor: Monitor.Value, monitorType: MonitorType.Value,
+                             startTime: DateTime, endTime: DateTime, span: Float, z_std: Float, z_val: Float,
+                             zd_val: Float, zd_pnt: Float,
+                             s_std: Float, s_sval: Float, sd_val: Float, sd_pnt: Float)
 
   def getTabName(year: Int) = {
     SQLSyntax.createUnsafely(s"[P1234567_Cal_${year}]")
   }
-  
+
   def calibrationQueryReport(monitor: Monitor.Value, start: Timestamp, end: Timestamp) = {
     val tab = getTabName(start.toDateTime.getYear)
     DB readOnly { implicit session =>
@@ -47,15 +46,14 @@ object Calibration {
 
     }
   }
-  
-  def calibrationSummary(monitor: Monitor.Value, start: Timestamp, end: Timestamp) ={
+
+  def calibrationSummary(monitor: Monitor.Value, start: Timestamp, end: Timestamp) = {
     val reports = calibrationQueryReport(monitor, start, end)
     val pairs =
-    for(r <- reports)
-    yield 
-      r.monitorType -> r
-    
-    Map(pairs :_*).values.toList.sortBy { item => item.startTime }
+      for (r <- reports)
+        yield r.monitorType -> r
+
+    Map(pairs: _*).values.toList.sortBy { item => item.startTime }
   }
 
   def calibrationMonthly(monitor: Monitor.Value, monitorType: MonitorType.Value, start: DateTime) = {
@@ -88,10 +86,21 @@ object Calibration {
 
       }
     val pairs =
-      for{r<-report}
-    yield{
-      r.startTime.toString("d")->r
+      for { r <- report } yield {
+        r.startTime.toString("d") -> r
+      }
+    Map(pairs: _*)
+  }
+
+  def getLatestMonitorRecordTime(m: Monitor.Value) = {
+    val tab_name = getTabName(DateTime.now.getYear)
+    DB readOnly { implicit session =>
+      sql"""
+      SELECT TOP 1 S_DateTime
+      FROM ${tab_name}
+      WHERE DP_NO = ${m.toString}
+      ORDER BY M_DateTime  DESC
+      """.map { r => r.timestamp(1) }.single.apply
     }
-    Map(pairs :_*)
   }
 }
