@@ -484,7 +484,7 @@ object Maintance extends Controller {
     
     val email = Email(
       "測試警告信",
-      s"麥寮AQMS <aqm6812646@gmail.com>",
+      s"AQMS <aqm6812646@gmail.com>",
       Seq(s"${user.name} <${user.email}>"),
       // adds attachment
       attachments = Seq(),

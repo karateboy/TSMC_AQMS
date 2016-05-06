@@ -11,6 +11,7 @@ import play.api.libs.functional.syntax._
 import PdfUtility._
 import models.ModelHelper._
 import play.api.Play.current
+import java.sql.Timestamp
 
 object Realtime extends Controller {
   def realtimeStat(outputTypeStr: String) = Security.Authenticated {
@@ -19,10 +20,10 @@ object Realtime extends Controller {
       val group = Group.getGroup(userInfo.groupID).get
       val outputType = OutputType.withName(outputTypeStr)
 
-      val current = getLatestRecordTime(TableType.Min).get
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now.withSecondOfMinute(0) : Timestamp)
       val sub_current = current.toDateTime - 60.second
       val rt_status = getRealtimeMinStatus(sub_current, group.privilege)
-      val currentHr = getLatestRecordTime(TableType.Hour).get
+      val currentHr = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0) : Timestamp)
       val rt_psi = getRealtimePSI(currentHr)
       val output = views.html.realtimeStatus(sub_current, rt_status, MonitorType.psiList, rt_psi, group.privilege)
       val title = "即時資訊"
@@ -64,7 +65,7 @@ object Realtime extends Controller {
       val monitorTypeStrArray = monitorTypeStr.split(':')
       val monitorTypes = monitorTypeStrArray.map { MonitorType.withName }
 
-      val current = getLatestRecordTime(TableType.Hour).get
+      val current = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0):Timestamp)
       val reportUnit = ReportUnit.Hour
       val monitorStatusFilter = MonitorStatusFilter.ValidData
       val start = current.toDateTime - 1.day
@@ -83,7 +84,7 @@ object Realtime extends Controller {
       val monitorTypeStrArray = monitorTypeStr.split(':')
       val monitorTypes = monitorTypeStrArray.map { MonitorType.withName }
 
-      val current = getLatestRecordTime(TableType.Min).get
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now.withSecond(0):Timestamp)
       val reportUnit = ReportUnit.Min
       val monitorStatusFilter = MonitorStatusFilter.ValidData
       val start = current.toDateTime - 4.hour
@@ -139,7 +140,7 @@ object Realtime extends Controller {
       val mt = MonitorType.withName(monitorTypeStr)
       val mtCase = MonitorType.map(mt)
 
-      val current = getLatestRecordTime(TableType.Min).get
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now: Timestamp)
       val latestRecordTime = current.toDateTime - 1.minutes  
       
       val realtimeValueMap =
@@ -212,7 +213,7 @@ object Realtime extends Controller {
 
   def realtimeMap = Security.Authenticated {
     implicit request =>
-      val current = getLatestRecordTime(TableType.SixSec).get
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now():Timestamp)
       val sub_current = current.toDateTime -1.minute
       val weatherMap = getRealtimeWeatherMap(sub_current)
       val statusMap = getRealtimeMonitorStatusMap(sub_current)
