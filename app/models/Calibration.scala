@@ -13,7 +13,46 @@ object Calibration {
   case class CalibrationItem(monitor: Monitor.Value, monitorType: MonitorType.Value,
                              startTime: DateTime, endTime: DateTime, span: Float, z_std: Float, z_val: Float,
                              zd_val: Float, zd_pnt: Float,
-                             s_std: Float, s_sval: Float, sd_val: Float, sd_pnt: Float)
+                             s_std: Float, s_sval: Float, sd_val: Float, sd_pnt: Float){
+    def save()={
+      val tab = getTabName(startTime.getYear)
+      DB localTx{
+        implicit session=>
+          sql"""
+            INSERT INTO $tab
+           ([DP_NO]
+           ,[M_ITEM]
+           ,[S_DateTime]
+           ,[E_DateTime]
+           ,[SPAN]
+           ,[Z_STD]
+           ,[Z_VAL]
+           ,[ZD_VAL]
+           ,[ZD_PNT]
+           ,[S_STD]
+           ,[S_SVAL]
+           ,[SD_VAL]
+           ,[SD_PNT]
+           ,[CHK])
+     VALUES
+           (${monitor.toString}
+           ,${monitorType.toString}
+           ,${startTime :java.sql.Timestamp}
+           ,${endTime: java.sql.Timestamp}
+           ,$span
+           ,$z_std
+           ,$z_val
+           ,$zd_val
+           ,$zd_pnt
+           ,$s_std
+           ,$s_sval
+           ,$sd_val
+           ,$sd_pnt
+           ,null)
+            """.update.apply
+      }
+    }
+  }
 
   def getTabName(year: Int) = {
     SQLSyntax.createUnsafely(s"[P1234567_Cal_${year}]")
