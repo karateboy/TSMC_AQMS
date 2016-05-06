@@ -138,7 +138,7 @@ object Calibration {
       SELECT TOP 1 S_DateTime
       FROM ${tab_name}
       WHERE DP_NO = ${m.toString}
-      ORDER BY M_DateTime  DESC
+      ORDER BY S_DateTime  DESC
       """.map { r => r.timestamp(1) }.single.apply
     }
   }
