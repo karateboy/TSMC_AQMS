@@ -106,7 +106,7 @@ object Record {
 
       if (tab == TableType.Hour) {
         sql"""
-          INSERT INTO $tab
+          INSERT INTO $tab_name
            ([DP_NO]
            ,[M_DateTime]
            ,[CHK]
@@ -217,7 +217,7 @@ object Record {
             """.update.apply
       } else {
         sql"""
-          INSERT INTO $tab
+          INSERT INTO $tab_name
            ([DP_NO]
            ,[M_DateTime]
            ,[CHK]
