@@ -23,8 +23,8 @@
 		<tr>
 			<td>@Monitor.map(a.monitor).name</td>
 			<td>@a.time.toString("YYYY/MM/dd HH:mm")</td>
-			<td>@a.level</td>
-			<td>@a.src</td>
+			<td>@Alarm2.Level.map(a.level)</td>
+			<td>@Alarm2.getSrcForDisplay(a.src)</td>
 			<td>@a.info</td>
 		</tr>
 	}
