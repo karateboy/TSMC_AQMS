@@ -731,19 +731,14 @@ object Query extends Controller {
       Ok(views.html.alarm(group.privilege))
   }
 
-  def alarmReport(monitorStr: String, statusStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
+  def alarmReport(monitorStr: String, level: Int, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     val monitorStrArray = monitorStr.split(':')
     val monitors = monitorStrArray.map { Monitor.withName }
-    val statusFilter = if (statusStr.equalsIgnoreCase("none")) {
-      None
-    } else {
-      Some(statusStr.split(':').toList)
-    }
     val start = DateTime.parse(startStr)
     val end = DateTime.parse(endStr) + 1.day
     val outputType = OutputType.withName(outputTypeStr)
 
-    val records = Alarm.getAlarm(monitors, statusFilter, start, end)
+    val records = Alarm2.getAlarmByLevel(monitors, level, start, end)
 
     val output = views.html.alarmReport(start, end, records)
     val title = "警告報表"

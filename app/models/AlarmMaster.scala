@@ -3,7 +3,6 @@ import play.api._
 import akka.actor._
 import com.github.nscala_time.time.Imports._
 import play.api.Play.current
-import Alarm._
 import models.Realtime._
 import ModelHelper._
 

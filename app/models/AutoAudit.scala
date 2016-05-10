@@ -17,6 +17,7 @@ case class MinMaxCfg(
   min: Float,
   max: Float)
 
+import Alarm2._
 case class MinMaxRule(
     enabled: Boolean,
     monitorTypes: Seq[MinMaxCfg]) extends Rule('a') {
@@ -34,9 +35,9 @@ case class MinMaxRule(
 
         if (mt_value > cfg.max || mt_value <= cfg.min) {
           targetStat.setAuditStat(mt, lead)
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mt).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mt), Level.ERR, s"違反極大極小值稽核")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -72,9 +73,9 @@ case class CompareRule(
       val ch4 = ch4_rec._1.get
       if (ch4 > thc) {
         invalid = true
-        val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(A226).id, record.date, 1.0f, lead + "10")
+        val ar = Alarm2(Monitor.withName(record.name), record.date, Src(A226), Level.ERR, s"違反合理性稽核")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -92,9 +93,9 @@ case class CompareRule(
       val no2 = no2_rec._1.get
       if (nox < no2) {
         invalid = true
-        val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(A223).id, record.date, 1.0f, lead + "10")
+        val ar = Alarm2(Monitor.withName(record.name), record.date, Src(A223), Level.ERR, s"違反合理性稽核(NOx<NO2)")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -112,9 +113,9 @@ case class CompareRule(
         invalid = true
         targetStat.setAuditStat(A214, lead)
         targetStat.setAuditStat(A213, lead)
-        val ar = Alarm.Alarm(Monitor.withName(record.name), "Z206", record.date, 1.0f, "056")
+        val ar = Alarm2(Monitor.withName(record.name), record.date, Src(A214), Level.ERR, s"違反合理性稽核(PM10>TSP)")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -126,9 +127,9 @@ case class CompareRule(
         invalid = true
         targetStat.setAuditStat(A215, lead)
         targetStat.setAuditStat(A213, lead)
-        val ar = Alarm.Alarm(Monitor.withName(record.name), "Z216", record.date, 1.0f, "058")
+        val ar = Alarm2(Monitor.withName(record.name), record.date, Src(A215), Level.ERR, s"違反合理性稽核(PM2.5>TSP)")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -140,9 +141,9 @@ case class CompareRule(
         invalid = true
         targetStat.setAuditStat(A214, lead)
         targetStat.setAuditStat(A215, lead)
-        val ar = Alarm.Alarm(Monitor.withName(record.name), "Z226", record.date, 1.0f, "059")
+        val ar = Alarm2(Monitor.withName(record.name), record.date, Src(A214), Level.ERR, s"違反合理性稽核(PM2.5>PM10)")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -191,9 +192,9 @@ case class DifferenceRule(
       val (avg, std) = avgStdMap(mt)
       if (Math.abs(v - avg) > multiplier * std) {
         invalid = true
-        val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mt).id, record.date, 1.0f, lead + "10")
+        val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mt), Level.ERR, s"違反單調性稽核")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -233,9 +234,9 @@ case class SpikeRule(
         val v = pre_mt_rec(1)._1.get
         if (Math.abs(v - avg) > mtcfg.abs) {
           invalid = true
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mtcfg.id).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mtcfg.id), Level.ERR, s"突波高值稽核")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -275,9 +276,9 @@ case class PersistenceRule(
         val pre_mt_rec = pre_records.map(Record.monitorTypeProject2(mt)).filter(isOk).filter(r => r._1.get == mt_rec._1.get)
         if (pre_mt_rec.length == same - 1) {
           invalid = true
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mt).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mt), Level.ERR, s"違反持續性稽核")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -321,9 +322,9 @@ case class MonoRule(enabled: Boolean, count: Int,
         val min = values.min
         if ((max - min) < mtcfg.abs) {
           invalid = true
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mtcfg.id).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mtcfg.id), Level.ERR, s"違反一致姓稽核")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -362,9 +363,9 @@ case class TwoHourRule(enabled: Boolean, monitorTypes: Seq[MonoCfg]) extends Rul
       if (isOk(mt_rec) && pre_rec.length == 1) {
         if (Math.abs(pre_rec(0)._1.get - mt_rec._1.get) > mtcfg.abs) {
           invalid = true
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mtcfg.id).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mtcfg.id), Level.ERR, s"違反小時值變換驗證")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -411,9 +412,9 @@ case class ThreeHourRule(enabled: Boolean, monitorTypes: Seq[ThreeHourCfg]) exte
         val overs = abs_percent.filter(v => v._1 > mtcfg.abs && v._2 > mtcfg.percent)
         if (overs.length == 2) {
           invalid = true
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mtcfg.id).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mtcfg.id), Level.ERR, s"違反三小時值變換驗證")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -456,9 +457,9 @@ case class FourHourRule(enabled: Boolean, monitorTypes: Seq[FourHourCfg]) extend
         val avg = values.sum / 4
         if (avg > mtcfg.abs) {
           invalid = true
-          val ar = Alarm.Alarm(Monitor.withName(record.name), MonitorType.map(mtcfg.id).id, record.date, 1.0f, lead + "10")
+          val ar = Alarm2(Monitor.withName(record.name), record.date, Src(mtcfg.id), Level.ERR, s"違反四小時值變換驗證")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm
@@ -502,9 +503,9 @@ case class OverInternalStdMinRule(enabled: Boolean, threshold: Int) extends Rule
 
       if (over > threshold) {
         invalid = true
-        val ar = Alarm.Alarm(m, mt.toString, DateTime.now, 1.0f, lead + "10")
+        val ar = Alarm2(m, DateTime.now, Src(mt), Level.ERR, "分鐘值超過內控")
         try {
-          Alarm.insertAlarm(ar)
+          Alarm2.insertAlarm(ar)
         } catch {
           case ex: Exception =>
           // Skip duplicate alarm
@@ -533,9 +534,9 @@ case class DataReadyMinRule(enabled: Boolean, overdue: Int) extends Rule('k') {
       val duetime = DateTime.now() - overdue.minutes
       if (currentMinOpt.get.toDateTime < duetime) {
         for (mt <- Monitor.map(m).monitorTypes) {
-          val ar = Alarm.Alarm(m, mt.toString, DateTime.now, 1.0f, lead + "10")
+          val ar = Alarm2(m, DateTime.now, Src(mt), Level.ERR, "分鐘值回傳超時")
           try {
-            Alarm.insertAlarm(ar)
+            Alarm2.insertAlarm(ar)
           } catch {
             case ex: Exception =>
             // Skip duplicate alarm

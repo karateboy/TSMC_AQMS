@@ -81,8 +81,8 @@ GET		/EffectivePercentage/:start/:end	controllers.Query.effectivePercentageRepor
 GET		/PDF/EffectivePercentage/:start/:end	controllers.Query.effectivePercentageReport(start, end, outputTypeStr="pdf")
 
 GET		/Alarm					controllers.Query.alarm
-GET		/AlarmReport/:monitor/:status/:start/:end	controllers.Query.alarmReport(monitor, status, start, end, outputTypeStr="html")
-GET		/PDF/AlarmReport/:monitor/:status/:start/:end	controllers.Query.alarmReport(monitor, status, start, end, outputTypeStr="pdf")
+GET		/AlarmReport/:monitor/:level/:start/:end	controllers.Query.alarmReport(monitor, level:Int, start, end, outputTypeStr="html")
+GET		/PDF/AlarmReport/:monitor/:level/:start/:end	controllers.Query.alarmReport(monitor, level:Int, start, end, outputTypeStr="pdf")
 
 GET		/WindRose				controllers.Query.windRose
 GET		/WindRoseReport/:monitor/:monitorType/:nWays/:start/:end	controllers.Query.windRoseReport(monitor, monitorType, nWays:Int, start, end, outputType="html")
@@ -210,5 +210,5 @@ GET		/MinRecordRange/:monitor		controllers.DataLogger.getMinRecordRange(monitor)
 PUT		/MinRecord/:monitor				controllers.DataLogger.insertMinRecord(monitor)						
 GET 	/CalibrationRecordRange/:monitor	controllers.DataLogger.getCalibrationRange(monitor)
 PUT		/CalibrationRecord/:monitor			controllers.DataLogger.insertCalibrationRecord(monitor)
-#GET 	/AlertRecordRange/:monitor 		controllers.DataLogger.getAlertRecordRange(monitor)
-#PUT		/AlertRecord/:monitor			controllers.DataLogger.insertAlertRecord(monitor)
+GET 	/AlarmRecordRange/:monitor 			controllers.DataLogger.getAlarmRange(monitor)
+PUT		/AlarmRecord/:monitor			controllers.DataLogger.insertAlarmRecord(monitor)

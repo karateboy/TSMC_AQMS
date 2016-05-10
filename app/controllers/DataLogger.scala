@@ -11,19 +11,24 @@ import play.api.libs.functional.syntax._
 case class LatestRecordTime(time: Long)
 case class MtRecord(mtName: String, value: Double, status: String)
 case class RecordList(time: Long, mtDataList: Seq[MtRecord])
-case class CalibrationJSON(monitorType: String, startTime: Long, endTime: Long, zero_val: Double, 
-                       span_std: Double, span_val: Double){
+case class CalibrationJSON(monitorType: String, startTime: Long, endTime: Long, zero_val: Double,
+                           span_std: Double, span_val: Double) {
   def zero_dev = Math.abs(zero_val)
   def span_dev = Math.abs(span_val - span_std)
-  def span_dev_ratio = span_dev / span_std
+  def span_dev_ratio = if (span_std != 0)
+    span_dev / span_std
+  else
+    0
 }
+
+case class Alarm2JSON(time: Long, src: String, level: Int, info: String)
 
 object DataLogger extends Controller {
   implicit val latestRecordTimeWrite = Json.writes[LatestRecordTime]
   implicit val mtRecordRead = Json.reads[MtRecord]
   implicit val RecordListRead = Json.reads[RecordList]
   implicit val CalibrationRead = Json.reads[CalibrationJSON]
-
+  
   def getRecordRange(tabType: TableType.Value)(monitorStr: String) = Action {
     val monitor = Monitor.withName(monitorStr)
     val timeOpt = models.Realtime.getLatestMonitorRecordTime(tabType, monitor)
@@ -141,18 +146,19 @@ object DataLogger extends Controller {
   }
 
   import Calibration._
-  def toCalibrationItem(json:CalibrationJSON)(monitorStr: String)={
+  def toCalibrationItem(json: CalibrationJSON)(monitorStr: String) = {
     val monitor = Monitor.withName(monitorStr)
     val mtCode = mapMonitorToMtCode(json.monitorType)
     val mt = MonitorType.withName(mtCode)
 
     CalibrationItem(monitor, mt,
-                             new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.toFloat, 
-                             0, json.zero_val.toFloat,
-                             json.zero_dev.toFloat, 0,
-                             json.span_std.toFloat, json.span_val.toFloat, 
-                             json.span_dev.toFloat, json.span_dev_ratio.toFloat)
+      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.toFloat,
+      0, json.zero_val.toFloat,
+      json.zero_dev.toFloat, 0,
+      json.span_std.toFloat, json.span_val.toFloat,
+      json.span_dev.toFloat, json.span_dev_ratio.toFloat)
   }
+  
   def insertCalibrationRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
     implicit request =>
       val monitor = Monitor.withName(monitorStr)
@@ -162,7 +168,7 @@ object DataLogger extends Controller {
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
         recordListSeq => {
-          val calibrationList = recordListSeq.map { toCalibrationItem(_)(monitorStr) } 
+          val calibrationList = recordListSeq.map { toCalibrationItem(_)(monitorStr) }
           calibrationList.foreach { _.save }
           Ok(Json.obj("ok" -> true))
         })
@@ -212,4 +218,38 @@ object DataLogger extends Controller {
         "C213"
     }
   }
+  
+  def getAlarmRange(monitorStr: String) = Action {
+    val monitor = Monitor.withName(monitorStr)
+    val timeOpt = Alarm2.getLatestAlarmTime(monitor)
+    val latestRecordTime = timeOpt.map {
+      time =>
+        LatestRecordTime(time.getMillis)
+    }.getOrElse(LatestRecordTime(0))
+
+    Ok(Json.toJson(latestRecordTime))
+  }
+
+  def toAlarm2(json:Alarm2JSON)(monitorStr:String)={
+    val monitor = Monitor.withName(monitorStr)
+    Alarm2(monitor, new DateTime(json.time), json.src, json.level, json.info) 
+  }
+  
+  def insertAlarmRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
+    implicit request =>
+      implicit val ar2JsonRead = Json.reads[Alarm2JSON]
+      
+      val monitor = Monitor.withName(monitorStr)
+      val result = request.body.validate[Seq[Alarm2JSON]]
+      result.fold(err => {
+        Logger.error(JsError(err).toString())
+        BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
+      },
+        alarm2JsonSeq => {
+          val alarm2Seq = alarm2JsonSeq.map { toAlarm2(_)(monitorStr) }
+          Alarm2.insertAlarmSeq(alarm2Seq)
+          Ok(Json.obj("ok" -> true))
+        })
+  }
+
 }

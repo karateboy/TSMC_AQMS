@@ -3,7 +3,7 @@ import play.api._
 import akka.actor._
 import com.github.nscala_time.time.Imports._
 import play.api.Play.current
-import Alarm._
+import Alarm2._
 
 sealed trait AlarmCheckMsg
 case class Start(startTime: DateTime) extends AlarmCheckMsg
@@ -16,7 +16,7 @@ class AlarmWorker extends Actor{
   }
   
   def checkAlarm(startTime: DateTime)={
-    val alarms = Alarm.getAlarm(Monitor.mvList, Some(MonitorStatus.alarmList), startTime, DateTime.now)
+    val alarms = Alarm2.getAlarmByLevel(Monitor.mvList, 1, startTime, DateTime.now)
     if(alarms.length == 0)
       startTime
     else{
@@ -25,8 +25,7 @@ class AlarmWorker extends Actor{
         val matchedUser = adminUserList.filter { user =>
           user.alarmConfig.isDefined && {
             val alarmConfig = user.alarmConfig.get
-            alarmConfig.enable && alarmConfig.monitorFilter.contains(ar.monitor) &&
-              alarmConfig.statusFilter.contains(ar.code)
+            alarmConfig.enable && alarmConfig.monitorFilter.contains(ar.monitor)
           }
         }
         if (matchedUser.length != 0){
@@ -34,7 +33,7 @@ class AlarmWorker extends Actor{
           try {
             sendAlarmEmail(matchedUser, ar)            
             EventLog.create(EventLog(DateTime.now, EventLog.evtTypeInformAlarm,
-              s"送信警告信給${userName} ${Monitor.map(ar.monitor).name}-${Alarm.map(ar.mItem)}-${MonitorStatus.map(ar.code).desp}"))
+              s"送信警告信給${userName} ${Monitor.map(ar.monitor).name}- ${ar.time.toString("MM-dd HH:mm")} :${ar.src}-${ar.info}}"))
           } catch {
             case ex: Exception =>
               Console.print(ex.toString)
@@ -49,17 +48,12 @@ class AlarmWorker extends Actor{
   }
   
   import play.api.libs.mailer._
-  def sendAlarmEmail(users: List[User], alarm: Alarm) = {
-    val ar_state =
-      if (alarm.mVal == 0)
-        "恢復正常"
-      else
-        "觸發"
+  def sendAlarmEmail(users: List[User], alarm: Alarm2) = {
 
-    val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString}:${Alarm.map(alarm.mItem)}:${MonitorStatus.map(alarm.code).desp}:${ar_state}"
-    val htmlMsg = s"<html><body><p><b>${Monitor.map(alarm.monitor).name}-${alarm.time.toString("YYYY/MM/dd HH:mm")}:${Alarm.map(alarm.mItem)}:${MonitorStatus.map(alarm.code).desp}:${ar_state}</b></p></body></html>"
+    val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${alarm.src}-${alarm.info}}"
+    val htmlMsg = s"<html><body><p><b>${Monitor.map(alarm.monitor).name}-${alarm.time.toString("YYYY/MM/dd HH:mm")}:${alarm.level}:$alarm.info}</b></p></body></html>"
     val email = Email(
-      s"警報: ${Monitor.map(alarm.monitor).name}-${Alarm.map(alarm.mItem)}(${MonitorStatus.map(alarm.code).desp})",
+      s"警報: ${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${alarm.src}-${alarm.info}}",
       "警報服務 <karateboy.huang@gmail.com>",
       users.map { _.email },
       // adds attachment

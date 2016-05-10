@@ -3,13 +3,14 @@ import play.api._
 import akka.actor._
 import com.github.nscala_time.time.Imports._
 import play.api.Play.current
-import Alarm._
+import Alarm2._
 import ModelHelper._
 import models._
 import models.ModelHelper._
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
+import Alarm2._
 
 object DataCheckFinish
 
@@ -63,7 +64,9 @@ class DataAlarmChecker extends Actor {
 
   def checkHourData() = {
     var alarm = false
-    val currentHour = Realtime.getLatestRecordTime(TableType.Hour).get
+    import ModelHelper._
+    import java.sql.Timestamp
+    val currentHour = Realtime.getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now() : Timestamp)
 
     for {
       m <- Monitor.mvList
@@ -80,9 +83,9 @@ class DataAlarmChecker extends Actor {
             if (MonitorStatus.isNormalStat(status)
               && v > std_internal) {
               alarm = true
-              val ar = Alarm.Alarm(m, mt.toString, r._1.toDateTime, 1.0f, "011")
+              val ar = Alarm2(m, r._1.toDateTime, Src(mt), Level.ERR, s"超過內控")
               try {
-                Alarm.insertAlarm(ar)
+                Alarm2.insertAlarm(ar)
               } catch {
                 case ex: Exception =>
                 // Skip duplicate alarm

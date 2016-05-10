@@ -60,17 +60,10 @@ class AlarmNotifier(out: ActorRef) extends Actor {
     val alarmConfig = user.alarmConfig.get
 
     if (alarmConfig.enable) {
-      val alarms = Alarm.getAlarm(Monitor.mvList, Some(MonitorStatus.alarmList), lastCheckTime, DateTime.now)
+      val alarms = Alarm2.getAlarmByLevel(Monitor.mvList, 1, lastCheckTime, DateTime.now)
       for (ar <- alarms) {
-        if (alarmConfig.monitorFilter.contains(ar.monitor) &&
-          alarmConfig.statusFilter.contains(ar.code)) {
-          val ar_state = 
-            if(ar.mVal == 0)
-              "恢復正常"
-            else
-              "觸發"
-              
-          val msg = s"${CmdType.alert}!${ar.time.toString("MM-dd HH:mm")} ${Monitor.map(ar.monitor).name}:${Alarm.map(ar.mItem)}-${MonitorStatus.map(ar.code).desp}:${ar_state}"
+        if (alarmConfig.monitorFilter.contains(ar.monitor)) {              
+          val msg = s"${CmdType.alert}!${ar.time.toString("MM-dd HH:mm")} ${Monitor.map(ar.monitor).name}:${ar.src}-${ar.info}}"
           out ! msg
         }
       }
