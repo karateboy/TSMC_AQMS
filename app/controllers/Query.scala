@@ -840,8 +840,8 @@ object Query extends Controller {
         Results.Ok(Json.toJson(chart))
       }
     } catch {
-      case e: AssertionError =>
-        Logger.error(e.toString())
+      case ex: AssertionError =>
+        Logger.error(ex.getMessage, ex)
         BadRequest("無資料")
     }
   }

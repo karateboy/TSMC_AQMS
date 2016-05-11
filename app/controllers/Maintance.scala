@@ -440,12 +440,9 @@ object Maintance extends Controller {
 
         Ok(mtData.data)
       } catch {
-        case e: Exception =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
-        case e: Throwable =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
+        case ex: Throwable =>
+          Logger.error(ex.getMessage, ex)
+          BadRequest(ex.getMessage)
       }
   }
 
@@ -462,9 +459,9 @@ object Maintance extends Controller {
           try {
             Part.create(param)
           } catch {
-            case e: Exception =>
-              Logger.error(e.toString())
-              BadRequest(Json.obj("ok" -> false, "msg" -> e.toString()))
+            case ex: Exception =>
+              Logger.error(ex.getMessage, ex)
+              BadRequest(Json.obj("ok" -> false, "msg" -> ex.getMessage))
           }
 
           Ok(Json.obj("ok" -> true))

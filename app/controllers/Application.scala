@@ -157,12 +157,9 @@ object Application extends Controller {
 
         Ok(mtData.data)
       } catch {
-        case e: Exception =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
-        case e: Throwable =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
+        case ex: Throwable =>
+          Logger.error(ex.getMessage, ex)
+          BadRequest(ex.getMessage)
       }
   }
 
@@ -186,12 +183,9 @@ object Application extends Controller {
         
         Ok(threshold.data)
       } catch {
-        case e: Exception =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
-        case e: Throwable =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
+        case ex: Throwable =>
+          Logger.error(ex.getMessage, ex)
+          BadRequest(ex.getMessage)
       }
   }
   def newEquipment = Security.Authenticated(BodyParsers.parse.json) {
@@ -209,7 +203,7 @@ object Application extends Controller {
             Equipment.create(param)
           } catch {
             case e: Exception =>
-              Logger.error(e.toString())
+              Logger.error(e.getMessage, e)
               BadRequest(Json.obj("ok" -> false, "msg" -> e.toString()))
           }
 
@@ -232,12 +226,9 @@ object Application extends Controller {
 
         Ok(mtData.data)
       } catch {
-        case e: Exception =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
-        case e: Throwable =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
+        case ex: Throwable =>
+          Logger.error(ex.getMessage, ex)
+          BadRequest(ex.getMessage)
       }    
   }
 
@@ -266,12 +257,9 @@ object Application extends Controller {
 
         Ok(msData.data)
       } catch {
-        case e: Exception =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
-        case e: Throwable =>
-          Logger.error(e.toString)
-          BadRequest(e.toString)
+        case ex: Throwable =>
+          Logger.error(ex.getMessage, ex)
+          BadRequest(ex.getMessage)
       }
   }
 
@@ -342,7 +330,7 @@ object Application extends Controller {
 
           } catch {
             case ex: Exception =>
-              Logger.error(ex.toString)
+              Logger.error(ex.getMessage, ex)
               Ok(views.html.epaRealtimeData(url, Seq.empty[EpaRealtimeData]))
           }
       }

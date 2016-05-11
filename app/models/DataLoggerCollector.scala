@@ -176,7 +176,7 @@ class DataLoggerCollector(host: String) extends Actor {
     }
     f onFailure ({
       case ex: Throwable =>
-        Logger.error(ex.getMessage)
+        Logger.error(ex.getMessage, ex)
         import scala.concurrent.duration._
         Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectMinData(start))
     })
@@ -206,7 +206,7 @@ class DataLoggerCollector(host: String) extends Actor {
 
     f onFailure ({
       case ex: Throwable =>
-        Logger.error(ex.getMessage)
+        Logger.error(ex.getMessage, ex)
         import scala.concurrent.duration._
         Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectHourData(start))
     })
