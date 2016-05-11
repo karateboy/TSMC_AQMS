@@ -72,7 +72,7 @@ object InstrumentStatus {
            ({monitor}
            ,{instrumentID}
            ,{time}
-           ,{json}
+           ,{json})
           """.batchByName(batchList: _*)
         .apply
     }
