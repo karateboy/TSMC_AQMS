@@ -252,4 +252,31 @@ object DataLogger extends Controller {
         })
   }
 
+  def getInstrumentStatusRange(monitorStr: String) = Action {
+    val monitor = Monitor.withName(monitorStr)
+    val timeOpt = InstrumentStatus.getLatestTime(monitor)
+    val latestRecordTime = timeOpt.map {
+      time =>
+        LatestRecordTime(time.getMillis)
+    }.getOrElse(LatestRecordTime(0))
+
+    Ok(Json.toJson(latestRecordTime))
+  }
+
+  import InstrumentStatus._
+  def insertInstrumentStatusRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
+    implicit request =>
+      import InstrumentStatus._
+      val monitor = Monitor.withName(monitorStr)
+      val result = request.body.validate[Seq[InstrumentStatusJSON]]
+      result.fold(err => {
+        Logger.error(JsError(err).toString())
+        BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
+      },
+        instrumentStatusSeq => {
+          InstrumentStatus.insert(monitor, instrumentStatusSeq)
+          Ok(Json.obj("ok" -> true))
+        })
+  }
+
 }
