@@ -6,8 +6,13 @@ import play.api._
 import play.api.libs.json._
 
 case class Status(key: String, value: Double)
+case class InstrumentStatusMap(time: DateTime, statusMap: Map[String, Double])
 case class InstrumentStatusJSON(time: Long, instID: String, statusList: List[Status]){
-  def toInstrumentStatus=InstrumentStatus(new DateTime(time), instID, statusList)  
+  def toInstrumentStatus=InstrumentStatus(new DateTime(time), instID, statusList)
+  def toStatusMap={
+    val map = statusList.map { s => s.key->s.value }.toMap
+    InstrumentStatusMap(new DateTime(time), map)
+  }
 }
 case class InstrumentStatus(time: DateTime, instID: String, statusList: List[Status]) {
   def excludeNaN = {
@@ -37,7 +42,7 @@ object InstrumentStatus {
         WHERE monitor = ${monitor.toString} and instrumentID = ${instrumentID}
         """.map { rs =>
           val json = rs.string(3)
-          Json.parse(json).validate[InstrumentStatusJSON].asOpt }.list.apply
+          Json.parse(json).validate[InstrumentStatusJSON].get }.list.apply
     }
   }
   
@@ -76,5 +81,12 @@ object InstrumentStatus {
           """.batchByName(batchList: _*)
         .apply
     }
+  }
+  
+  def format(v:Option[Double])={
+    if(v.isDefined)
+      s"%.2f".format(v.get)
+    else
+      "-"
   }
 }

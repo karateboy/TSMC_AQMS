@@ -42,10 +42,10 @@ object Application extends Controller {
       Ok(views.html.monitor(m))
   }
 
-  case class MonitorInfo(mt:Seq[MonitorType.Value], imgUrl:String, equipments:List[Equipment])
+  case class MonitorInfo(mt: Seq[MonitorType.Value], imgUrl: String, equipments: List[Equipment])
   implicit val equipmentWrite = Json.writes[Equipment]
   implicit val mInfoWrite = Json.writes[MonitorInfo]
-  
+
   def getMonitorInfo(monitorStr: String) = Security.Authenticated {
     implicit request =>
       val m = Monitor.withName(monitorStr)
@@ -106,13 +106,13 @@ object Application extends Controller {
           oldCase.getNewStd(monitorType, stdValue)
         }
 
-      val newCase = Monitor(oldCase.id, oldCase.name, oldCase.lat, oldCase.lng, oldCase.url, 
-          oldCase.autoAudit, oldCase.monitorTypes, newStd, oldCase.instrumentStatusTypeMapOpt)
+      val newCase = Monitor(oldCase.id, oldCase.name, oldCase.lat, oldCase.lng, oldCase.url,
+        oldCase.autoAudit, oldCase.monitorTypes, newStd, oldCase.instrumentStatusTypeMapOpt)
       Monitor.updateStdInternal(newCase)
 
       Ok(Json.obj("ok" -> true))
   }
-  
+
   def setMonitorImgUrl(monitorStr: String) = Security.Authenticated(BodyParsers.parse.json) {
     implicit request =>
       val monitor = Monitor.withName(monitorStr)
@@ -124,11 +124,11 @@ object Application extends Controller {
           BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
         },
         imgUrl => {
-           Monitor.updateImgUrl(monitor, imgUrl)
+          Monitor.updateImgUrl(monitor, imgUrl)
           Ok(Json.obj("ok" -> true))
         })
   }
-  
+
   def monitorTypeConfig = Security.Authenticated {
     implicit request =>
       val autoAuditNormal = SystemConfig.getConfig(SystemConfig.AutoAuditAsNormal, "False").toBoolean
@@ -165,7 +165,7 @@ object Application extends Controller {
   }
 
   def setInstrumentThreshold() = Security.Authenticated {
-    implicit request =>      
+    implicit request =>
       try {
         val mtForm = Form(
           mapping(
@@ -175,13 +175,13 @@ object Application extends Controller {
         val threshold = mtForm.bindFromRequest.get
 
         val v =
-          if(threshold.data.length() == 0 || threshold.data == "-")
+          if (threshold.data.length() == 0 || threshold.data == "-")
             None
           else
             Some(threshold.data.toFloat)
 
         InstrumentThreshold.setValue(threshold.id, v)
-        
+
         Ok(threshold.data)
       } catch {
         case ex: Throwable =>
@@ -212,7 +212,7 @@ object Application extends Controller {
         })
   }
 
-  def updateEquipment() = Security.Authenticated{
+  def updateEquipment() = Security.Authenticated {
     implicit request =>
       try {
         val mtForm = Form(
@@ -222,30 +222,30 @@ object Application extends Controller {
 
         val mtData = mtForm.bindFromRequest.get
         val ids = mtData.id.split(":")
-       
-        Equipment.update(ids, mtData.data)        
+
+        Equipment.update(ids, mtData.data)
 
         Ok(mtData.data)
       } catch {
         case ex: Throwable =>
           Logger.error(ex.getMessage, ex)
           BadRequest(ex.getMessage)
-      }    
+      }
   }
 
-  def deleteEquipment(idStr:String) = Security.Authenticated{
+  def deleteEquipment(idStr: String) = Security.Authenticated {
     val ids = idStr.split(":")
     Equipment.delete(Monitor.withName(ids(0)), ids(1))
     Ok(Json.obj("ok" -> true))
   }
-  
+
   def monitorStatusConfig = Security.Authenticated {
     implicit request =>
       Ok(views.html.monitorStatusConfig())
   }
 
   def saveMonitorStatusConfig() = Security.Authenticated {
-   implicit request =>
+    implicit request =>
       try {
         val mtForm = Form(
           mapping(
@@ -377,7 +377,7 @@ object Application extends Controller {
     implicit request =>
       val userInfoOpt = Security.getUserinfo(request)
       val userInfo = userInfoOpt.get
-      
+
       Ticket.transferTickets(id, userInfo.id)
       User.deleteUser(id)
       Ok(Json.obj("ok" -> true))
@@ -484,9 +484,9 @@ object Application extends Controller {
       Ok(views.html.history("/HistoryQueryReport/true/", group.privilege, true))
   }
 
-  case class ManualAudit(monitor: Monitor.Value, monitorType: MonitorType.Value, time: Long, status: String, reason:Option[String])
+  case class ManualAudit(monitor: Monitor.Value, monitorType: MonitorType.Value, time: Long, status: String, reason: Option[String])
   case class ManualAuditList(list: Seq[ManualAudit])
-  def manualAuditApply(recordTypeStr:String) = Security.Authenticated(BodyParsers.parse.json) {
+  def manualAuditApply(recordTypeStr: String) = Security.Authenticated(BodyParsers.parse.json) {
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
       val user = User.getUserById(userInfo.id).get
@@ -503,24 +503,24 @@ object Application extends Controller {
           for (ma <- manualAuditList.list.reverse) {
             val now = DateTime.now
             val tagInfo = MonitorStatus.getTagInfo(ma.status)
-            EventLog.create(EventLog(now, EventLog.evtTypeManualAudit, 
-                s"${user.name} 進行人工註記 :${new DateTime(ma.time).toString("YYYY/MM/dd HH:mm")}:${Monitor.map(ma.monitor).name}:${MonitorType.map(ma.monitorType).desp}-${MonitorStatus.map(ma.status).desp}"))
-            if(tagInfo.statusType == StatusType.Manual){
+            EventLog.create(EventLog(now, EventLog.evtTypeManualAudit,
+              s"${user.name} 進行人工註記 :${new DateTime(ma.time).toString("YYYY/MM/dd HH:mm")}:${Monitor.map(ma.monitor).name}:${MonitorType.map(ma.monitorType).desp}-${MonitorStatus.map(ma.status).desp}"))
+            if (tagInfo.statusType == StatusType.Manual) {
               val log = ManualAuditLog(tabType, ma.monitor, new DateTime(ma.time), ma.monitorType, now, ma.status, user.name, ma.reason)
-              try{
+              try {
                 val logOpt = ManualAuditLog.getLog(tabType, ma.monitor, new DateTime(ma.time), ma.monitorType)
-                if(logOpt.isEmpty)
+                if (logOpt.isEmpty)
                   ManualAuditLog.newLog(log)
                 else
                   ManualAuditLog.updateLog(log)
-              }catch{
-                case ex:Exception=>
-                  
+              } catch {
+                case ex: Exception =>
+
               }
-            }else if(tagInfo.statusType == StatusType.Internal){
+            } else if (tagInfo.statusType == StatusType.Internal) {
               ManualAuditLog.deleteLog(tabType, ma.monitor, new DateTime(ma.time), ma.monitorType)
             }
-            
+
             Record.updateRecordStatus(tabType, ma.monitor, ma.monitorType, ma.time, ma.status)
           }
 
@@ -534,8 +534,8 @@ object Application extends Controller {
       val group = Group.getGroup(userInfo.groupID).get
 
       Ok(views.html.manualAuditQuery(group.privilege))
-  }  
-  
+  }
+
   def manualAuditQueryReport(monitorStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     val monitorStrArray = monitorStr.split(':')
     val monitors = monitorStrArray.map { Monitor.withName }
@@ -557,7 +557,6 @@ object Application extends Controller {
     }
 
   }
-
 
   def auditConfig() = Security.Authenticated {
     implicit request =>
@@ -602,37 +601,21 @@ object Application extends Controller {
       Ok(views.html.instrument(group.privilege))
   }
 
-  def instrumentReport(monitorStr: String, instrumentStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
+  
+  def instrumentReport(monitorStr: String, instrumentId: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     val monitor = Monitor.withName(monitorStr)
-    val instrument = Instrument.withName(instrumentStr)
+    val instStatusTypeMap = Monitor.map(monitor).instrumentStatusTypeMapOpt
+      .get.map(map => map.instrumentId -> map.statusTypeSeq).toMap
+    val statusTypeMap = instStatusTypeMap(instrumentId).map { st => st.key->st }.toMap
+
     val start = DateTime.parse(startStr)
     val end = DateTime.parse(endStr) + 1.day
     val outputType = OutputType.withName(outputTypeStr)
-
-    val output =
-      instrument match {
-        case Instrument.H370 =>
-          val records = Instrument.getH370Record(monitor, start, end)
-          views.html.h370Report(monitor, start, end, records)
-        case Instrument.T100 =>
-          val records = Instrument.getT100Record(monitor, start, end)
-          views.html.T100Report(monitor, start, end, records)
-        case Instrument.T200 =>
-          val records = Instrument.getT200Record(monitor, start, end)
-          views.html.T200Report(monitor, start, end, records)
-        case Instrument.T300 =>
-          val records = Instrument.getT300Record(monitor, start, end)
-          views.html.T300Report(monitor, start, end, records)
-        case Instrument.T400 =>
-          val records = Instrument.getT400Record(monitor, start, end)
-          views.html.T400Report(monitor, start, end, records)
-        case Instrument.TSP =>
-          val records = Instrument.getTSPRecord(monitor, start, end)
-          views.html.TSPReport(monitor, start, end, records)
-        case Instrument.PM10 =>
-          val records = Instrument.getPM10Record(monitor, start, end)
-          views.html.PM10Report(monitor, start, end, records)
-      }
+    val records = InstrumentStatus.query(monitor, instrumentId, start, end)
+    val statusMapList = records.map { _.toStatusMap }
+    val keySet = statusMapList.map { _.statusMap.keySet }.foldRight(Set.empty[String])((a,b)=>a++b)
+    val output = views.html.InstrumentStatusReport(monitor, instrumentId, keySet.toList,
+        statusTypeMap, statusMapList, start, end)
     val title = "儀器狀態"
 
     outputType match {

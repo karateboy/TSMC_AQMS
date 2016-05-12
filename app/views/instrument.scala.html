@@ -8,9 +8,6 @@
 					<li class="active">
 						<a data-toggle="tab" href="#parameterDiv"> <span class="glyphicons glyphicons-hotspot"></span>查詢參數</a>
 					</li>
-					<li>
-						<a data-toggle="tab" href="#thresholdDiv"> <span class="glyphicons glyphicons-hotspot"></span>儀器內控參數</a>
-					</li>
 				</ul>	
 
             	<div class="panel-body panel-collapse in" id="reportParam">
@@ -38,8 +35,8 @@
 	            			<label class="col-lg-1 control-label">儀器種類</label>
 	            			<div class="col-lg-11">
 	            				<div class="btn-group" data-toggle="buttons">	            					            				
-	            					@for(inst<-Instrument.values.toList.sorted){
-            							@if(inst == Instrument.values.toList.sorted.head){
+	            					@for(inst<-Monitor.getInstrumentList){
+            							@if(inst == Monitor.getInstrumentList.head){
             								<label class="btn btn-outline btn-primary dim active">
 											<input type="radio" name="instrument" id="@inst" checked>@inst</label>
             							}else{
@@ -69,27 +66,17 @@
 						</div>
             		</form>
             		</div>
-            		<div id="thresholdDiv" class="tab-pane" align="center">
-            			@instrument_threshold()
-            		</div>
-            		</div>
+             		</div>
             	</div>
         	</div>
         	<div class="panel panel-success" style="display:none" id="reportPanel">
             	<div class="panel-body panel-collapse" id="monitorReport">
-            		<div align="right">
-            			<label class="btn btn-outline" data-toggle="tooltip" data-placement="bottom" title="PDF"><a href="#" id="downloadPDF"><i class="fa fa-file-pdf-o fa-2x pdf"></i></a></label>            			            			
-                	</div>            		
 					<div id="reportDiv" align="center" style="overflow-x:auto">
             		</div>
             	</div>
         	</div>
 	</div>
 </div>
-<script>
-	var localization_url = '@routes.Assets.at("localization/zh_tw.json")';
-	var dom_url = '@routes.Assets.at("js/plugins/dataTables/swf/copy_csv_xls_pdf.swf")';
-</script>
 <script>
 $(document).ready(function (){
 	$('#datepicker').datepicker({
@@ -148,22 +135,6 @@ $(document).ready(function (){
 			dataType : "html",
 			success : function(result) {
 				$('#reportDiv').html(result);
-				$("#downloadPDF").prop("href", "/PDF" + url);
-				
-				$('#reportTable').dataTable( {
-					responsive: true,
-					"dom": 'T<"clear">lfrtip',
-					language: {
-						url: localization_url,							
-					},
-					"tableTools": {
-        				"sSwfPath": dom_url,
-        				"aButtons": ["copy", "print", "csv"]
-        			},
-					"paging":   false,
-					"searching": false				
-				});
-				
 			},
 			error : function(xhr, status, errorThrown) {
 				console.log("錯誤訊息:" + status + "-" + errorThrown);

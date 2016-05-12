@@ -85,10 +85,21 @@ object Monitor extends Enumeration {
     mvList.filter { p.allowedMonitors.contains }
   }
 
+  //FIXME 
   def instrumentMvList(p: Privilege) = {
     List(Monitor.withName("A013")).filter { p.allowedMonitors.contains }
   }
 
+  //FIXME
+  def getInstrumentList() = {
+    val statusTypeMapOpt = map(Monitor.withName("A013")).instrumentStatusTypeMapOpt
+    val mapOpt = statusTypeMapOpt.map { mapList => mapList.map { map => map.instrumentId -> map.statusTypeSeq } }.map(_.toMap)
+    if(mapOpt.isDefined){
+      mapOpt.get.keys.toList
+    }else
+      List.empty[String]
+  }
+  
   def getDisplayName(m: Monitor.Value) = {
     map(m).name
   }

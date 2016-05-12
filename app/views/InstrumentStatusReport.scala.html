@@ -1,0 +1,43 @@
+@* InstrumentStatusReport Template File *@
+@import com.github.nscala_time.time.Imports._
+@import InstrumentThreshold._
+@(monitor:Monitor.Value, instrument:String, keys:List[String], statusTypeMap:Map[String, InstrumentStatusType], isList:List[InstrumentStatusMap], start:DateTime, end:DateTime)
+<H3>測站:@Monitor.map(monitor).name</H3>
+<H5>儀器:@instrument</H5>
+<H5>開始:@start.toString("YYYY-MM-dd")</H5>
+<H5>結束:@end.toString("YYYY-MM-dd")</H5>
+<span style="color:red">超過內控值</span>
+<table id="reportTable" class="table">
+<thead>
+	<tr>		
+		<th>時間</th>
+	@for(key<-keys){
+		<th>@statusTypeMap(key).desc (@statusTypeMap(key).unit)</th>
+	}
+	</tr>
+</thead>
+<tbody>
+	@for(is<-isList){
+		<tr>
+			<td>@is.time.toString("YYYY-MM-dd HH:mm")</td>
+			@for(key<-keys){
+				<td>@InstrumentStatus.format(is.statusMap.get(key))</td>
+			}
+		</tr>
+	}
+</tbody>
+</table>
+<script>
+	var local_url = '@routes.Assets.at("localization/zh_tw.json")';
+</script>
+<script>
+$(document ).ready(function() {
+	$('#reportTable').dataTable( {
+		language: {
+			url: local_url,							
+		},
+		"paging":   true,
+		"searching": true				
+	});
+});
+</script>
