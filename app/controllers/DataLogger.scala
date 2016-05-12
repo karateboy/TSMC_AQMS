@@ -295,13 +295,13 @@ object DataLogger extends Controller {
     implicit request =>
       import Monitor._
       val monitor = Monitor.withName(monitorStr)
-      val result = request.body.validate[List[InstrumentStatusTypeMap]]
+      val result = request.body.validate[Seq[InstrumentStatusTypeMap]]
       result.fold(err => {
         Logger.error(JsError(err).toString())
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
         newMap => {
-          val newMonitor = Monitor.map(monitor).updateInstrumentStatusTypeMap(Some(newMap))
+          val newMonitor = Monitor.map(monitor).updateInstrumentStatusTypeMap(Some(newMap.toList))
           Monitor.updateInstrumentStatusTypeMap(newMonitor)
           Ok(Json.obj("ok" -> true))
         })

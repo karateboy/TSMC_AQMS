@@ -10,11 +10,11 @@ import play.api.libs.functional.syntax._
 import models.ModelHelper._
 
 case class InstrumentStatusType(key: String, addr: Int, desc: String, unit: String)
-case class InstrumentStatusTypeMap(instrumentId: String, statusTypeSeq: List[InstrumentStatusType])
+case class InstrumentStatusTypeMap(instrumentId: String, statusTypeSeq: Seq[InstrumentStatusType])
 
 case class Monitor(id: String, name: String, lat: Double, lng: Double, url: String, autoAudit: AutoAudit,
                    monitorTypes: Seq[MonitorType.Value], monitorTypeStds: Seq[MonitorTypeStandard],
-                   instrumentStatusTypeMapOpt: Option[List[InstrumentStatusTypeMap]]) {
+                   instrumentStatusTypeMapOpt: Option[Seq[InstrumentStatusTypeMap]]) {
   private val stdMap = Map(monitorTypeStds.map { r => r.id -> r.std_internal }: _*)
   def getStdInternal(mt: MonitorType.Value) = {
     val monitorStd = stdMap.get(mt)
