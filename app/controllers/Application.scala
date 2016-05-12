@@ -106,7 +106,8 @@ object Application extends Controller {
           oldCase.getNewStd(monitorType, stdValue)
         }
 
-      val newCase = Monitor(oldCase.id, oldCase.name, oldCase.lat, oldCase.lng, oldCase.url, oldCase.autoAudit, oldCase.monitorTypes, newStd)
+      val newCase = Monitor(oldCase.id, oldCase.name, oldCase.lat, oldCase.lng, oldCase.url, 
+          oldCase.autoAudit, oldCase.monitorTypes, newStd, oldCase.instrumentStatusTypeMapOpt)
       Monitor.updateStdInternal(newCase)
 
       Ok(Json.obj("ok" -> true))

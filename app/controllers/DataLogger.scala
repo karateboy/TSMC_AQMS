@@ -28,7 +28,7 @@ object DataLogger extends Controller {
   implicit val mtRecordRead = Json.reads[MtRecord]
   implicit val RecordListRead = Json.reads[RecordList]
   implicit val CalibrationRead = Json.reads[CalibrationJSON]
-  
+
   def getRecordRange(tabType: TableType.Value)(monitorStr: String) = Action {
     val monitor = Monitor.withName(monitorStr)
     val timeOpt = models.Realtime.getLatestMonitorRecordTime(tabType, monitor)
@@ -158,7 +158,7 @@ object DataLogger extends Controller {
       json.span_std.toFloat, json.span_val.toFloat,
       json.span_dev.toFloat, json.span_dev_ratio.toFloat)
   }
-  
+
   def insertCalibrationRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
     implicit request =>
       val monitor = Monitor.withName(monitorStr)
@@ -218,7 +218,7 @@ object DataLogger extends Controller {
         "C213"
     }
   }
-  
+
   def getAlarmRange(monitorStr: String) = Action {
     val monitor = Monitor.withName(monitorStr)
     val timeOpt = Alarm2.getLatestAlarmTime(monitor)
@@ -230,15 +230,15 @@ object DataLogger extends Controller {
     Ok(Json.toJson(latestRecordTime))
   }
 
-  def toAlarm2(json:Alarm2JSON)(monitorStr:String)={
+  def toAlarm2(json: Alarm2JSON)(monitorStr: String) = {
     val monitor = Monitor.withName(monitorStr)
-    Alarm2(monitor, new DateTime(json.time), json.src, json.level, json.info) 
+    Alarm2(monitor, new DateTime(json.time), json.src, json.level, json.info)
   }
-  
+
   def insertAlarmRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
     implicit request =>
       implicit val ar2JsonRead = Json.reads[Alarm2JSON]
-      
+
       val monitor = Monitor.withName(monitorStr)
       val result = request.body.validate[Seq[Alarm2JSON]]
       result.fold(err => {
@@ -275,6 +275,34 @@ object DataLogger extends Controller {
       },
         instrumentStatusSeq => {
           InstrumentStatus.insert(monitor, instrumentStatusSeq)
+          Ok(Json.obj("ok" -> true))
+        })
+  }
+
+  def getInstrumentStatusTypeIds(monitorStr: String) = Action {
+    val monitor = Monitor.withName(monitorStr)
+    val instrumentStatusTypeMapOpt = Monitor.map(monitor).instrumentStatusTypeMapOpt
+    val instrumentStatusTypeIds = instrumentStatusTypeMapOpt.map { istMap =>
+      istMap.map { map =>
+        map.instrumentId + map.statusTypeSeq.mkString("")
+      }.mkString("")
+    }.getOrElse("")
+
+    Ok(Json.toJson(instrumentStatusTypeIds))
+  }
+
+  def updateInstrumentStatusTypeMap(monitorStr: String) = Action(BodyParsers.parse.json) {
+    implicit request =>
+      import Monitor._
+      val monitor = Monitor.withName(monitorStr)
+      val result = request.body.validate[List[InstrumentStatusTypeMap]]
+      result.fold(err => {
+        Logger.error(JsError(err).toString())
+        BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
+      },
+        newMap => {
+          val newMonitor = Monitor.map(monitor).updateInstrumentStatusTypeMap(Some(newMap))
+          Monitor.updateInstrumentStatusTypeMap(newMonitor)
           Ok(Json.obj("ok" -> true))
         })
   }
