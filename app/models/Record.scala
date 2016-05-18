@@ -1072,6 +1072,30 @@ object Record {
     }
   }
 
+  def getEpaHourMap(epaMonitorList: List[EpaMonitor.Value], monitorTypeList: List[MonitorType.Value], time: DateTime)(implicit session: DBSession = AutoSession) = {
+    val monitorIdList = epaMonitorList.map(EpaMonitor.map(_).id)
+    val mStr = SQLSyntax.createUnsafely(monitorIdList.mkString("('", "','", "')"))
+    val monitorTypes = monitorTypeList.flatMap(MonitorType.map(_).epa_mapping)
+    val mtStr = SQLSyntax.createUnsafely(monitorTypes.mkString("('", "','", "')"))
+    val records =
+      sql"""
+        Select * 
+        From hour_data
+        Where MStation in ${mStr} and MItem in ${mtStr} and MDate = ${time: Timestamp}
+      """.map {
+        rs => EpaHourRecord(EpaMonitor.idMap(rs.int(2)), rs.timestamp(3), MonitorType.epaMap(rs.string(4)), rs.float(5))
+      }.list().apply()
+
+    var recordMap = Map.empty[EpaMonitor.Value, Map[MonitorType.Value, Float]]
+
+    records.foreach { r =>
+      val mtMap = recordMap.getOrElse(r.monitor, Map.empty[MonitorType.Value, Float])
+      val newMtMap = mtMap ++ Map(r.monitorType -> r.value)
+      recordMap = recordMap + (r.monitor -> newMtMap)
+    }
+    recordMap
+  }
+
   def compareEpaReport(monitor: Monitor.Value, epaMonitor: EpaMonitor.Value, start: DateTime, end: DateTime) = {
     val hrRecord = getHourRecords(monitor, start, end)
     val pairs =

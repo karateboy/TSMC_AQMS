@@ -12,6 +12,7 @@ import PdfUtility._
 import models.ModelHelper._
 import play.api.Play.current
 import java.sql.Timestamp
+import Record._
 
 object Realtime extends Controller {
   def realtimeStat(outputTypeStr: String) = Security.Authenticated {
@@ -141,68 +142,13 @@ object Realtime extends Controller {
       val mtCase = MonitorType.map(mt)
 
       val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now: Timestamp)
+      val currentDateTime:DateTime = current
       val latestRecordTime = current.toDateTime - 1.minutes  
       
-      val realtimeValueMap =
-        if (group.privilege.allowedMonitorTypes.contains(mt))
-          getRealtimeMonitorValueMap(mt, latestRecordTime)
-        else {
-          Map[Monitor.Value, (Option[Float], Option[String])]()
-        }
-
-      val series = for (m <- group.privilege.allowedMonitors) yield {
-        seqData(Monitor.map(m).name, Seq({
-          val vOpt = realtimeValueMap.get(m)
-          if (vOpt.isEmpty || vOpt.get._1.isEmpty || vOpt.get._2.isEmpty)
-            Seq(Some(latestRecordTime.getMillis), None)
-          else {
-            val value = vOpt.get._1.get
-            val status = vOpt.get._2.get
-            if (MonitorStatus.isNormalStat(status))
-              Seq(Some(latestRecordTime.getMillis), Some(value))
-            else
-              Seq(Some(latestRecordTime.getMillis), None)
-          }
-
-        }))
-      }
-
-      def getAxisLines(mt: MonitorType.Value) = {
-        val mtCase = MonitorType.map(mt)
-        val std_law_line =
-          if (mtCase.std_law.isEmpty)
-            None
-          else
-            Some(AxisLine("#FF0000", 2, mtCase.std_law.get, Some(AxisLineLabel("right", "法規值"))))
-
-        val std_internal_line =
-          {
-            val std_internals = group.privilege.allowedMonitors.map { Monitor.map(_).getStdInternal(mt) }
-            val min_std_internal = std_internals.min
-            if (min_std_internal.isDefined)
-              Some(AxisLine("#0000FF", 2, mtCase.std_internal_default.get, Some(AxisLineLabel("left", "內控值"))))
-            else
-              None
-          }
-
-        val lines = Seq(std_law_line, std_internal_line).filter { _.isDefined }.map { _.get }
-        if (lines.length > 0)
-          Some(lines)
-        else
-          None
-      }
-
-      val title = mtCase.desp + " 即時資料"
-      val axisLines = getAxisLines(mt)
-
-      val c = HighchartData(
-        Map("type" -> "column"),
-        Map("text" -> title),
-        XAxis(None),
-        Seq(YAxis(None, AxisTitle(Some(None)), axisLines)),
-        series)
-
-      Ok(Json.toJson(c))
+      import controllers.Query.trendHelper
+      val chart = trendHelper(Monitor.mvList.toArray, Array.empty[EpaMonitor.Value], Array(mt), ReportUnit.Min, 
+          MonitorStatusFilter.Normal, currentDateTime-1.hour, currentDateTime)
+      Ok(Json.toJson(chart))
   }
 
   case class MonitorInfo(id: String, status: Int, winDir: Float, winSpeed: Float, statusStr: String)
@@ -259,7 +205,21 @@ object Realtime extends Controller {
           MonitorInfo(m.toString(), statusIndex, weather.winDir.last.getOrElse(0f), weather.winSpeed.last.getOrElse(0f), statusStr)
         }
 
-      Ok(Json.toJson(RealtimeMapInfo(mapInfos)))
+      //EPA monitor
+      val WIND_DIR = MonitorType.C212
+      val WIND_SPEED = MonitorType.C211 
+      val currentHour = DateTime.now.withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0) - 2.hour
+      val epaWeatherMap = Record.getEpaHourMap(EpaMonitor.epaList, 
+          List(WIND_DIR, WIND_SPEED), currentHour)
+          
+      val epaMapInfos = 
+        for {
+          m <- EpaMonitor.epaList
+          weather = epaWeatherMap.getOrElse(m, Map.empty[MonitorType.Value, Float])
+        } yield {
+          MonitorInfo(m.toString(), 0, weather.getOrElse(WIND_DIR, 0), weather.getOrElse(WIND_DIR, 0), "")
+        }
+      Ok(Json.toJson(RealtimeMapInfo(mapInfos++epaMapInfos)))
   }
   
   def alarmNofificationSocket  = WebSocket.acceptWithActor[String, String] { request =>

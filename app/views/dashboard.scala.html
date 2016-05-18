@@ -45,6 +45,16 @@ var monitorInfo = [];
 			lat:'@Monitor.map(m).lat',
 			lng:'@Monitor.map(m).lng',
 			status:'@Monitor.map(m).name',			
+		});	
+}
+@for(m <- EpaMonitor.epaList){
+	monitorInfo.push(
+		{
+			id:'@EpaMonitor.map(m).id',
+			name:'@EpaMonitor.map(m).name',
+			lat:'@EpaMonitor.map(m).lat',
+			lng:'@EpaMonitor.map(m).lng',
+			status:'@EpaMonitor.map(m).name',			
 		});
 }
 
