@@ -262,13 +262,13 @@ object Report extends Controller {
       for {
         (monitorType, pos) <- includeTypes.zipWithIndex
         typeStat = getTypeStat(pos)
-        validData = typeStat.filter { _.count != 0 }
+        validData = typeStat.filter { _.count >= 16 }
         count = validData.length
         total = dailyReports.length
         overCount = validData.map(_.overCount).sum
       } yield {
         val overallStat =
-          if (count != 0) {
+          if (count >= 20) {
             val avg = if (MonitorType.windDirList.contains(monitorType)) {
               val windDir = validData
               val (windSpeedMt, windSpeedPos) = includeTypes.zipWithIndex.find(t => t._1 == MonitorType.C211).get
@@ -335,8 +335,8 @@ object Report extends Controller {
     val periods = getPeriods(adjustStart, adjustEnd, period)
     val nPeriod = periods.length
     val periodReports =
-      for { p <- periods } yield {
-        (p -> getPeriodReport(monitor, p, period, MonitorType.mtvAllList, filter))
+      for { start <- periods } yield {
+        (start -> getPeriodReport(monitor, start, period, MonitorType.mtvAllList, filter))
       }
 
     import scala.collection.mutable.Map
@@ -347,7 +347,9 @@ object Report extends Controller {
       t <- report.typeArray
     } {
       val periodMap = map.getOrElse(t.monitorType, Map.empty[DateTime, (Option[Float], Option[String])])
-      periodMap.put(time, (t.stat.avg, Some(MonitorStatusFilter.statusMap(filter))))
+      if(t.stat.avg.isDefined)
+        periodMap.put(time, (t.stat.avg, MonitorStatusFilter.statusMap.get(filter)))
+        
       map.put(t.monitorType, periodMap)
     }
     map

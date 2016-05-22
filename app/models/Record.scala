@@ -847,7 +847,7 @@ object Record {
 
         } yield {
           val stat =
-            if (count != 0) {
+            if (count >=16) {
               val avg = if (MonitorType.windDirList.contains(mt)) {
                 val windDir = projections
                 val windSpeedT = monitorTypeProject2(MonitorType.C211)
