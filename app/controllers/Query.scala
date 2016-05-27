@@ -776,8 +776,15 @@ object Query extends Controller {
     assert(nWay == 8 || nWay == 16 || nWay == 32)
 
     try {
-      val level = List(1f, 2f, 5f, 15f)
-      val windMap = Record.getWindRose(monitor, epa, start, end, level, nWay)
+      val mtCase = MonitorType.map(monitorType)
+      val mtLevel = List(mtCase.level1, mtCase.level2, mtCase.level3, mtCase.level4)
+
+      val level = if (mtLevel.forall { _.isDefined })
+        mtLevel.map { _.get }
+      else
+        List(1f, 2f, 5f, 15f)
+        
+      val windMap = Record.getWindRose(monitor, epa, monitorType, start, end, level, nWay)
 
       val nRecord = windMap.values.map { _.length }.sum
 
@@ -806,13 +813,13 @@ object Query extends Controller {
       val speedLevel = level.flatMap { l =>
         if (l == level.head) {
           last = l
-          List(s"< ${l} m/s")
+          List(s"< ${l} ${mtCase.unit}")
         } else if (l == level.last) {
-          val ret = List(s"${last}~${l} m/s", s"> ${l} m/s")
+          val ret = List(s"${last}~${l} ${mtCase.unit}", s"> ${l} ${mtCase.unit}")
           last = l
           ret
         } else {
-          val ret = List(s"${last}~${l} m/s")
+          val ret = List(s"${last}~${l} ${mtCase.unit}")
           last = l
           ret
         }
@@ -830,7 +837,7 @@ object Query extends Controller {
         seqData(speedLevel(level), data)
       }
 
-      val title = "風瑰圖"
+      val title = s"${mtCase.desp}玫瑰圖"
       val chart = HighchartData(
         scala.collection.immutable.Map("polar" -> "true", "type" -> "column"),
         scala.collection.immutable.Map("text" -> title),

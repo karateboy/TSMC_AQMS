@@ -46,20 +46,22 @@
             	<table id="monitorTypeTable" class="table" cellspacing="0" width="100%">
             		<thead>
             			<tr>
-            				<th>測項代碼</th>
             				<th>名稱</th>
             				<th>單位</th>
             				<th>預設內控值</th>
             				<th>法規值</th>
             				<th>小時標準</th>
             				<th>日標準</th>
-            				<th>小數點位數</th>
+            				<th>小數位數</th>
+            				<th>標準1</th>
+            				<th>標準2</th>
+            				<th>標準3</th>
+            				<th>標準4</th>
             			</tr>
             		</thead>
             		<tbody>
             			@for(mt<-MonitorType.mtvAllList){
-            				<tr id="@map(mt).id">
-            					<th>@map(mt).id</th>
+            				<tr id="@map(mt).id">            					
             					<td col="desp">@map(mt).desp</td>
             					<td col="unit">@map(mt).unit</td>
             					@if(map(mt).std_internal_default.isEmpty){
@@ -87,6 +89,10 @@
             					}
             					
             					<td col="precision">@map(mt).prec</td> 
+            					<td col="level1">@MonitorType.format(mt, map(mt).level1)</td>
+            					<td col="level2">@MonitorType.format(mt, map(mt).level2)</td>
+            					<td col="level3">@MonitorType.format(mt, map(mt).level3)</td>
+            					<td col="level4">@MonitorType.format(mt, map(mt).level4)</td>
             				</tr>
             			}
             		</tbody>

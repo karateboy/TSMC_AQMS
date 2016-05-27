@@ -94,12 +94,12 @@ object Monitor extends Enumeration {
   def getInstrumentList() = {
     val statusTypeMapOpt = map(Monitor.withName("A013")).instrumentStatusTypeMapOpt
     val mapOpt = statusTypeMapOpt.map { mapList => mapList.map { map => map.instrumentId -> map.statusTypeSeq } }.map(_.toMap)
-    if(mapOpt.isDefined){
+    if (mapOpt.isDefined) {
       mapOpt.get.keys.toList
-    }else
+    } else
       List.empty[String]
   }
-  
+
   def getDisplayName(m: Monitor.Value) = {
     map(m).name
   }
@@ -176,34 +176,39 @@ case class MonitorType(id: String, desp: String, unit: String,
                        zd_internal: Option[Float], zd_law: Option[Float],
                        sd_internal: Option[Float], sd_law: Option[Float],
                        epa_mapping: Option[String],
-                       prec: Int, order: Int)
+                       prec: Int, order: Int,
+                       level1: Option[Float], level2: Option[Float], level3: Option[Float], level4: Option[Float])
 
 object MonitorType extends Enumeration {
   implicit val mtReads: Reads[MonitorType.Value] = EnumUtils.enumReads(MonitorType)
   implicit val mtWrites: Writes[MonitorType.Value] = EnumUtils.enumWrites
+
+  def mapper(r: WrappedResultSet) = MonitorType(id = r.string(1),
+    desp = r.string(2),
+    unit = r.string(3),
+    std_internal_default = r.floatOpt(5),
+    std_law = r.floatOpt(6),
+    std_hour = r.floatOpt(7),
+    std_day = r.floatOpt(8),
+    std_year = r.floatOpt(9),
+    zd_internal = r.floatOpt(10),
+    zd_law = r.floatOpt(11),
+    sd_internal = r.floatOpt(12),
+    sd_law = r.floatOpt(13),
+    epa_mapping = r.stringOpt(14),
+    prec = r.int(15),
+    order = r.int(16),
+    level1 = r.floatOpt(17),
+    level2 = r.floatOpt(18),
+    level3 = r.floatOpt(19),
+    level4 = r.floatOpt(20))
 
   private def mtList: List[MonitorType] =
     DB readOnly { implicit session =>
       sql"""
         Select *
         From MonitorType
-      """.map { r =>
-        MonitorType(id = r.string(1),
-          desp = r.string(2),
-          unit = r.string(3),
-          std_internal_default = r.floatOpt(5),
-          std_law = r.floatOpt(6),
-          std_hour = r.floatOpt(7),
-          std_day = r.floatOpt(8),
-          std_year = r.floatOpt(9),
-          zd_internal = r.floatOpt(10),
-          zd_law = r.floatOpt(11),
-          sd_internal = r.floatOpt(12),
-          sd_law = r.floatOpt(13),
-          epa_mapping = r.stringOpt(14),
-          prec = r.int(15),
-          order = r.int(16))
-      }.list.apply
+      """.map { mapper }.list.apply
     }
 
   var map: Map[Value, MonitorType] = Map(mtList.map { e => Value(e.id) -> e }: _*) - MonitorType.withName("A325")
@@ -256,23 +261,7 @@ object MonitorType extends Enumeration {
           Select *
           From MonitorType
           Where ITEM=${mt.toString}
-        """.map { r =>
-          MonitorType(id = r.string(1),
-            desp = r.string(2),
-            unit = r.string(3),
-            std_internal_default = r.floatOpt(5),
-            std_law = r.floatOpt(6),
-            std_hour = r.floatOpt(7),
-            std_day = r.floatOpt(8),
-            std_year = r.floatOpt(9),
-            zd_internal = r.floatOpt(10),
-            zd_law = r.floatOpt(11),
-            sd_internal = r.floatOpt(12),
-            sd_law = r.floatOpt(13),
-            epa_mapping = r.stringOpt(14),
-            prec = r.int(15),
-            order = r.int(16))
-        }.single.apply
+        """.map { mapper }.single.apply
       map = (map + (mt -> newMtOpt.get))
     }
   }

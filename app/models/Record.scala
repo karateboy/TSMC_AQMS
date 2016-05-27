@@ -948,18 +948,21 @@ object Record {
     Map(statList: _*)
   }
 
-  def getWindRose(monitor: Enumeration#Value, epa: Boolean, start: DateTime, end: DateTime, level: List[Float], nDiv: Int = 16) = {
+  def getWindRose(monitor: Enumeration#Value, epa: Boolean, monitorType:MonitorType.Value, start: DateTime, end: DateTime, level: List[Float], nDiv: Int = 16) = {
     val windRecords = if (!epa) {
       val records = getHourRecords(monitor.asInstanceOf[Monitor.Value], start, end)
-      records.map { r => (r.wind_dir, r.wind_speed) }
+      Record.monitorTypeProject2(monitorType)
+      records.map { r =>
+        val mtValue = Record.monitorTypeProject2(monitorType)(r)._1
+        (r.wind_dir, mtValue) }
     } else {
-      val windSpeed = getEpaHourRecord(monitor.asInstanceOf[EpaMonitor.Value], MonitorType.C211, start, end)
-      val windSpeedMap = windSpeed.map { r => r.time -> r.value }.toMap
+      val mtValue = getEpaHourRecord(monitor.asInstanceOf[EpaMonitor.Value], monitorType, start, end)
+      val mtValueMap = mtValue.map { r => r.time -> r.value }.toMap
       val windDir = getEpaHourRecord(monitor.asInstanceOf[EpaMonitor.Value], MonitorType.C212, start, end)
 
       val windDirMap = windDir.map { r => r.time -> r.value }.toMap
       for (time <- getPeriods(start, end, 1.hour))
-        yield (windDirMap.get(time), windSpeedMap.get(time))
+        yield (windDirMap.get(time), mtValueMap.get(time))
 
     }
     monitor match {
