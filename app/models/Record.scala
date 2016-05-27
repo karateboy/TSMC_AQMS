@@ -789,7 +789,7 @@ object Record {
           val endTime = start + 1.day
           import controllers.Report
 
-          for (t <- Report.getPeriods(start, endTime, 1.hour))
+          for (t <- getPeriods(start, endTime, 1.hour))
             yield recordMap.getOrElse(t, emptyRecord(monitor.toString(), t))
         }
 
@@ -828,7 +828,7 @@ object Record {
 
         } yield {
           val stat =
-            if (count >=16) {
+            if (count >= 16) {
               val avg = if (MonitorType.windDirList.contains(mt)) {
                 val windDir = projections
                 val windSpeedT = monitorTypeProject2(MonitorType.C211)
@@ -948,9 +948,36 @@ object Record {
     Map(statList: _*)
   }
 
-  def getWindRose(monitor: Monitor.Value, start: DateTime, end: DateTime, level: List[Float], nDiv: Int = 16) = {
-    val records = getHourRecords(monitor, start, end)
-    val windRecords = records.map { r => (r.wind_dir, r.wind_speed) }
+  def getWindRose(monitor: Enumeration#Value, epa: Boolean, start: DateTime, end: DateTime, level: List[Float], nDiv: Int = 16) = {
+    val windRecords = if (!epa) {
+      val records = getHourRecords(monitor.asInstanceOf[Monitor.Value], start, end)
+      records.map { r => (r.wind_dir, r.wind_speed) }
+    } else {
+      val windSpeed = getEpaHourRecord(monitor.asInstanceOf[EpaMonitor.Value], MonitorType.C211, start, end)
+      val windSpeedMap = windSpeed.map { r => r.time -> r.value }.toMap
+      val windDir = getEpaHourRecord(monitor.asInstanceOf[EpaMonitor.Value], MonitorType.C212, start, end)
+
+      val windDirMap = windDir.map { r => r.time -> r.value }.toMap
+      for (time <- getPeriods(start, end, 1.hour))
+        yield (windDirMap.get(time), windSpeedMap.get(time))
+
+    }
+    monitor match {
+      case m: Monitor.Value =>
+
+      case m: EpaMonitor.Value =>
+        Logger.debug("EpaMonitor $m")
+        val windSpeed = getEpaHourRecord(m, MonitorType.C211, start, end)
+        Logger.debug(s"#=${windSpeed.length}")
+        val windSpeedMap = windSpeed.map { r => r.time -> r.value }.toMap
+        val windDir = getEpaHourRecord(m, MonitorType.C212, start, end)
+        Logger.debug(s"#=${windDir.length}")
+
+        val windDirMap = windDir.map { r => r.time -> r.value }.toMap
+        for (time <- getPeriods(start, end, 1.hour))
+          yield (windDirMap.get(time), windSpeedMap.get(time))
+    }
+
     assert(windRecords.length != 0)
 
     val step = 360f / nDiv
@@ -1038,10 +1065,12 @@ object Record {
     val end: Timestamp = endTime
     val monitorId = EpaMonitor.map(epaMonitor).id
     val monitorTypeStrOpt = MonitorType.map(monitorType).epa_mapping
-    if (monitorTypeStrOpt.isEmpty)
+    if (monitorTypeStrOpt.isEmpty) {
+      Logger.error(s"Epa mapping is empty for $monitorType")
       List.empty[EpaHourRecord]
-    else {
+    } else {
       val monitorTypeStr = monitorTypeStrOpt.get
+      Logger.debug(s"id=${monitorId} MItem=${monitorTypeStr} and MDate >= ${start} and MDate < ${end}")
       sql"""
         Select * 
         From hour_data

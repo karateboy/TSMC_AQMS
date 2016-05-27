@@ -316,19 +316,6 @@ object Report extends Controller {
       date - (date.getDayOfWeek).days
   }
 
-  def getPeriods(start: DateTime, endTime: DateTime, d: Period): List[DateTime] = {
-    import scala.collection.mutable.ListBuffer
-
-    val buf = ListBuffer[DateTime]()
-    var current = start
-    while (current < endTime) {
-      buf.append(current)
-      current += d
-    }
-
-    buf.toList
-  }
-
   def getPeriodReportMap(monitor: Monitor.Value, start: DateTime, end: DateTime, filter: MonitorStatusFilter.Value, period: Period) = {
     val adjustStart = DateTime.parse(start.toString("YYYY-MM-dd"))
     val adjustEnd = DateTime.parse(end.toString("YYYY-MM-dd")) + 1.day

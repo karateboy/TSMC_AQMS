@@ -23,6 +23,10 @@
 	            						}
 	            						
 	            					}
+	            					@for(m<-EpaMonitor.values.toList.sorted){
+	            						<label class="btn btn-outline btn-primary dim">
+										<input type="radio" name="monitor" id="@m">環保署:@EpaMonitor.map(m).name</label>		            						
+	            					}
 	            				</div>
 	            			</div>	            			            		
 	                    </div>

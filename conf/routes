@@ -203,6 +203,10 @@ GET		/MinMonthlyReportSocket		controllers.Report.getMinMonthlySocket
 GET		/DownloadMinMonthlyReport/:n	controllers.Report.downloadMinMontlyReport(n: Int)
 GET		/AlarmNotificationSocket	controllers.Realtime.alarmNofificationSocket
 
+# import Epa
+GET	/ImportEpaXLS		controllers.Application.importEpa103
+GET	/ImportEpaCSV		controllers.Application.importEpa100
+
 # Data Logger
 GET		/HourRecordRange/:monitor		controllers.DataLogger.getHourRecordRange(monitor)
 PUT		/HourRecord/:monitor			controllers.DataLogger.insertHourRecord(monitor)

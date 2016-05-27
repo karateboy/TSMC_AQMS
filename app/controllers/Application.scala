@@ -627,4 +627,17 @@ object Application extends Controller {
             play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + start.toString("YYYYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
     }
   }
+  
+  val path = current.path.getAbsolutePath + "/importEPA/"
+  
+  def importEpa103 = Action{    
+    Epa103Importer.importData(path)
+    Ok(s"匯入 $path")
+  }
+  
+  def importEpa100 = Action{
+    Epa100Importer.importData(path)
+    Ok(s"匯入 $path")    
+  }
+    
 }
