@@ -1070,7 +1070,6 @@ object Record {
       List.empty[EpaHourRecord]
     } else {
       val monitorTypeStr = monitorTypeStrOpt.get
-      Logger.debug(s"id=${monitorId} MItem=${monitorTypeStr} and MDate >= ${start} and MDate < ${end}")
       sql"""
         Select * 
         From hour_data
