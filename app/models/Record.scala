@@ -102,7 +102,7 @@ object Record {
       var h2s_stat: Option[String] = None) {
 
     def save(tab: TableType.Value)(implicit session: DBSession = AutoSession) {
-      val tab_name = Record.getTabName(tab, date.toDateTime().getYear)
+      val tab_name = Record.getTabName(tab)
 
       if (tab == TableType.Hour) {
         sql"""
@@ -412,17 +412,14 @@ object Record {
     if (startTime == endTime)
       List.empty[HourRecord]
     else {
-      val tab_name = getTabName(TableType.Hour, startTime.getYear)
+      val tab_name = getTabName(TableType.Hour)
       val result = sql"""
         Select * 
         From ${tab_name}
         Where DP_NO=${monitorName} and M_DateTime >= ${start} and M_DateTime < ${end}
         ORDER BY M_DateTime ASC
       """.map { mapper }.list().apply()
-      if (startTime.getYear == endTime.getYear)
-        result
-      else
-        result ++ getHourRecords(monitor, DateTime.parse(s"${startTime.getYear + 1}-1-1"), endTime)
+      result
     }
   }
 
@@ -435,17 +432,13 @@ object Record {
       List.empty[HourRecord]
     else {
 
-      val tab_name = getTabName(TableType.Hour, startTime.getYear)
-      val result = sql"""
+      val tab_name = getTabName(TableType.Hour)
+      sql"""
         Select * 
         From ${tab_name}
         Where DP_NO=${monitorName} and M_DateTime >= ${start} and M_DateTime < ${end} and CHK is Null
         ORDER BY M_DateTime ASC
       """.map { mapper }.list().apply()
-      if (startTime.getYear == endTime.getYear)
-        result
-      else
-        result ++ getUncheckedHourRecords(monitor, DateTime.parse(s"${startTime.getYear + 1}-1-1"), endTime)
     }
   }
 
@@ -458,17 +451,13 @@ object Record {
     else {
 
       val monitorName = monitor.toString()
-      val tab_name = getTabName(TableType.Hour, startTime.getYear)
-      val result = sql"""
+      val tab_name = getTabName(TableType.Hour)
+      sql"""
         Select * 
         From ${tab_name}
         Where DP_NO=${monitorName} and M_DateTime >= ${start} and M_DateTime < ${end} and CHK = 'BAD'
         ORDER BY M_DateTime ASC
       """.map { mapper }.list().apply()
-      if (startTime.getYear == endTime.getYear)
-        result
-      else
-        result ++ getInvalidHourRecords(monitor, DateTime.parse(s"${startTime.getYear + 1}-1-1"), endTime)
     }
   }
 
@@ -481,17 +470,13 @@ object Record {
     else {
 
       val monitorName = monitor.toString()
-      val tab_name = getTabName(TableType.Min, startTime.getYear)
-      val result = sql"""
+      val tab_name = getTabName(TableType.Min)
+      sql"""
         Select * 
         From ${tab_name}
         Where DP_NO=${monitorName} and M_DateTime >= ${start} and M_DateTime < ${end}
         ORDER BY M_DateTime ASC
       """.map { mapper }.list().apply()
-      if (startTime.getYear == endTime.getYear)
-        result
-      else
-        result ++ getMinRecords(monitor, DateTime.parse(s"${startTime.getYear + 1}-1-1"), endTime)
     }
   }
 
@@ -503,17 +488,13 @@ object Record {
     else {
 
       val monitorName = monitor.toString()
-      val tab_name = getTabName(TableType.SixSec, startTime.getYear)
-      val result = sql"""
+      val tab_name = getTabName(TableType.SixSec)
+      sql"""
         Select * 
         From ${tab_name}
         Where DP_NO=${monitorName} and M_DateTime >= ${start} and M_DateTime < ${end}
         ORDER BY M_DateTime ASC
       """.map { sixSecMapper }.list().apply()
-      if (startTime.getYear == endTime.getYear)
-        result
-      else
-        result ++ getSecRecords(monitor, DateTime.parse(s"${startTime.getYear + 1}-1-1"), endTime)
     }
   }
 
@@ -556,7 +537,7 @@ object Record {
   def updateRecordStatus(tabType: TableType.Value, monitor: Monitor.Value, monitorType: MonitorType.Value, mill: Long, status: String)(implicit session: DBSession = AutoSession) = {
     val recordTime = new Timestamp(mill)
     val monitorName = monitor.toString()
-    val tab_name = getTabName(tabType, recordTime.toDateTime.getYear)
+    val tab_name = getTabName(tabType)
     val field_name = getFieldName(tabType, monitorType, recordTime)
     if (tabType != TableType.SixSec) {
       sql""" 
@@ -634,7 +615,7 @@ object Record {
 
   def getRecordValidationReport(start: DateTime, end: DateTime) = {
     DB readOnly { implicit session =>
-      val tab_name = getTabName(TableType.Hour, start.getYear)
+      val tab_name = getTabName(TableType.Hour)
       val hrRecords =
         sql"""
         SELECT DP_NO, count(DP_NO)
@@ -645,7 +626,7 @@ object Record {
 
       val hourReport = Map(hrRecords: _*)
 
-      val mintab_name = getTabName(TableType.Min, start.getYear)
+      val mintab_name = getTabName(TableType.Min)
       val minRecords =
         sql"""
         SELECT DP_NO, count(DP_NO)
@@ -656,7 +637,7 @@ object Record {
 
       val minReport = Map(minRecords: _*)
 
-      val sectab_name = getTabName(TableType.SixSec, start.getYear)
+      val sectab_name = getTabName(TableType.SixSec)
       val sixSecRecords =
         sql"""
         SELECT DP_NO, count(DP_NO)
@@ -1040,14 +1021,14 @@ object Record {
     typeRecords
   }
 
-  def getTabName(tab: TableType.Value, year: Int) = {
+  def getTabName(tab: TableType.Value) = {
     tab match {
       case TableType.Hour =>
-        SQLSyntax.createUnsafely(s"[P1234567_Hr_${year}]")
+        SQLSyntax.createUnsafely(s"[HourRecord]")
       case TableType.Min =>
-        SQLSyntax.createUnsafely(s"[P1234567_M1_${year}]")
+        SQLSyntax.createUnsafely(s"[MinRecord]")
       case TableType.SixSec =>
-        SQLSyntax.createUnsafely(s"[P1234567_S6_${year}]")
+        SQLSyntax.createUnsafely(s"[SecRecord]")
     }
   }
 

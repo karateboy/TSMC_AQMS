@@ -177,7 +177,7 @@ class AuditStat(hr: HourRecord) {
   }
 
   def updateDB()(implicit session: DBSession = AutoSession) = {
-    val tab_name = Record.getTabName(TableType.Hour, date.toDateTime().getYear)
+    val tab_name = Record.getTabName(TableType.Hour)
     sql"""
     Update ${tab_name}
      Set  [CHK] = ${statT(chk)} 

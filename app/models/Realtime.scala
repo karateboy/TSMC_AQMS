@@ -27,7 +27,7 @@ object Realtime {
   def getRealtimeMinStatus(current:DateTime, privilege: Privilege) = {
 
     DB readOnly { implicit session =>
-      val tab_name = Record.getTabName(TableType.Min, current.getYear)
+      val tab_name = Record.getTabName(TableType.Min)
       val hrs =
             sql"""
               SELECT *
@@ -326,7 +326,7 @@ object Realtime {
   }
   
   def getLatestRecordTime(tabType:TableType.Value)(implicit session: DBSession = AutoSession) = {
-    val tab_name = Record.getTabName(tabType, DateTime.now.getYear)
+    val tab_name = Record.getTabName(tabType)
     sql"""
       SELECT TOP 1 M_DateTime
       FROM ${tab_name}
@@ -335,7 +335,7 @@ object Realtime {
   }
   
   def getLatestMonitorRecordTime(tabType:TableType.Value, m:Monitor.Value)(implicit session: DBSession = AutoSession) = {
-    val tab_name = Record.getTabName(tabType, DateTime.now.getYear)
+    val tab_name = Record.getTabName(tabType)
     sql"""
       SELECT TOP 1 M_DateTime
       FROM ${tab_name}
@@ -346,7 +346,7 @@ object Realtime {
   
   def getRealtimeMonitorValueMap(mt:MonitorType.Value, current:Timestamp)(implicit session: DBSession = AutoSession) = {
     val datetime = current.toDateTime 
-    val tab = Record.getTabName(TableType.Min, datetime.getYear)
+    val tab = Record.getTabName(TableType.Min)
     val records = sql"""
       SELECT *
       FROM ${tab}
@@ -364,7 +364,7 @@ object Realtime {
   
   def getRealtimeMonitorStatusMap(current:Timestamp)(implicit session: DBSession = AutoSession) = {
     val datetime = current.toDateTime 
-    val tab = Record.getTabName(TableType.Min, datetime.getYear)
+    val tab = Record.getTabName(TableType.Min)
     val records = sql"""
       SELECT *
       FROM ${tab}
@@ -390,7 +390,7 @@ object Realtime {
     
   def getRealtimeWeatherMap(current:Timestamp)(implicit session: DBSession = AutoSession) = {
     val datetime = current.toDateTime 
-    val tab = Record.getTabName(TableType.SixSec, datetime.getYear)
+    val tab = Record.getTabName(TableType.SixSec)
     val records = sql"""
       SELECT *
       FROM ${tab}
