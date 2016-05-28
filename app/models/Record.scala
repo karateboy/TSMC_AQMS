@@ -965,21 +965,6 @@ object Record {
         yield (windDirMap.get(time), mtValueMap.get(time))
 
     }
-    monitor match {
-      case m: Monitor.Value =>
-
-      case m: EpaMonitor.Value =>
-        Logger.debug("EpaMonitor $m")
-        val windSpeed = getEpaHourRecord(m, MonitorType.C211, start, end)
-        Logger.debug(s"#=${windSpeed.length}")
-        val windSpeedMap = windSpeed.map { r => r.time -> r.value }.toMap
-        val windDir = getEpaHourRecord(m, MonitorType.C212, start, end)
-        Logger.debug(s"#=${windDir.length}")
-
-        val windDirMap = windDir.map { r => r.time -> r.value }.toMap
-        for (time <- getPeriods(start, end, 1.hour))
-          yield (windDirMap.get(time), windSpeedMap.get(time))
-    }
 
     assert(windRecords.length != 0)
 
