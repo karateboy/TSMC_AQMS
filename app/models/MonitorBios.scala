@@ -183,8 +183,8 @@ object MonitorBios {
     town="-",
     area="-",
     density="-",
-    founded="102年09月",
-    height="10.5公尺",
+    founded="-",
+    height="-",
     angle="360度",
     sample_height="11.3公尺",
     distance="-"

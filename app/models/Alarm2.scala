@@ -45,6 +45,10 @@ object Alarm2 {
     }
   }
 
+  def mapper(rs: WrappedResultSet)={
+    Alarm2(Monitor.withName(rs.string("monitor")), rs.timestamp("time"), rs.string("src"), rs.int("important"), rs.string("info"), rs.longOpt("ticketNo"))
+  }
+  
   def getAlarm(monitors: Seq[Monitor.Value], start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
     val mStr = SQLSyntax.createUnsafely(monitors.mkString("('", "','", "')"))
     val startT: Timestamp = start
@@ -56,10 +60,7 @@ object Alarm2 {
         From alarm
         Where monitor in ${mStr} and time>=${startT} and time<${end}
         ORDER BY time ASC
-        """.map {
-      rs =>
-        Alarm2(Monitor.withName(rs.string(1)), rs.timestamp(2), rs.string(3), rs.int(4), rs.string(5), rs.longOpt(6))
-    }.list.apply
+        """.map {mapper}.list.apply
   }
 
   def getAlarmByLevel(monitors: Seq[Monitor.Value], level: Int, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
@@ -73,10 +74,7 @@ object Alarm2 {
         From alarm
         Where monitor in ${mStr} and time>=${startT} and time<${end} and important >= $level
         ORDER BY time ASC
-        """.map {
-      rs =>
-        Alarm2(Monitor.withName(rs.string(1)), rs.timestamp(2), rs.string(3), rs.int(4), rs.string(5), rs.longOpt(6))
-    }.list.apply
+        """.map {mapper}.list.apply
   }
 
   def getAlarmBySrcFilter(monitors: Seq[Monitor.Value], srcFilter: Seq[String], start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
@@ -90,10 +88,7 @@ object Alarm2 {
         From alarm
         Where monitor in ${mStr} and time>=${startT} and time<${end} and src in ${sfilter}
         ORDER BY time ASC
-        """.map {
-      rs =>
-        Alarm2(Monitor.withName(rs.string(1)), rs.timestamp(2), rs.string(3), rs.int(4), rs.string(5), rs.longOpt(6))
-    }.list.apply
+        """.map {mapper}.list.apply
   }
 
   def getAlarmByLikeFilter(monitors: Seq[Monitor.Value], srcFilter: String, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
@@ -107,10 +102,7 @@ object Alarm2 {
         From alarm
         Where monitor in ${mStr} and time>=${startT} and time<${end} and src like ${srcFilter}
         ORDER BY time ASC
-        """.map {
-      rs =>
-        Alarm2(Monitor.withName(rs.string(1)), rs.timestamp(2), rs.string(3), rs.int(4), rs.string(5), rs.longOpt(6))
-    }.list.apply
+        """.map {mapper}.list.apply
   }
 
   def insertAlarm(ar: Alarm2) = {
@@ -123,8 +115,7 @@ object Alarm2 {
           Select *
           From alarm
           Where monitor = ${ar.monitor.toString} and time = ${time} and src = ${ar.src}          
-          """.map(rs =>
-          Alarm2(Monitor.withName(rs.string(1)), rs.timestamp(2), rs.string(3), rs.int(4), rs.string(5), rs.longOpt(6))).single.apply
+          """.map(mapper).single.apply
       }
     }
     val arOpt = checkExist()
