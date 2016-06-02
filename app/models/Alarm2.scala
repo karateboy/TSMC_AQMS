@@ -19,20 +19,30 @@ object Alarm2 {
   }
   val alarmLevelList = Level.INFO to Level.ERR
 
-  def Src(mt: MonitorType.Value) = s"T:${MonitorType.map(mt).desp}"
+  def Src(mt: MonitorType.Value) = s"T:$mt"
   def Src() = "S:System"
 
   def getSrcForDisplay(src: String) = {
     val part = src.split(':')
-    val srcType = part(0) match {
-      case "S" =>
-        "系統"
-      case "I" =>
-        "設備:" + part(1)
-      case "T" =>
-        "測項:" + MonitorType.map(MonitorType.withName(part(1))).desp
+    if (part.length >= 2) {
+      val srcType = part(0) match {
+        case "S" =>
+          "系統"
+        case "I" =>
+          "設備:" + part(1)
+        case "T" =>
+          try {
+            "測項:" + MonitorType.map(MonitorType.withName(part(1))).desp
+          } catch {
+            case ex: Throwable =>
+              "測項:" + part(1)
+          }
+      }
+      srcType
+    }else{
+      Logger.warn(s"Unexpected alarm src $src")
+      src
     }
-    srcType
   }
 
   def getAlarm(monitors: Seq[Monitor.Value], start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
