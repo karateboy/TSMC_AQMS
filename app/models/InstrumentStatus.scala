@@ -79,7 +79,7 @@ object InstrumentStatus {
            ,{time}
            ,{json})
           """.batchByName(batchList: _*)
-        .apply
+        .apply()
     }
   }
   

@@ -159,7 +159,7 @@ class DataLoggerCollector(host: String) extends Actor {
         val epaData = response.json.validate[Seq[RecordList]]
         epaData.fold(
           error => {
-            Logger.error(JsError.toFlatJson(error).toString())
+            Logger.error(JsError.toJson(error).toString())
             import scala.concurrent.duration._
             Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectMinData(start))
           },
@@ -190,7 +190,7 @@ class DataLoggerCollector(host: String) extends Actor {
         val epaData = response.json.validate[Seq[RecordList]]
         epaData.fold(
           error => {
-            Logger.error(JsError.toFlatJson(error).toString())
+            Logger.error(JsError.toJson(error).toString())
             import scala.concurrent.duration._
             Akka.system.scheduler.scheduleOnce(Duration(1, MINUTES), self, CollectHourData(start))
           },

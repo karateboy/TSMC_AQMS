@@ -155,7 +155,7 @@ object Alarm2 {
     }
   }
 
-  def insertAlarmSeq(arList: Seq[Alarm2]) = {
+  def insertAlarmSeq(arList: Seq[Alarm2]) {
     val batchList = arList.map { a =>
       Seq('monitor -> a.monitor.toString,
         'time -> (a.time: Timestamp), 'src -> a.src, 'level -> a.level, 'info -> a.info)
@@ -181,7 +181,7 @@ object Alarm2 {
         
         """
         .batchByName(batchList: _*)
-        .apply
+        .apply()
     }
   }
 }

@@ -903,8 +903,8 @@ object Report extends Controller {
 
       abEntriesResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         entries => {
           AbnormalReport.updateReport(date, entries)
@@ -968,8 +968,8 @@ object Report extends Controller {
 
       mSummaryResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         entries => {
           AggregateReport.updateReport(date, entries)

@@ -3,7 +3,6 @@ package controllers
 import play.api._
 import play.api.mvc._
 import play.api.Logger
-import play.api.libs.mailer._
 import models._
 import models.Realtime._
 import com.github.nscala_time.time.Imports._
@@ -43,8 +42,8 @@ object Maintance extends Controller {
 
       newTicketJson.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         ticketParam => {
           val tickets =
@@ -145,8 +144,8 @@ object Maintance extends Controller {
 
       ticketResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         param => {
           val ticketOpt = Ticket.getTicket(ID)
@@ -191,8 +190,8 @@ object Maintance extends Controller {
 
       formResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         form => {
           Ticket.updateTicketFormData(ID, form)
@@ -207,8 +206,8 @@ object Maintance extends Controller {
 
       formResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         form => {
           Ticket.updateRepairFormData(ID, form)
@@ -402,8 +401,8 @@ object Maintance extends Controller {
 
       reportJsonResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         report => {
           MonitorJournal.updateReport(report)
@@ -452,8 +451,8 @@ object Maintance extends Controller {
 
       newPartResult.fold(
         error => {
-          Logger.error(JsError.toFlatJson(error).toString())
-          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toFlatJson(error)))
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         param => {
           try {
@@ -471,38 +470,6 @@ object Maintance extends Controller {
   def deletePart(id: String) = Security.Authenticated {
     Part.delete(id)
     Ok(Json.obj("ok" -> true))
-  }
-
-  def testAlarmMail = Security.Authenticated {
-    implicit request =>      
-    val userInfoOpt = Security.getUserinfo(request)
-    val userInfo = userInfoOpt.get
-    val user = User.getUserById(userInfo.id).get
-    
-    val email = Email(
-      "測試警告信",
-      s"AQMS <aqm6812646@gmail.com>",
-      Seq(s"${user.name} <${user.email}>"),
-      // adds attachment
-      attachments = Seq(),
-      // sends text, HTML or both...
-      bodyText = Some("測試信"),
-      bodyHtml = Some("<html><body><p>測試信</p></body></html>")
-    )
-    
-    try{
-      MailerPlugin.send(email)
-      EventLog.create(EventLog(DateTime.now, EventLog.evtTypeInformAlarm, "送測試信!"))
-      Ok(s"已經送信到${user.email}")
-    }catch{
-      case ex:Exception 
-        =>
-          Console.print(ex.getCause)
-          EventLog.create(EventLog(DateTime.now, EventLog.evtTypeInformAlarm, "送測試信失敗!"))
-          Ok(s"無法送信到${user.email}: ${ex.getCause}")
-    }
-    
-    
   }
   
   def dutySchedule = Security.Authenticated {

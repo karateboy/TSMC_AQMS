@@ -192,7 +192,6 @@ DELETE  /Part/:id			controllers.Maintance.deletePart(id)
 GET		/EventLog			controllers.Maintance.eventLog
 GET		/EventLogReport/:start/:end	controllers.Maintance.eventLogReport(start, end)
 
-GET		/TestAlarmMail		controllers.Maintance.testAlarmMail
 GET		/DutySchedule		controllers.Maintance.dutySchedule
 
 GET		/DownloadNotification	controllers.Maintance.downloadNotification

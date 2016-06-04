@@ -47,9 +47,9 @@ class AlarmWorker extends Actor{
     }
   }
   
-  import play.api.libs.mailer._
+  //FIXME
   def sendAlarmEmail(users: List[User], alarm: Alarm2) = {
-
+  /* 
     val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${alarm.src}-${alarm.info}}"
     val htmlMsg = s"<html><body><p><b>${Monitor.map(alarm.monitor).name}-${alarm.time.toString("YYYY/MM/dd HH:mm")}:${alarm.level}:$alarm.info}</b></p></body></html>"
     val email = Email(
@@ -64,5 +64,7 @@ class AlarmWorker extends Actor{
 
     SmsSender.send(users, msg)
     MailerPlugin.send(email)
+    * /
+    */
   }
 }
