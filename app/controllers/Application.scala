@@ -601,21 +601,25 @@ object Application extends Controller {
       Ok(views.html.instrument(group.privilege))
   }
 
-  
   def instrumentReport(monitorStr: String, instrumentId: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     val monitor = Monitor.withName(monitorStr)
-    val instStatusTypeMap = Monitor.map(monitor).instrumentStatusTypeMapOpt
-      .get.map(map => map.instrumentId -> map.statusTypeSeq).toMap
-    val statusTypeMap = instStatusTypeMap(instrumentId).map { st => st.key->st }.toMap
+    val instStatusTypeMap = if (Monitor.map(monitor).instrumentStatusTypeMapOpt.isDefined)
+      Monitor.map(monitor).instrumentStatusTypeMapOpt
+        .get.map(map => map.instrumentId -> map.statusTypeSeq).toMap
+    else
+      Map.empty[String, Seq[InstrumentStatusType]]
+
+    val statusTypeMap =
+      instStatusTypeMap.getOrElse(instrumentId, Seq.empty[InstrumentStatusType]).map { st => st.key -> st }.toMap
 
     val start = DateTime.parse(startStr)
     val end = DateTime.parse(endStr) + 1.day
     val outputType = OutputType.withName(outputTypeStr)
     val records = InstrumentStatus.query(monitor, instrumentId, start, end)
     val statusMapList = records.map { _.toStatusMap }
-    val keySet = statusMapList.map { _.statusMap.keySet }.foldRight(Set.empty[String])((a,b)=>a++b)
-    val output = views.html.InstrumentStatusReport(monitor, instrumentId, keySet.toList,
-        statusTypeMap, statusMapList, start, end)
+    val keySet = statusMapList.map { _.statusMap.keySet }.foldRight(Set.empty[String])((a, b) => a ++ b)
+    val output = views.html.InstrumentStatusReport(monitor, instrumentId, (keySet & statusTypeMap.keySet).toList,
+      statusTypeMap, statusMapList, start, end)
     val title = "儀器狀態"
 
     outputType match {
@@ -627,17 +631,17 @@ object Application extends Controller {
             play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + start.toString("YYYYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
     }
   }
-  
+
   val path = current.path.getAbsolutePath + "/importEPA/"
-  
-  def importEpa103 = Action{    
+
+  def importEpa103 = Action {
     Epa103Importer.importData(path)
     Ok(s"匯入 $path")
   }
-  
-  def importEpa100 = Action{
+
+  def importEpa100 = Action {
     Epa100Importer.importData(path)
-    Ok(s"匯入 $path")    
+    Ok(s"匯入 $path")
   }
-    
+
 }
