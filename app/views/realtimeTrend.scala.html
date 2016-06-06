@@ -1,17 +1,17 @@
 @* realtimeTrend Template File *@
-@(privilege: Privilege, minChart:Boolean=false)
+@(privilege: Privilege, minChart:Boolean=false)(implicit messages:Messages)
 <div class="row">
    	<div class="col-lg-12">
        	<div class="panel panel-primary" id="paramPanel">
            	<div class="panel-heading panel-title" >
-           		<a data-toggle="collapse" href="#reportParam">查詢參數</a>	
+           		<a data-toggle="collapse" href="#reportParam">@Messages("query.parameter")</a>	
             </div>
            	<div class="panel-body panel-collapse in" id="reportParam">
            		<form class="form-horizontal">
 	            		<div class="form-group">
-	            			<label class="col-lg-1 control-label">測站</label>
+	            			<label class="col-lg-1 control-label">@Messages("query.monitor")</label>
 	            			<div class="col-lg-11">
-	            				<button id="select-all-monitors" class="btn btn-info" type="button">全選</button>
+	            				<button id="select-all-monitors" class="btn btn-info" type="button">@Messages("query.selectAll")</button>
 	            				<div class="btn-group" data-toggle="buttons">	            					            				
 	            					@for(m<-Monitor.myMvList(privilege)){
 	            						@if(m == Monitor.myMvList(privilege).head){
@@ -27,9 +27,9 @@
 	            			</div>	            			            		
 	                    </div>
 	                    <div class="form-group">
-	            			<label class="col-lg-1 control-label">測項</label>
+	            			<label class="col-lg-1 control-label">@Messages("query.monitorType")</label>
 	            			<div class="col-lg-11">
-	            				<button id="select-all-monitorTypes" class="btn btn-info" type="button">全選</button>
+	            				<button id="select-all-monitorTypes" class="btn btn-info" type="button">@Messages("query.selectAll")</button>
 	            				<div class="btn-group" data-toggle="buttons">	            				
 	            				@for(mt<-MonitorType.myMtvList(privilege)){
 	            					@if(mt == MonitorType.myMtvList(privilege).head){
@@ -44,26 +44,25 @@
 	            			</div>	            			            		
 	                    </div>
 	                    <div class="form-group">
-	            			<label class="col-lg-1 control-label">圖表類型</label>						
+	            			<label class="col-lg-1 control-label">@Messages("query.chartType")</label>						
 	            			<div class="col-lg-11 btn-group" data-toggle="buttons">
            						<label class="btn btn-outline btn-primary dim active">
-									<input type="radio" name="chartType" id="line" checked>折線圖</label>
+									<input type="radio" name="chartType" id="line" checked>@Messages("query.chartType.line")</label>
 								<label class="btn btn-outline btn-primary dim">
-									<input type="radio" name="chartType" id="spline">曲線圖</label>
+									<input type="radio" name="chartType" id="spline">@Messages("query.chartType.spline")</label>
 								<label class="btn btn-outline btn-primary dim">
-									<input type="radio" name="chartType" id="area">面積圖</label>	
+									<input type="radio" name="chartType" id="area">@Messages("query.chartType.area")</label>	
 								<label class="btn btn-outline btn-primary dim">
-									<input type="radio" name="chartType" id="areaspline">曲線面積圖</label>		
+									<input type="radio" name="chartType" id="areaspline">@Messages("query.chartType.areaSpline")</label>		
 								<label class="btn btn-outline btn-primary dim">
-									<input type="radio" name="chartType" id="column">柱狀圖</label>
-
+									<input type="radio" name="chartType" id="column">@Messages("query.chartType.column")</label>
 								<label class="btn btn-outline btn-primary dim">
-									<input type="radio" name="chartType" id="scatter">點圖</label>			
+									<input type="radio" name="chartType" id="scatter">@Messages("query.chartType.scatter")</label>			
 	            			</div>            		
 	                    </div>	                    
 						<div class="form-group">
 							<div class="col-lg-1 col-lg-offset-1">
-								<button type="button" class="btn btn-primary" id="queryReport">查詢</button>
+								<button type="button" class="btn btn-primary" id="queryReport">@Messages("query.query")</button>
 							</div>							
 						</div>	                    	                    	                    
             		</form>           	

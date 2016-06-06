@@ -13,18 +13,60 @@ import models.ModelHelper._
 import play.api.Play.current
 import java.sql.Timestamp
 import Record._
+import javax.inject._
+import play.api.i18n._
 
-object Realtime extends Controller {
+case class XAxis(categories: Option[Seq[String]], gridLineWidth: Option[Int] = None, tickInterval: Option[Int] = None)
+case class AxisLineLabel(align: String, text: String)
+case class AxisLine(color: String, width: Int, value: Float, label: Option[AxisLineLabel])
+case class AxisTitle(text: Option[Option[String]])
+case class YAxis(labels: Option[String], title: AxisTitle, plotLines: Option[Seq[AxisLine]], opposite: Boolean = false,
+                 floor: Option[Int] = None, ceiling: Option[Int] = None, min: Option[Int] = None, max: Option[Int] = None, tickInterval: Option[Int] = None,
+                 gridLineWidth: Option[Int] = None, gridLineColor: Option[String] = None)
+
+case class seqData(name: String, data: Seq[Seq[Option[Double]]], yAxis: Int = 0, chartType: Option[String] = None,
+                   status: Option[Seq[Option[String]]] = None)
+case class HighchartData(chart: Map[String, String],
+                         title: Map[String, String],
+                         xAxis: XAxis,
+                         yAxis: Seq[YAxis],
+                         series: Seq[seqData],
+                         downloadFileName: Option[String] = None)
+case class FrequencyTab(header: Seq[String], body: Seq[Seq[String]], footer: Seq[String])
+case class WindRoseReport(chart: HighchartData, table: FrequencyTab)
+
+object Realtime {
+  implicit val xaWrite = Json.writes[XAxis]
+  implicit val axisLineLabelWrite = Json.writes[AxisLineLabel]
+  implicit val axisLineWrite = Json.writes[AxisLine]
+  implicit val axisTitleWrite = Json.writes[AxisTitle]
+  implicit val yaWrite = Json.writes[YAxis]
+  type lof = (Long, Option[Float])
+
+  implicit val seqDataWrite: Writes[seqData] = (
+    (__ \ "name").write[String] and
+    (__ \ "data").write[Seq[Seq[Option[Double]]]] and
+    (__ \ "yAxis").write[Int] and
+    (__ \ "type").write[Option[String]] and
+    (__ \ "status").write[Option[Seq[Option[String]]]])(unlift(seqData.unapply))
+  implicit val hcWrite = Json.writes[HighchartData]
+  implicit val feqWrite = Json.writes[FrequencyTab]
+  implicit val wrWrite = Json.writes[WindRoseReport]
+
+}
+class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+  import Realtime._
+
   def realtimeStat(outputTypeStr: String) = Security.Authenticated {
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
       val group = Group.getGroup(userInfo.groupID).get
       val outputType = OutputType.withName(outputTypeStr)
 
-      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now.withSecondOfMinute(0) : Timestamp)
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now.withSecondOfMinute(0): Timestamp)
       val sub_current = current.toDateTime - 60.second
       val rt_status = getRealtimeMinStatus(sub_current, group.privilege)
-      val currentHr = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0) : Timestamp)
+      val currentHr = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0): Timestamp)
       val rt_psi = getRealtimePSI(currentHr)
       val output = views.html.realtimeStatus(sub_current, rt_status, MonitorType.psiList, rt_psi, group.privilege)
       val title = "即時資訊"
@@ -48,25 +90,25 @@ object Realtime extends Controller {
   def realtimeTrend() = Security.Authenticated {
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
-      val group = Group.getGroup(userInfo.groupID).get      
+      val group = Group.getGroup(userInfo.groupID).get
       Ok(views.html.realtimeTrend(group.privilege, false))
   }
-  
+
   def realtimeMinTrend() = Security.Authenticated {
     implicit request =>
-     val userInfo = Security.getUserinfo(request).get
-      val group = Group.getGroup(userInfo.groupID).get      
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
       Ok(views.html.realtimeTrend(group.privilege, true))
   }
 
-  def realtimeHourTrendChart(monitorStr: String, monitorTypeStr: String) = Security.Authenticated{
+  def realtimeHourTrendChart(monitorStr: String, monitorTypeStr: String) = Security.Authenticated {
     implicit request =>
       val monitorStrArray = monitorStr.split(':')
       val monitors = monitorStrArray.map { Monitor.withName }
       val monitorTypeStrArray = monitorTypeStr.split(':')
       val monitorTypes = monitorTypeStrArray.map { MonitorType.withName }
 
-      val current = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0):Timestamp)
+      val current = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0): Timestamp)
       val reportUnit = ReportUnit.Hour
       val monitorStatusFilter = MonitorStatusFilter.ValidData
       val start = current.toDateTime - 1.day
@@ -74,18 +116,18 @@ object Realtime extends Controller {
 
       import Query.trendHelper
       val chart = trendHelper(monitors, Array.empty[EpaMonitor.Value], monitorTypes, reportUnit, monitorStatusFilter, start, end)
-      
+
       Results.Ok(Json.toJson(chart))
   }
 
-  def realtimeMinTrendChart(monitorStr: String, monitorTypeStr: String) = Security.Authenticated{
+  def realtimeMinTrendChart(monitorStr: String, monitorTypeStr: String) = Security.Authenticated {
     implicit request =>
       val monitorStrArray = monitorStr.split(':')
       val monitors = monitorStrArray.map { Monitor.withName }
       val monitorTypeStrArray = monitorTypeStr.split(':')
       val monitorTypes = monitorTypeStrArray.map { MonitorType.withName }
 
-      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now.withSecond(0):Timestamp)
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now.withSecond(0): Timestamp)
       val reportUnit = ReportUnit.Min
       val monitorStatusFilter = MonitorStatusFilter.ValidData
       val start = current.toDateTime - 4.hour
@@ -93,45 +135,9 @@ object Realtime extends Controller {
 
       import Query.trendHelper
       val chart = trendHelper(monitors, Array.empty[EpaMonitor.Value], monitorTypes, reportUnit, monitorStatusFilter, start, end)
-      
+
       Results.Ok(Json.toJson(chart))
   }
-
-  case class XAxis(categories: Option[Seq[String]], gridLineWidth: Option[Int]=None, tickInterval:Option[Int]=None)
-  case class AxisLineLabel(align: String, text: String)
-  case class AxisLine(color: String, width: Int, value: Float, label: Option[AxisLineLabel])
-  case class AxisTitle(text: Option[Option[String]])
-  case class YAxis(labels: Option[String], title: AxisTitle, plotLines: Option[Seq[AxisLine]], opposite:Boolean=false, 
-      floor:Option[Int]=None, ceiling:Option[Int]=None, min:Option[Int]=None, max:Option[Int]=None, tickInterval:Option[Int]=None, 
-      gridLineWidth:Option[Int]=None, gridLineColor:Option[String]=None)
-      
-  case class seqData(name: String, data: Seq[Seq[Option[Double]]], yAxis:Int=0, chartType:Option[String]=None, 
-      status:Option[Seq[Option[String]]]=None)
-  case class HighchartData(chart: Map[String, String],
-                           title: Map[String, String],
-                           xAxis: XAxis,
-                           yAxis: Seq[YAxis],
-                           series: Seq[seqData],
-                           downloadFileName: Option[String]=None)
-  case class FrequencyTab(header:Seq[String], body:Seq[Seq[String]], footer:Seq[String])                         
-  case class WindRoseReport(chart:HighchartData, table:FrequencyTab)
-  implicit val xaWrite = Json.writes[XAxis]
-  implicit val axisLineLabelWrite = Json.writes[AxisLineLabel]
-  implicit val axisLineWrite = Json.writes[AxisLine]
-  implicit val axisTitleWrite = Json.writes[AxisTitle]
-  implicit val yaWrite = Json.writes[YAxis]
-  type lof = (Long, Option[Float])
-          
-  implicit val seqDataWrite:Writes[seqData] = (
-    (__ \ "name").write[String] and
-    (__ \ "data").write[Seq[Seq[Option[Double]]]] and
-    (__ \ "yAxis").write[Int] and
-    (__ \ "type").write[Option[String]] and
-    (__ \ "status").write[Option[Seq[Option[String]]]]
-  )(unlift(seqData.unapply))
-  implicit val hcWrite = Json.writes[HighchartData]
-  implicit val feqWrite = Json.writes[FrequencyTab]
-  implicit val wrWrite = Json.writes[WindRoseReport]
 
   def highchartJson(monitorTypeStr: String) = Security.Authenticated {
     implicit request =>
@@ -142,12 +148,12 @@ object Realtime extends Controller {
       val mtCase = MonitorType.map(mt)
 
       val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now: Timestamp)
-      val currentDateTime:DateTime = current
-      val latestRecordTime = current.toDateTime - 1.minutes  
-      
+      val currentDateTime: DateTime = current
+      val latestRecordTime = current.toDateTime - 1.minutes
+
       import controllers.Query.trendHelper
-      val chart = trendHelper(Monitor.mvList.toArray, Array.empty[EpaMonitor.Value], Array(mt), ReportUnit.Min, 
-          MonitorStatusFilter.Normal, currentDateTime-1.hour, currentDateTime)
+      val chart = trendHelper(Monitor.mvList.toArray, Array.empty[EpaMonitor.Value], Array(mt), ReportUnit.Min,
+        MonitorStatusFilter.Normal, currentDateTime - 1.hour, currentDateTime)
       Ok(Json.toJson(chart))
   }
 
@@ -159,8 +165,8 @@ object Realtime extends Controller {
 
   def realtimeMap = Security.Authenticated {
     implicit request =>
-      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now():Timestamp)
-      val sub_current = current.toDateTime -1.minute
+      val current = getLatestRecordTime(TableType.Min).getOrElse(DateTime.now(): Timestamp)
+      val sub_current = current.toDateTime - 1.minute
       val weatherMap = getRealtimeWeatherMap(sub_current)
       val statusMap = getRealtimeMonitorStatusMap(sub_current)
 
@@ -188,8 +194,8 @@ object Realtime extends Controller {
             4
           }
         }
-        
-        if(statusIndexes.size == 0)
+
+        if (statusIndexes.size == 0)
           (0, "")
         else
           (statusIndexes.max, statusBuilder.toString())
@@ -207,23 +213,23 @@ object Realtime extends Controller {
 
       //EPA monitor
       val WIND_DIR = MonitorType.C212
-      val WIND_SPEED = MonitorType.C211 
+      val WIND_SPEED = MonitorType.C211
       val currentHour = DateTime.now.withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0) - 2.hour
-      val epaWeatherMap = Record.getEpaHourMap(EpaMonitor.epaList, 
-          List(WIND_DIR, WIND_SPEED), currentHour)
-          
-      val epaMapInfos = 
+      val epaWeatherMap = Record.getEpaHourMap(EpaMonitor.epaList,
+        List(WIND_DIR, WIND_SPEED), currentHour)
+
+      val epaMapInfos =
         for {
           m <- EpaMonitor.epaList
           weather = epaWeatherMap.getOrElse(m, Map.empty[MonitorType.Value, Float])
         } yield {
           MonitorInfo(m.toString(), 0, weather.getOrElse(WIND_DIR, 0), weather.getOrElse(WIND_DIR, 0), "")
         }
-      Ok(Json.toJson(RealtimeMapInfo(mapInfos++epaMapInfos)))
+      Ok(Json.toJson(RealtimeMapInfo(mapInfos ++ epaMapInfos)))
   }
-  
-  def alarmNofificationSocket  = WebSocket.acceptWithActor[String, String] { request =>
+
+  def alarmNofificationSocket = WebSocket.acceptWithActor[String, String] { request =>
     out =>
       AlarmNotifier.props(out)
-  } 
+  }
 }

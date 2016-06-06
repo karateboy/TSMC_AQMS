@@ -19,9 +19,25 @@ import scala.concurrent.Future
 import PdfUtility._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-object Application extends Controller {
+import javax.inject._
+import play.api.i18n._
 
-  val title = "台積電空氣品質監測系統"
+case class EditData(id: String, data: String)
+case class EpaRealtimeData(
+    siteName: String,
+    county: String,
+    psi: String,
+    so2: String,
+    co: String,
+    o3: String,
+    pm10: String,
+    pm25: String,
+    no2: String,
+    windSpeed: String,
+    windDir: String,
+    publishTime: String)
+
+class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport{
 
   def index = Security.Authenticated {
     implicit request =>
@@ -32,7 +48,7 @@ object Application extends Controller {
         val userInfo = userInfoOpt.get
         val user = User.getUserById(userInfo.id).get
         val group = Group.getGroup(userInfo.groupID).get
-        Ok(views.html.index(title, user, userInfo, group.privilege))
+        Ok(views.html.index(Messages("system.name"), user, userInfo, group.privilege))
       }
   }
 
@@ -141,7 +157,6 @@ object Application extends Controller {
       Ok(Json.obj("ok" -> true))
   }
 
-  case class EditData(id: String, data: String)
   def saveMonitorTypeConfig() = Security.Authenticated {
     implicit request =>
       try {
@@ -283,20 +298,6 @@ object Application extends Controller {
 
       Ok(views.html.recordValidationReport(start, end, report))
   }
-
-  case class EpaRealtimeData(
-    siteName: String,
-    county: String,
-    psi: String,
-    so2: String,
-    co: String,
-    o3: String,
-    pm10: String,
-    pm25: String,
-    no2: String,
-    windSpeed: String,
-    windDir: String,
-    publishTime: String)
 
   implicit val epaRealtimeDataRead: Reads[EpaRealtimeData] =
     ((__ \ "SiteName").read[String] and

@@ -1,3 +1,3 @@
-@(title: String, user:User, userInfo:controllers.Security.UserInfo, privilege: Privilege)(implicit request: RequestHeader)
+@(title: String, user:User, userInfo:controllers.Security.UserInfo, privilege: Privilege)(implicit request: RequestHeader, messages: Messages)
 
 @outline(title, userInfo, privilege, dashboard(user, privilege))

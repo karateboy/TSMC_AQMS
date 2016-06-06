@@ -7,6 +7,8 @@ import com.github.nscala_time.time.Imports._
 import models.ModelHelper._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import javax.inject._
+import play.api.i18n._
 
 case class LatestRecordTime(time: Long)
 case class MtRecord(mtName: String, value: Double, status: String)
@@ -23,7 +25,7 @@ case class CalibrationJSON(monitorType: String, startTime: Long, endTime: Long, 
 
 case class Alarm2JSON(time: Long, src: String, level: Int, info: String)
 
-object DataLogger extends Controller {
+class DataLogger extends Controller {
   implicit val latestRecordTimeWrite = Json.writes[LatestRecordTime]
   implicit val mtRecordRead = Json.reads[MtRecord]
   implicit val RecordListRead = Json.reads[RecordList]

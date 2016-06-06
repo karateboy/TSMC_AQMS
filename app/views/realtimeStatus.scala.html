@@ -2,7 +2,7 @@
 @import models.Realtime._
 @import com.github.nscala_time.time.Imports._
 @import MonitorStatus._
-@(current:DateTime, rt_status: Map[Monitor.Value, Map[MonitorType.Value, (Option[Float], Option[String])]], psiList:List[MonitorType.Value], rt_psi: Map[Monitor.Value, (Option[Float], Map[MonitorType.Value, (Option[Float], Option[Float])])], privilege: Privilege)
+@(current:DateTime, rt_status: Map[Monitor.Value, Map[MonitorType.Value, (Option[Float], Option[String])]], psiList:List[MonitorType.Value], rt_psi: Map[Monitor.Value, (Option[Float], Map[MonitorType.Value, (Option[Float], Option[Float])])], privilege: Privilege)(implicit messages:Messages)
 <div class="row">
 	<div class="col-lg-12">
 		<div class="ibox float-e-margins">
@@ -12,10 +12,10 @@
 <div class="ibox-content">
 <ul class="nav nav-tabs">
 <li class="active">
-	<a data-toggle="tab" href="#reportDiv"> <span class="glyphicons glyphicons-hotspot"></span>空氣品質/氣象 即時數據</a>
+	<a data-toggle="tab" href="#reportDiv"> <span class="glyphicons glyphicons-hotspot"></span>@Messages("rtStatus.title1")</a>
 </li>
 <li>
-	<a data-toggle="tab" href="#psiDiv"> <span class="glyphicons glyphicons-hotspot"></span>PSI即時數據</a>
+	<a data-toggle="tab" href="#psiDiv"> <span class="glyphicons glyphicons-hotspot"></span>@Messages("rtStatus.title2")</a>
 </li>
 </ul>
 <div class="tab-content">
@@ -23,7 +23,7 @@
 <table id="reportTable" class="table" cellspacing="0" width="100%">
 	<thead>
 		<tr>			  
-			<th>測站</th>			
+			<th>@Messages("rtStatus.monitor")</th>			
 			@for(mt <- MonitorType.realtimeList.filter(privilege.allowedMonitorTypes.contains)){
 				<th>@MonitorType.map(mt).desp</th>
 			}
@@ -31,7 +31,7 @@
 	</thead>
 	<tfoot>
 		<tr>			  
-			<th>法規值</th>			
+			<th>@Messages("rtStatus.LawStd")</th>			
 			@for(mt <- MonitorType.realtimeList.filter(privilege.allowedMonitorTypes.contains)){
 				@if(MonitorType.map(mt).std_law.isDefined){
 					<th style="color:@OverLawColor">@MonitorType.map(mt).std_law</th>	
@@ -56,7 +56,7 @@
 					}else{						
 						<td style="@MonitorType.getStyleStr(m, mt, rt_status(m)(mt))" 
 							@if(Monitor.map(m).getStdInternal(mt).isDefined){																
-								title="內控值:@Monitor.map(m).getStdInternal(mt).get @MonitorType.map(mt).unit"
+								title="@Messages("rtStatus.internalStd"):@Monitor.map(m).getStdInternal(mt).get @MonitorType.map(mt).unit"
 							}
 							data-toggle="tooltip" data-container="body" data-trigger="hover"
 						>@MonitorType.format(mt, (rt_status(m)(mt)._1))</td>
@@ -71,13 +71,13 @@
 <table class="table">
 <tbody>
 <tr>
-	<td class="col-lg-1" style="color:black"><strong>標示說明:</strong></td>
-	<td class="col-lg-1" style="color:@OverInternalColor">超過內控值</td>
-	<td class="col-lg-1" style="color:@OverLawColor">超過法規值</td>	
-	<td class="col-lg-1" style="color:black;background-color:@CalibrationColor">校正</td>
-	<td class="col-lg-1" style="color:black;background-color:@RepairColor">維修</td>
-	<td class="col-lg-1" style="color:black;background-color:@MaintanceColor">定保</td>
-	<td class="col-lg-1" style="color:black;background-color:@AbnormalColor">異常</td>
+	<td class="col-lg-1" style="color:black"><strong>@Messages("rtStatus.prompt")</strong></td>
+	<td class="col-lg-1" style="color:@OverInternalColor">@Messages("rtStatus.overInternal")</td>
+	<td class="col-lg-1" style="color:@OverLawColor">@Messages("rtStatus.overLaw")</td>	
+	<td class="col-lg-1" style="color:black;background-color:@CalibrationColor">@Messages("rtStatus.calibration")</td>
+	<td class="col-lg-1" style="color:black;background-color:@RepairColor">@Messages("rtStatus.repair")</td>
+	<td class="col-lg-1" style="color:black;background-color:@MaintanceColor">@Messages("rtStatus.maintance")</td>
+	<td class="col-lg-1" style="color:black;background-color:@AbnormalColor">@Messages("rtStatus.abnormal")</td>
 </tr>
 </tbody>
 </table>
@@ -88,16 +88,16 @@
 <table id="psiTable" cellspacing="0" width="100%">
 <thead>
 	<tr>
-		<td rowspan='2'>測站</td>
-		<td rowspan='2'>PSI指標</td>
+		<td rowspan='2'>@Messages("rtStatus.monitor")</td>
+		<td rowspan='2'>@Messages("rtStatus.psi")</td>
 		@for(mtv<-psiList){
 			<td colspan='2'>@MonitorType.map(mtv).desp</td>		
 		}		
 	</tr>
 	<tr>
 		@for(mtv<-psiList){
-			<td>副指標</td>
-			<td>數值(@MonitorType.map(mtv).unit)</td>	
+			<td>@Messages("rtStatus.subIndex")</td>
+			<td>@Messages("rtStatus.value") (@MonitorType.map(mtv).unit)</td>	
 		}
 	</tr>
 </thead>
@@ -141,7 +141,7 @@
 <br/>
 <table border="1" class="DIV_CENTER ALT_TABLE_EVENT">
 	<tbody><tr class="ALT">
-		<th>空氣污染指標(PSI)</th>
+		<th>@Messages("rtStatus.explain.psi")</th>
 		<th nowrap="">0～50</th>
 		<th>51～100</th>
 		<th>101～199</th>
@@ -149,12 +149,12 @@
 		<th>&gt;=300</th>
 	</tr>
 	<tr>
-		<th rowspan="2" nowrap="">對健康的影響</th>
-		<td><p align="center">良好</p></td>
-		<td><p align="center">普通</p></td>
-		<td><p align="center">不良</p></td>
-		<td><p align="center">非常不良</p></td>
-		<td><p align="center">有害</p></td>
+		<th rowspan="2" nowrap="">@Messages("rtStatus.explain.toHealth")</th>
+		<td><p align="center">@Messages("rtStatus.explain.1")</p></td>
+		<td><p align="center"></p>@Messages("rtStatus.explain.2")</td>
+		<td><p align="center"></p>@Messages("rtStatus.explain.3")</td>
+		<td><p align="center"></p>@Messages("rtStatus.explain.4")</td>
+		<td><p align="center"></p>@Messages("rtStatus.explain.5")</td>
 	</tr>
 	<tr class="ALT">
 		<td><p align="center">Good</p></td>
@@ -164,7 +164,7 @@
 		<td><p align="center">Hazardous</p></td>
 	</tr>
 	<tr>
-		<th>狀態色塊</th>
+		<th>@Messages("rtStatus.psi.block")</th>
 		<td class="PSI1">&nbsp;</td>
 		<td class="PSI2">&nbsp;</td>
 		<td class="PSI3">&nbsp;</td>
@@ -172,12 +172,12 @@
 		<td class="PSI5">&nbsp;</td>
 	</tr>
 	<tr class="ALT">
-		<th>人體健康影響</th>
-		<td>對一般民眾身體健康無影響。</td>
-		<td>對敏感族群健康無立即影響。</td>
-		<td>對敏感族群會有輕微症狀惡化的現象，如臭氧濃度在此範圍，眼鼻會略有刺激感。</td>
-		<td>對敏感族群會有明顯惡化的現象，降低其運動能力；一般大眾則視身體狀況，可能產生各種不同的症狀。</td>
-		<td>對敏感族群除了 不適症狀顯著惡化並造成某些疾病提早開始；減低正常人的運動能力。</td>
+		<th>@Messages("rtStatus.psi.humanEffect")</th>
+		<td>@Messages("rtStatus.psi.effect.1")</td>
+		<td>@Messages("rtStatus.psi.effect.2")</td>
+		<td>@Messages("rtStatus.psi.effect.3")</td>
+		<td>@Messages("rtStatus.psi.effect.4")</td>
+		<td>@Messages("rtStatus.psi.effect.5")</td>
 	</tr>
 	</tbody></table>
 </div>

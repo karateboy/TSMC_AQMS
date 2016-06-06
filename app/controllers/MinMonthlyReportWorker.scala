@@ -4,12 +4,13 @@ import play.api._
 import play.api.mvc._ 
 import com.github.nscala_time.time.Imports._
 import models._
+import javax.inject._
 
 object MinMonthlyReportWorker {
   def props(out: ActorRef) = Props(new MinMonthlyReportWorker(out))
 }
  
-class MinMonthlyReportWorker(out: ActorRef) extends Actor {
+class MinMonthlyReportWorker (out: ActorRef) extends Actor {
   object CmdType extends Enumeration{
     val start = Value
     val progress = Value
@@ -17,6 +18,7 @@ class MinMonthlyReportWorker(out: ActorRef) extends Actor {
   }
   
   var progress: Int = _
+  
   def parseStartCmd(msg:String)={
     val param = msg.split(":")
     (CmdType.withName(param(0)), Monitor.withName(param(1)), DateTime.parse(param(2)))

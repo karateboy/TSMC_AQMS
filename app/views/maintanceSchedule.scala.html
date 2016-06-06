@@ -1,5 +1,4 @@
 @* maintanceSchedule Template File *@
-@import Maintance._
 @(entries: List[MaintanceWeekEntry])
 <div class="row">
    	<div class="col-lg-12">
@@ -25,7 +24,7 @@
 				@entry.end.toString("MM/dd")
 			</td>
 			@for(m<-Monitor.mvList){
-				<td>@Html(getMaintanceStr(entry.map(m)))</td>
+				<td>@Html(Maintance.getMaintanceStr(entry.map(m)))</td>
 			}
 		</tr>
 	}

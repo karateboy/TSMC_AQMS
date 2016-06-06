@@ -6,12 +6,15 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.Logger
 import models.User
+import javax.inject._
+import play.api.i18n._
+
 case class Credential(account: String, password: String)
 
 /**
  * @author user
  */
-object Login extends Controller {
+class Login @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport{
   implicit val credentialReads = Json.reads[Credential]    
         
   def authenticate = Action(BodyParsers.parse.json){
@@ -24,7 +27,7 @@ object Login extends Controller {
           crd=>{
             val optUser = User.getUserByEmail(crd.account)
             if(optUser.isEmpty || optUser.get.password != crd.password)
-              Ok(Json.obj("ok"->false, "msg"->"密碼或帳戶錯誤"))
+              Ok(Json.obj("ok"->false, "msg"->Messages("login.error")))
             else {
               val user = optUser.get
               import Security._

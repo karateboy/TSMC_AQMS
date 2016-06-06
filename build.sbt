@@ -22,4 +22,6 @@ PlayKeys.fileWatchService := play.runsupport.FileWatchService.sbt(2000)
 
 scalacOptions += "-feature"
 
+routesGenerator := InjectedRoutesGenerator
+
 fork in run := false

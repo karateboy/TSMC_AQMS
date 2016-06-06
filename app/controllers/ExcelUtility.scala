@@ -3,7 +3,6 @@ import play.api._
 import play.api.Play.current
 import org.apache.poi.openxml4j.opc._
 import org.apache.poi.xssf.usermodel._
-import controllers.Report._
 import models._
 import models.Record._
 import models.ModelHelper._
@@ -12,10 +11,9 @@ import java.io._
 import java.nio.file.Files
 import java.nio.file._
 import org.apache.poi.ss.usermodel._
+import javax.inject._
+import play.api.i18n._
 
-/**
- * @author user
- */
 object ExcelUtility {
   val docRoot = "/report_template/"
 
@@ -566,7 +564,7 @@ object ExcelUtility {
     // 有效率月報
     fillEffectSheet(wb.getSheetAt(0))
     fillMonthlySheet(wb.getSheetAt(1))
-    val monthlyHourReport = monthlyHourReportHelper(monitor, reportDate)
+    val monthlyHourReport = Report.monthlyHourReportHelper(monitor, reportDate)
     fillMonthlyHourSheet(monthlyHourReport)
     fillGraphHourSheet(monthlyHourReport, 2 + monthlyHourReport.dailyReports(0).typeList.length)
 
@@ -1180,7 +1178,6 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  import controllers.Realtime.HighchartData
   def exportChartData(chart: HighchartData, monitorTypes: Array[MonitorType.Value]): File = {
     val precArray = monitorTypes.map { mt => MonitorType.map(mt).prec }
     exportChartData(chart, precArray)
@@ -2027,6 +2024,12 @@ object ExcelUtility {
 
     }
     finishExcel(reportFilePath, pkg, wb)
-  }
+  }  
+}
 
+/**
+ * @author user
+ */
+class ExcelUtility @Inject()(val messagesApi: MessagesApi) extends I18nSupport{
+  import ExcelUtility._
 }

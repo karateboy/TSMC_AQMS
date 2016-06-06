@@ -1,6 +1,5 @@
 @* historyReport Template File *@
 @import com.github.nscala_time.time.Imports._
-@import Query._
 @(monitorType:MonitorType.Value, start:DateTime, end:DateTime, report:Seq[OverLawStdEntry])
 
 <H3>測項:@MonitorType.map(monitorType).desp (@MonitorType.map(monitorType).unit)</H3>

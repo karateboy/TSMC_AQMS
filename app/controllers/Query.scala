@@ -10,6 +10,8 @@ import play.api.libs.functional.syntax._
 import PdfUtility._
 import models.MonitorStatusFilter
 import java.nio.file.Files
+import javax.inject._
+import play.api.i18n._
 
 object ReportUnit extends Enumeration {
   val Min = Value("min")
@@ -23,153 +25,10 @@ object ReportUnit extends Enumeration {
   val map = Map((Min -> "分"), (TenMin -> "十分"), (Hour -> "小時"), (EightHour -> "八小時"), (Day -> "日"), (Week -> "週"), (Month -> "月"), (Quarter -> "季"))
 }
 
-object Query extends Controller {
+case class OverLawStdEntry(monitor: Monitor.Value, time: DateTime, value: Float)
+case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: DateTime, maxDate: DateTime)
 
-  def history() = Security.Authenticated {
-    implicit request =>
-      val userInfo = Security.getUserinfo(request).get
-      val group = Group.getGroup(userInfo.groupID).get
-      Ok(views.html.history("/HistoryQueryReport/" + false.toString + "/", group.privilege))
-  }
-
-  def auditedQuery() = Security.Authenticated {
-    implicit request =>
-      val userInfo = Security.getUserinfo(request).get
-      val group = Group.getGroup(userInfo.groupID).get
-      Ok(views.html.auditQuery(group.privilege))
-  }
-
-  def auditReport(monitorStr: String, monitorTypeStr: String, recordTypeStr: String, startStr: String, endStr: String, outputTypeStr: String, reaudit: Boolean) = Security.Authenticated {
-    implicit request =>
-
-      import scala.collection.JavaConverters._
-      val monitorStrArray = monitorStr.split(':')
-      val monitors = monitorStrArray.map { Monitor.withName }
-      val monitorType = MonitorType.withName(monitorTypeStr)
-      val tabType = TableType.withName(recordTypeStr)
-      val start =
-        DateTime.parse(startStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
-
-      val end =
-        DateTime.parse(endStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
-      val outputType = OutputType.withName(outputTypeStr)
-
-      var timeSet = Set.empty[DateTime]
-
-      if (reaudit) {
-        for (m <- monitors)
-          Auditor.auditHourData(m, Monitor.map(m).autoAudit, start, end, reaudit)
-      }
-      val pairs =
-        for {
-          m <- monitors
-          records = Record.getInvalidHourRecords(m, start, end)
-          mtPreRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
-          mtRecords = mtPreRecords.filter(r => r._2._1.isDefined && r._2._2.isDefined &&
-            MonitorStatus.getTagInfo(r._2._2.get).statusType == StatusType.Auto)
-          timeMap = Map(mtRecords: _*)
-        } yield {
-          timeSet ++= timeMap.keySet
-          (m -> timeMap)
-        }
-
-      val recordMap = Map(pairs: _*)
-
-      val title = "無效資料查詢"
-      val output = views.html.auditedReport(false, monitors, monitorType, start, end, timeSet.toList.sorted, recordMap)
-      outputType match {
-        case OutputType.html =>
-          Ok(output)
-        case OutputType.pdf =>
-          Ok.sendFile(creatPdfWithReportHeader(title, output),
-            fileName = _ =>
-              play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
-      }
-  }
-
-  def historyReport(edit: Boolean, monitorStr: String, epaMonitorStr: String, monitorTypeStr: String, recordTypeStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
-    implicit request =>
-
-      import scala.collection.JavaConverters._
-      val monitorStrArray = monitorStr.split(':')
-      val monitors = monitorStrArray.map { Monitor.withName }
-      val epaMonitors = if (epaMonitorStr.equalsIgnoreCase("None"))
-        Array.empty[EpaMonitor.Value]
-      else
-        epaMonitorStr.split(':').map { EpaMonitor.withName }
-
-      val monitorType = MonitorType.withName(monitorTypeStr)
-      val tableType = TableType.withName(recordTypeStr)
-      val start =
-        DateTime.parse(startStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
-
-      val end =
-        DateTime.parse(endStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
-
-      val outputType = OutputType.withName(outputTypeStr)
-
-      var timeSet = Set[DateTime]()
-      val pairs =
-        if (tableType == TableType.Hour || tableType == TableType.Min) {
-          for {
-            m <- monitors
-            records = if (tableType == TableType.Hour)
-              Record.getHourRecords(m, start, end)
-            else
-              Record.getMinRecords(m, start, end)
-            mtRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
-            timeMap = Map(mtRecords: _*)
-          } yield {
-            timeSet ++= timeMap.keySet
-            (m -> timeMap)
-          }
-        } else {
-          for {
-            m <- monitors
-            records = Record.getSecRecords(m, start, end)
-            mtRecords = records.flatMap { rs => Record.secRecordProject(monitorType)(rs) }
-            timeMap = Map(mtRecords: _*)
-          } yield {
-            timeSet ++= timeMap.keySet
-            (m -> timeMap)
-          }
-        }
-
-      val recordMap = Map(pairs: _*)
-
-      val epa_pairs =
-        for {
-          epa <- epaMonitors
-          records = Record.getEpaHourRecord(epa, monitorType, start, end)
-          timeRecords = records.map { t => t.time -> t.value }
-          timeMap = Map(timeRecords: _*)
-        } yield {
-          epa -> timeMap
-        }
-      val epaRecordMap = Map(epa_pairs: _*)
-      val title = "歷史資料查詢"
-      val output =
-        if (tableType == TableType.SixSec)
-          views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, true, tableType.toString)
-        else
-          views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, false, tableType.toString)
-      outputType match {
-        case OutputType.html =>
-          Ok(output)
-        case OutputType.pdf =>
-          Ok.sendFile(creatPdfWithReportHeader(title, output),
-            fileName = _ =>
-              play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
-      }
-  }
-
-  def historyTrend = Security.Authenticated {
-    implicit request =>
-      val userInfo = Security.getUserinfo(request).get
-      val group = Group.getGroup(userInfo.groupID).get
-      Ok(views.html.historyTrend(group.privilege))
-  }
-
+object Query{
   def trendHelper(monitors: Array[Monitor.Value], epaMonitors: Array[EpaMonitor.Value],
                   monitorTypes: Array[MonitorType.Value], reportUnit: ReportUnit.Value, monitorStatusFilter: MonitorStatusFilter.Value,
                   start: DateTime, end: DateTime) = {
@@ -496,11 +355,162 @@ object Query extends Controller {
 
     chart
   }
+  
+}
+
+class Query @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport{
+  import Query._
+  
+  def history() = Security.Authenticated {
+    implicit request =>
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
+      Ok(views.html.history("/HistoryQueryReport/" + false.toString + "/", group.privilege))
+  }
+
+  def auditedQuery() = Security.Authenticated {
+    implicit request =>
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
+      Ok(views.html.auditQuery(group.privilege))
+  }
+
+  def auditReport(monitorStr: String, monitorTypeStr: String, recordTypeStr: String, startStr: String, endStr: String, outputTypeStr: String, reaudit: Boolean) = Security.Authenticated {
+    implicit request =>
+
+      import scala.collection.JavaConverters._
+      val monitorStrArray = monitorStr.split(':')
+      val monitors = monitorStrArray.map { Monitor.withName }
+      val monitorType = MonitorType.withName(monitorTypeStr)
+      val tabType = TableType.withName(recordTypeStr)
+      val start =
+        DateTime.parse(startStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
+
+      val end =
+        DateTime.parse(endStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
+      val outputType = OutputType.withName(outputTypeStr)
+
+      var timeSet = Set.empty[DateTime]
+
+      if (reaudit) {
+        for (m <- monitors)
+          Auditor.auditHourData(m, Monitor.map(m).autoAudit, start, end, reaudit)
+      }
+      val pairs =
+        for {
+          m <- monitors
+          records = Record.getInvalidHourRecords(m, start, end)
+          mtPreRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
+          mtRecords = mtPreRecords.filter(r => r._2._1.isDefined && r._2._2.isDefined &&
+            MonitorStatus.getTagInfo(r._2._2.get).statusType == StatusType.Auto)
+          timeMap = Map(mtRecords: _*)
+        } yield {
+          timeSet ++= timeMap.keySet
+          (m -> timeMap)
+        }
+
+      val recordMap = Map(pairs: _*)
+
+      val title = "無效資料查詢"
+      val output = views.html.auditedReport(false, monitors, monitorType, start, end, timeSet.toList.sorted, recordMap)
+      outputType match {
+        case OutputType.html =>
+          Ok(output)
+        case OutputType.pdf =>
+          Ok.sendFile(creatPdfWithReportHeader(title, output),
+            fileName = _ =>
+              play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
+      }
+  }
+
+  def historyReport(edit: Boolean, monitorStr: String, epaMonitorStr: String, monitorTypeStr: String, recordTypeStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
+    implicit request =>
+
+      import scala.collection.JavaConverters._
+      val monitorStrArray = monitorStr.split(':')
+      val monitors = monitorStrArray.map { Monitor.withName }
+      val epaMonitors = if (epaMonitorStr.equalsIgnoreCase("None"))
+        Array.empty[EpaMonitor.Value]
+      else
+        epaMonitorStr.split(':').map { EpaMonitor.withName }
+
+      val monitorType = MonitorType.withName(monitorTypeStr)
+      val tableType = TableType.withName(recordTypeStr)
+      val start =
+        DateTime.parse(startStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
+
+      val end =
+        DateTime.parse(endStr, DateTimeFormat.forPattern("YYYY-MM-dd HH:mm"))
+
+      val outputType = OutputType.withName(outputTypeStr)
+
+      var timeSet = Set[DateTime]()
+      val pairs =
+        if (tableType == TableType.Hour || tableType == TableType.Min) {
+          for {
+            m <- monitors
+            records = if (tableType == TableType.Hour)
+              Record.getHourRecords(m, start, end)
+            else
+              Record.getMinRecords(m, start, end)
+            mtRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
+            timeMap = Map(mtRecords: _*)
+          } yield {
+            timeSet ++= timeMap.keySet
+            (m -> timeMap)
+          }
+        } else {
+          for {
+            m <- monitors
+            records = Record.getSecRecords(m, start, end)
+            mtRecords = records.flatMap { rs => Record.secRecordProject(monitorType)(rs) }
+            timeMap = Map(mtRecords: _*)
+          } yield {
+            timeSet ++= timeMap.keySet
+            (m -> timeMap)
+          }
+        }
+
+      val recordMap = Map(pairs: _*)
+
+      val epa_pairs =
+        for {
+          epa <- epaMonitors
+          records = Record.getEpaHourRecord(epa, monitorType, start, end)
+          timeRecords = records.map { t => t.time -> t.value }
+          timeMap = Map(timeRecords: _*)
+        } yield {
+          epa -> timeMap
+        }
+      val epaRecordMap = Map(epa_pairs: _*)
+      val title = "歷史資料查詢"
+      val output =
+        if (tableType == TableType.SixSec)
+          views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, true, tableType.toString)
+        else
+          views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, false, tableType.toString)
+      outputType match {
+        case OutputType.html =>
+          Ok(output)
+        case OutputType.pdf =>
+          Ok.sendFile(creatPdfWithReportHeader(title, output),
+            fileName = _ =>
+              play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
+      }
+  }
+
+  def historyTrend = Security.Authenticated {
+    implicit request =>
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
+      Ok(views.html.historyTrend(group.privilege))
+  }
 
   def historyTrendChart(monitorStr: String, epaMonitorStr: String, monitorTypeStr: String,
                         reportUnitStr: String, msfStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     implicit request =>
       import scala.collection.JavaConverters._
+      import Realtime.hcWrite
       val monitorStrArray = monitorStr.split(':')
       val monitors = monitorStrArray.map { Monitor.withName }
       val epaMonitors = if (epaMonitorStr.equalsIgnoreCase("None"))
@@ -644,7 +654,6 @@ object Query extends Controller {
       Ok(views.html.overLawStd(group.privilege))
   }
 
-  case class OverLawStdEntry(monitor: Monitor.Value, time: DateTime, value: Float)
   def overLawStdReport(monitorStr: String, monitorTypeStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
@@ -909,7 +918,6 @@ object Query extends Controller {
       Ok(views.html.calculateStat(group.privilege))
   }
 
-  case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: DateTime, maxDate: DateTime)
   def calculateStatReport(monitorStr: String, monitorTypeStr: String, startStr: String, endStr: String, outputTypeStr: String) = Security.Authenticated {
     implicit request =>
       import scala.collection.JavaConverters._
@@ -975,7 +983,7 @@ object Query extends Controller {
                                  series: Seq[seqData2])
 
   implicit val seqDataWrite = Json.writes[seqData2]
-  implicit val hcWrite = Json.writes[RegressionChartData]
+  implicit val rcWrite = Json.writes[RegressionChartData]
 
   def regressionChart(monitorStr: String, monitorTypeStr: String, startStr: String, endStr: String) = Security.Authenticated {
     implicit request =>

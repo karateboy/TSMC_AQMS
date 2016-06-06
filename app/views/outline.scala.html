@@ -1,8 +1,7 @@
 @* outline Template File *@
-@import controllers.Security._
-@(title: String, user:controllers.Security.UserInfo, privilege: Privilege, content:Html)(implicit request: RequestHeader)
+@(title: String, user:controllers.Security.UserInfo, privilege: Privilege, content:Html)(implicit request: RequestHeader, messages: Messages)
 <!DOCTYPE html>
-<html lang="zh-tw">
+<html>
 
 <head>
 
@@ -142,102 +141,102 @@
             </li>
             @if(privilege.allowedMenuRights.contains(MenuRight.RealtimeInfo)){
             <li class="active">
-                <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">即時資訊</span> <span class="fa arrow"></span></a>
+                <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">@Messages("menu.realtime.1")</span> <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
-                    <li ><a href="/">即時畫面</a></li>
-                    <li ><a href="#" onClick="loadRefreshPage('/realtimeStatus','即時資訊','即時數據')">即時數據</a></li>
-                    <li ><a href="#" onClick="loadPage('/realtimeTrend','即時資訊','即時小時趨勢圖')">即時小時趨勢圖</a></li>
-                    <li ><a href="#" onClick="loadPage('/realtimeMinTrend','即時資訊','即時分鐘趨勢圖')">即時分鐘趨勢圖</a></li>
-                    <li ><a href="#" onClick="loadPage('/realtimeImage','即時資訊','即時影像')">即時影像</a></li>
+                    <li ><a href="/">@Messages("menu.realtime.2")</a></li>
+                    <li ><a href="#" onClick="loadRefreshPage('/realtimeStatus','@Messages("menu.realtime.1")','@Messages("menu.realtime.3")')">@Messages("menu.realtime.3")</a></li>
+                    <li ><a href="#" onClick="loadPage('/realtimeTrend','@Messages("menu.realtime.1")','@Messages("menu.realtime.4")')">@Messages("menu.realtime.4")</a></li>
+                    <li ><a href="#" onClick="loadPage('/realtimeMinTrend','@Messages("menu.realtime.1")','@Messages("menu.realtime.5")')">@Messages("menu.realtime.5")</a></li>
+                    <li ><a href="#" onClick="loadPage('/realtimeImage','@Messages("menu.realtime.1")','@Messages("menu.realtime.6")')">@Messages("menu.realtime.6")</a></li>
                 </ul>
             </li>
             }
             @if(privilege.allowedMenuRights.contains(MenuRight.DataQuery)){
             <li>
-                <a href="#"><i class="fa fa-bar-chart-o"></i> <span class="nav-label">數據查詢</span><span class="fa arrow"></span></a>
+                <a href="#"><i class="fa fa-bar-chart-o"></i> <span class="nav-label">@Messages("menu.query.1")</span><span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">                
-                    <li><a href="#" onClick="loadPage('/HistoryQuery','數據查詢','歷史資料查詢')">歷史資料查詢</a></li>
-                    <li><a href="#" onClick="loadPage('/HistoryTrend','數據查詢','歷史趨勢圖')">歷史趨勢圖</a></li>
-                    <li><a href="#" onClick="loadPage('/PsiTrend','數據查詢','PSI查詢')">PSI查詢</a></li>
-                    <li><a href="#" onClick="loadPage('/CompareLastYear','數據查詢','各年同期比較')">各年同期比較</a></li>
-                    <li><a href="#" onClick="loadPage('/OverLawStd','數據查詢','超過法規值查詢')" >超過法規值查詢</a></li>
-                    <li><a href="#" onClick="loadPage('/EffectivePercentage','數據查詢','有效數據百分比')" >有效數據百分比</a></li>
-                    <li><a href="#" onClick="loadPage('/WindRose ','數據查詢','玫瑰圖')" >玫瑰圖</a></li>
-                    <li><a href="#" onClick="loadPage('/CalibrationQuery','數據查詢','校正資料查詢')">校正資料查詢</a></li>
-                    <li><a href="#" onClick="loadPage('/Alarm','數據查詢','警報記錄查詢')">警報記錄查詢</a></li>
+                    <li><a href="#" onClick="loadPage('/HistoryQuery','@Messages("menu.query.1")','@Messages("menu.query.2")')">@Messages("menu.query.2")</a></li>
+                    <li><a href="#" onClick="loadPage('/HistoryTrend','@Messages("menu.query.1")','@Messages("menu.query.3")')">@Messages("menu.query.3")</a></li>
+                    <li><a href="#" onClick="loadPage('/PsiTrend','@Messages("menu.query.1")','@Messages("menu.query.4")')">@Messages("menu.query.4")</a></li>
+                    <li><a href="#" onClick="loadPage('/CompareLastYear','@Messages("menu.query.1")','@Messages("menu.query.5")')">@Messages("menu.query.5")</a></li>
+                    <li><a href="#" onClick="loadPage('/OverLawStd','@Messages("menu.query.1")','@Messages("menu.query.6")')" >@Messages("menu.query.6")</a></li>
+                    <li><a href="#" onClick="loadPage('/EffectivePercentage','@Messages("menu.query.1")','@Messages("menu.query.7")')" >@Messages("menu.query.7")</a></li>
+                    <li><a href="#" onClick="loadPage('/WindRose ','@Messages("menu.query.1")','@Messages("menu.query.8")')" >@Messages("menu.query.8")</a></li>
+                    <li><a href="#" onClick="loadPage('/CalibrationQuery','@Messages("menu.query.1")','@Messages("menu.query.9")')">@Messages("menu.query.9")</a></li>
+                    <li><a href="#" onClick="loadPage('/Alarm','@Messages("menu.query.1")','@Messages("menu.query.10")')">@Messages("menu.query.10")</a></li>
                 </ul>
             </li>
             }
             @if(privilege.allowedMenuRights.contains(MenuRight.Report)){
             <li>
-                <a href="#"><i class="fa fa-table"></i> <span class="nav-label">報表查詢 </span></a>
+                <a href="#"><i class="fa fa-table"></i> <span class="nav-label">@Messages("menu.report.1")</span></a>
                 <ul class="nav nav-second-level">
-                    <li><a href="#" onClick="loadPage('/report/@ReportType.MonitorReport','報表查詢','監測報表')">監測報表</a></li>
-                    <li><a href="#" onClick="loadPage('/epaCompare','報表查詢','測站數據比較報表')">測站數據比較報表</a></li>
-                    <li><a href="#" onClick="loadPage('/CalibrationReportForm','報表查詢','校正報表')">校正報表</a></li>
-                    <li><a href="#" onClick="loadPage('/PsiQuery','報表查詢','空氣品質PSI報表')">空氣品質PSI報表</a></li>
-                    <li><a href="#" onClick="loadPage('/EffectiveQuery','報表查詢','有效率年報表')">有效率年報表</a></li>
-                    <li><a href="#" onClick="loadPage('/report/@ReportType.MonthlyHourReport', '報表查詢','月份時報表')">月份時報表</a></li>
-                    <li><a href="#" onClick="loadPage('/MonitorAbnormal','報表查詢','測站異常狀況反應表')">測站異常狀況反應表</a></li>
-                    <li><a href="#" onClick="loadPage('/MonitorAggregate','報表查詢','測站每日監測彙總表')">測站每日監測彙總表</a></li>                                     
+                    <li><a href="#" onClick="loadPage('/report/@ReportType.MonitorReport','@Messages("menu.report.1")','@Messages("menu.report.2")')">@Messages("menu.report.2")</a></li>
+                    <li><a href="#" onClick="loadPage('/epaCompare','@Messages("menu.report.1")','@Messages("menu.report.3")')">@Messages("menu.report.3")</a></li>
+                    <li><a href="#" onClick="loadPage('/CalibrationReportForm','@Messages("menu.report.1")','@Messages("menu.report.4")')">@Messages("menu.report.4")</a></li>
+                    <li><a href="#" onClick="loadPage('/PsiQuery','@Messages("menu.report.1")','@Messages("menu.report.5")')">@Messages("menu.report.5")</a></li>
+                    <li><a href="#" onClick="loadPage('/EffectiveQuery','@Messages("menu.report.1")','@Messages("menu.report.6")')">@Messages("menu.report.6")</a></li>
+                    <li><a href="#" onClick="loadPage('/report/@ReportType.MonthlyHourReport', '@Messages("menu.report.1")','@Messages("menu.report.7")')">@Messages("menu.report.7")</a></li>
+                    <li><a href="#" onClick="loadPage('/MonitorAbnormal','@Messages("menu.report.1")','@Messages("menu.report.8")')">@Messages("menu.report.8")</a></li>
+                    <li><a href="#" onClick="loadPage('/MonitorAggregate','@Messages("menu.report.1")','@Messages("menu.report.9")')">@Messages("menu.report.9")</a></li>                                     
                 </ul>
             </li>
             }
             @if(privilege.allowedMenuRights.contains(MenuRight.Statistics)){
             <li>
-                <a href="#"><i class="fa fa-university"></i> <span class="nav-label">統計分析</span><span class="fa arrow"></span></a>
+                <a href="#"><i class="fa fa-university"></i> <span class="nav-label">@Messages("menu.stat.1")</span><span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
-                    <li><a href="#" onClick="loadPage('/CalculateStat','統計分析','數據統計')">數據統計</a></li>
-                    <li><a href="#" onClick="loadPage('/AuditedQuery','統計分析','數據檢核查詢')">數據檢核查詢</a></li>
-                    <li><a href="#" onClick="loadPage('/Regression','統計分析','趨勢分析')">趨勢分析</a></li>
+                    <li><a href="#" onClick="loadPage('/CalculateStat','@Messages("menu.stat.1")','@Messages("menu.stat.2")')">@Messages("menu.stat.2")</a></li>
+                    <li><a href="#" onClick="loadPage('/AuditedQuery','@Messages("menu.stat.1")','@Messages("menu.stat.3")')">@Messages("menu.stat.3")</a></li>
+                    <li><a href="#" onClick="loadPage('/Regression','@Messages("menu.stat.1")','@Messages("menu.stat.4")')">@Messages("menu.stat.4")</a></li>
                 </ul>
             </li>
             }
             @if(user.isAdmin && privilege.allowedMenuRights.contains(MenuRight.SystemManagement)){
             <li>
-                <a href="#"><i class="fa fa-desktop"></i> <span class="nav-label">系統管理</span></a>
+                <a href="#"><i class="fa fa-desktop"></i> <span class="nav-label">@Messages("menu.sys.1")</span></a>
                 <ul class="nav nav-second-level">
-                	<li><a href="#" onClick="loadPage('/MonitorStatusConfig','系統管理','狀態碼管理')">狀態碼管理</a></li>                    
-                    <li><a href="#" onClick="loadPage('/MonitorTypeConfig','系統管理','測項參數')">測項參數</a></li>
-                    <li><a href="#" onClick="loadPage('/Monitor','系統管理','測站管理')">測站管理</a></li>
-                    <li><a href="#" onClick="loadPage('/Instrument','系統管理','儀器狀態')">儀器狀態</a></li>
-                    <li><a href="#" onClick="loadPage('/AuditConfig','系統管理','資料檢核設定')">資料檢核設定</a></li>
-                    <li><a href="#" onClick="loadPage('/ManualAudit','系統管理','人工資料註記')">人工資料註記</a></li>
-                    <li><a href="#" onClick="loadPage('/ManualAuditQuery','系統管理','人工註記查詢')">人工註記查詢</a></li>
-                    <li><a href="#" onClick="loadPage('/GroupManagement','系統管理','管理權限')">管理權限</a></li>                   
-                    <li><a href="#" onClick="loadPage('/UserManagement','系統管理','使用者管理')">使用者管理</a></li>
-                    <li><a href="#" onClick="loadPage('/RecordValidation','系統管理','資料傳輸狀況')">資料傳輸狀況</a></li>
-                    <li><a href="#" onClick="loadPage('/RealtimeEpaRecord','系統管理','環保署及時資料')">環保署及時資料</a></li>
-                    <li><a href="#" onClick="loadPage('/EventLog','系統管理','事件紀錄')">事件紀錄</a></li>                    
+                	<li><a href="#" onClick="loadPage('/MonitorStatusConfig','@Messages("menu.sys.1")','@Messages("menu.sys.2")')">@Messages("menu.sys.2")</a></li>                    
+                    <li><a href="#" onClick="loadPage('/MonitorTypeConfig','@Messages("menu.sys.1")','@Messages("menu.sys.3")')">@Messages("menu.sys.3")</a></li>
+                    <li><a href="#" onClick="loadPage('/Monitor','@Messages("menu.sys.1")','@Messages("menu.sys.4")')">@Messages("menu.sys.4")</a></li>
+                    <li><a href="#" onClick="loadPage('/Instrument','@Messages("menu.sys.1")','@Messages("menu.sys.5")')">@Messages("menu.sys.5")</a></li>
+                    <li><a href="#" onClick="loadPage('/AuditConfig','@Messages("menu.sys.1")','@Messages("menu.sys.6")')">@Messages("menu.sys.6")</a></li>
+                    <li><a href="#" onClick="loadPage('/ManualAudit','@Messages("menu.sys.1")','@Messages("menu.sys.7")')">@Messages("menu.sys.7")</a></li>
+                    <li><a href="#" onClick="loadPage('/ManualAuditQuery','@Messages("menu.sys.1")','@Messages("menu.sys.8")')">@Messages("menu.sys.8")</a></li>
+                    <li><a href="#" onClick="loadPage('/GroupManagement','@Messages("menu.sys.1")','@Messages("menu.sys.9")')">@Messages("menu.sys.9")</a></li>                   
+                    <li><a href="#" onClick="loadPage('/UserManagement','@Messages("menu.sys.1")','@Messages("menu.sys.10")')">@Messages("menu.sys.10")</a></li>
+                    <li><a href="#" onClick="loadPage('/RecordValidation','@Messages("menu.sys.1")','@Messages("menu.sys.11")')">@Messages("menu.sys.11")</a></li>
+                    <li><a href="#" onClick="loadPage('/RealtimeEpaRecord','@Messages("menu.sys.1")','@Messages("menu.sys.12")')">@Messages("menu.sys.12")</a></li>
+                    <li><a href="#" onClick="loadPage('/EventLog','@Messages("menu.sys.1")','@Messages("menu.sys.13")')">@Messages("menu.sys.13")</a></li>                    
                  </ul>
             </li>
             }
             @if(privilege.allowedMenuRights.contains(MenuRight.RepartMaintance)){
             <li>
-            	<a href="#"><i class="fa fa-tasks"></i> <span class="nav-label">維修保養</span></a>
+            	<a href="#"><i class="fa fa-tasks"></i> <span class="nav-label">@Messages("menu.ma.1")</span></a>
             	<ul class="nav nav-second-level">
             		<li>
-                    	<a href="#">案件管理<span class="fa arrow"></span></a>
+                    	<a href="#">@Messages("menu.ma.2")<span class="fa arrow"></span></a>
                             <ul class="nav nav-third-level">
                                 <li>
-                                    <a href="#" onClick="loadPage('/NewTicket','維修保養','新增案件')">新增案件</a>
+                                    <a href="#" onClick="loadPage('/NewTicket','@Messages("menu.ma.1")','@Messages("menu.ma.3")')">@Messages("menu.ma.3")</a>
                                 </li>
                                 <li>
-                                    <a href="#" onClick="loadPage('/QueryTicket','維修保養','案件查詢')">案件查詢</a>
+                                    <a href="#" onClick="loadPage('/QueryTicket','@Messages("menu.ma.1")','@Messages("menu.ma.4")')">@Messages("menu.ma.4")</a>
                                 </li>
                                 <li>
-                                    <a href="#" onClick="loadPage('/CloseTicket','維修保養','結束案件')">結束案件</a>
+                                    <a href="#" onClick="loadPage('/CloseTicket','@Messages("menu.ma.1")','@Messages("menu.ma.5")')">@Messages("menu.ma.5")</a>
                                 </li>
                             </ul>
                         </li>
-            		<li><a href="#" onClick="loadPage('/MyTicket','維修保養','我的案件')">我的案件</a></li>
-            		<li><a href="#" onClick="loadPage('/EquipmentHistory','維修保養','儀器保養履歷')">儀器保養履歷</a></li>
-            		<li><a href="#" onClick="loadPage('/MonitorJournal','維修保養','測站工作日誌')">測站工作日誌</a></li>
-            		<li><a href="#" onClick="loadPage('/EquipmentManagement','維修保養','設備管理')">設備管理</a></li>
-            		<li><a href="#" onClick="loadPage('/PartManagement','維修保養','料件管理')">料件管理</a></li>
-            		<li><a href="#" onClick="loadPage('/DutySchedule','維修保養','值日排班表')">值日排班表</a></li>
-					<li><a href="#" onClick="loadPage('/DownloadNotification','維修保養','環保局通報單')">環保局通報單</a></li>
-					<li><a href="#" onClick="loadPage('/MaintanceSchedule','維修保養','測站定保排程表')">測站定保排程表</a></li>					            		             		           		
+            		<li><a href="#" onClick="loadPage('/MyTicket','@Messages("menu.ma.1")','@Messages("menu.ma.6")')">@Messages("menu.ma.6")</a></li>
+            		<li><a href="#" onClick="loadPage('/EquipmentHistory','@Messages("menu.ma.1")','@Messages("menu.ma.7")')">@Messages("menu.ma.7")</a></li>
+            		<li><a href="#" onClick="loadPage('/MonitorJournal','@Messages("menu.ma.1")','@Messages("menu.ma.8")')">@Messages("menu.ma.8")</a></li>
+            		<li><a href="#" onClick="loadPage('/EquipmentManagement','@Messages("menu.ma.1")','@Messages("menu.ma.9")')">@Messages("menu.ma.9")</a></li>
+            		<li><a href="#" onClick="loadPage('/PartManagement','@Messages("menu.ma.1")','@Messages("menu.ma.10")')">@Messages("menu.ma.10")</a></li>
+            		<li><a href="#" onClick="loadPage('/DutySchedule','@Messages("menu.ma.1")','@Messages("menu.ma.11")')">@Messages("menu.ma.11")</a></li>
+					<li><a href="#" onClick="loadPage('/DownloadNotification','@Messages("menu.ma.1")','@Messages("menu.ma.12")')">@Messages("menu.ma.12")</a></li>
+					<li><a href="#" onClick="loadPage('/MaintanceSchedule','@Messages("menu.ma.1")','@Messages("menu.ma.13")')">@Messages("menu.ma.13")</a></li>					            		             		           		
             	</ul>
             </li>
             }
@@ -266,8 +265,8 @@
                     <li class="divider"></li>
                     <li id="alarmQuery">
                         <div class="text-center link-block">
-                            <a href="#" onClick="loadPage('/Alarm','數據查詢','警報記錄查詢')">
-                                <strong>警報記錄查詢</strong>
+                            <a href="#" onClick="loadPage('/Alarm','@Messages("menu.query.1")','@Messages("menu.query.10")')">
+                                <strong>@Messages("menu.query.10")</strong>
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         </div>
@@ -277,7 +276,7 @@
 
             <li>
                 <a href="/logout">
-                    <i class="fa fa-sign-out"></i> 登出
+                    <i class="fa fa-sign-out"></i>@Messages("menu.logout")
                 </a>
             </li>
         </ul>
@@ -286,8 +285,7 @@
 </div>
 <div class="row wrapper border-bottom white-bg">
     <div class="col-lg-10">		
-        <h3 id='breadcrumb-title'>即時資訊 &gt 即時畫面</h3>
-		
+        <h3 id='breadcrumb-title'>@Messages("menu.realtime.1") &gt @Messages("menu.realtime.2")</h3>		
     </div>
 </div>
 
@@ -361,7 +359,6 @@
 		
 		$alertList.append('<li class="divider"></li>');
 		$alertList.append($alarmQueryLi);
-		//onClick="loadPage("/Alarm","數據查詢","警報記錄查詢")"
 	})
 		 
 	updateAlertCount();

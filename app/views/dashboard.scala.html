@@ -1,11 +1,11 @@
 @* dashboard Template File *@
-@(user:User, privilege: Privilege)
+@(user:User, privilege: Privilege)(implicit messages: Messages)
 <div class="row">
 	@for(mt<-user.myWidget){
 		<div class="col-lg-2">
 			<div class="ibox float-e-margins">
                <div class="ibox-title">
-               	<h5>@MonitorType.map(mt).desp 即時資料</h5>
+               	<h5>@Messages("dashboard.rt", MonitorType.map(mt).desp)</h5>
                        <div class="ibox-tools">
                            <a class="collapse-link">
                                <i class="fa fa-chevron-up"></i>
@@ -97,37 +97,37 @@ function HomeControl(map, div, home) {
 
   // Set CSS for the control border.
   var goHomeUI = document.createElement('span');
-  goHomeUI.title = '回到中心';
+  goHomeUI.title = '@Messages("dashboard.back_to_center")';
   controlDiv.appendChild(goHomeUI);
 
   // Set CSS for the control interior.
   var goHomeText = document.createElement('span');
-  goHomeText.innerHTML = '<button>中心</button>';
+  goHomeText.innerHTML = '<button>@Messages("dashboard.center")</button>';
   goHomeUI.appendChild(goHomeText);
   
   // Set CSS for the control border.
   var statusUI = document.createElement('span');
-  statusUI.title = '測站狀態';
+  statusUI.title = '@Messages("dashboard.monitorStatus")';
   controlDiv.appendChild(statusUI);
 
   // Set CSS for the control interior.
   var statusText = document.createElement('span');
-  statusText.innerHTML = '<button>測站狀態</button>';
+  statusText.innerHTML = '<button>@Messages("dashboard.monitorStatus")</button>';
   statusUI.appendChild(statusText);
 
   // Set CSS for the control border.
   var windUI = document.createElement('span');
-  windUI.title = '風向';
+  windUI.title = '@Messages("dashboard.windDir")';
   controlDiv.appendChild(windUI);
 
   // Set CSS for the control interior.
   var windText = document.createElement('span');
-  windText.innerHTML = '<button>風向</button>';
+  windText.innerHTML = '<button>@Messages("dashboard.windDir")</button>';
   windUI.appendChild(windText);
 
   // Set CSS for the setHome control border.
   var mapLegendUI = document.createElement('div');
-  mapLegendUI.title = '圖例';
+  mapLegendUI.title = '@Messages("dashboard.legend")';
   controlDiv.appendChild(mapLegendUI);
 
   // Set CSS for the control interior.
