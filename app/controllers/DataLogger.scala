@@ -13,14 +13,21 @@ import play.api.i18n._
 case class LatestRecordTime(time: Long)
 case class MtRecord(mtName: String, value: Double, status: String)
 case class RecordList(time: Long, mtDataList: Seq[MtRecord])
-case class CalibrationJSON(monitorType: String, startTime: Long, endTime: Long, zero_val: Double,
-                           span_std: Double, span_val: Double) {
-  def zero_dev = Math.abs(zero_val)
-  def span_dev = Math.abs(span_val - span_std)
-  def span_dev_ratio = if (span_std != 0)
-    span_dev / span_std
-  else
-    0
+case class CalibrationJSON(monitorType: String, startTime: Long, endTime: Long, zero_val: Option[Double],
+                           span_std: Option[Double], span_val: Option[Double]) {
+  def zero_dev = zero_val map { Math.abs(_) }
+  def span_dev = {
+    if (span_val.isDefined && span_std.isDefined)
+      Some(Math.abs(span_val.get - span_std.get))
+    else
+      None
+  }
+
+  def span_dev_ratio =
+    if (span_dev.isDefined && span_std.isDefined && span_std.get != 0)
+      Some(span_dev.get / span_std.get)
+    else
+      None
 }
 
 case class Alarm2JSON(time: Long, src: String, level: Int, info: String)
@@ -154,11 +161,11 @@ class DataLogger extends Controller {
     val mt = MonitorType.withName(mtCode)
 
     CalibrationItem(monitor, mt,
-      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.toFloat,
-      0, json.zero_val.toFloat,
-      json.zero_dev.toFloat, 0,
-      json.span_std.toFloat, json.span_val.toFloat,
-      json.span_dev.toFloat, json.span_dev_ratio.toFloat)
+      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.map{_.toFloat},
+      Some(0), json.zero_val.map{_.toFloat},
+      json.zero_dev.map{_.toFloat}, Some(0),
+      json.span_std.map{_.toFloat}, json.span_val.map{_.toFloat},
+      json.span_dev.map{_.toFloat}, json.span_dev_ratio.map{_.toFloat})
   }
 
   def insertCalibrationRecord(monitorStr: String) = Action(BodyParsers.parse.json) {

@@ -11,15 +11,14 @@ import models.ModelHelper._
 object Calibration {
 
   case class CalibrationItem(monitor: Monitor.Value, monitorType: MonitorType.Value,
-                             startTime: DateTime, endTime: DateTime, span: Float, z_std: Float, z_val: Float,
-                             zd_val: Float, zd_pnt: Float,
-                             s_std: Float, s_sval: Float, sd_val: Float, sd_pnt: Float){
-    def save()={
-      val tab = getTabName(startTime.getYear)
-      DB localTx{
-        implicit session=>
+                             startTime: DateTime, endTime: DateTime, span: Option[Float], z_std: Option[Float], z_val: Option[Float],
+                             zd_val: Option[Float], zd_pnt: Option[Float],
+                             s_std: Option[Float], s_sval: Option[Float], sd_val: Option[Float], sd_pnt: Option[Float]) {
+    def save() = {
+      DB localTx {
+        implicit session =>
           sql"""
-            INSERT INTO $tab
+            INSERT INTO Calibration
            ([DP_NO]
            ,[M_ITEM]
            ,[S_DateTime]
@@ -37,7 +36,7 @@ object Calibration {
      VALUES
            (${monitor.toString}
            ,${monitorType.toString}
-           ,${startTime :java.sql.Timestamp}
+           ,${startTime: java.sql.Timestamp}
            ,${endTime: java.sql.Timestamp}
            ,$span
            ,$z_std
@@ -54,35 +53,31 @@ object Calibration {
     }
   }
 
-  def getTabName(year: Int) = {
-    SQLSyntax.createUnsafely(s"[P1234567_Cal_${year}]")
+  def mapper(rs: WrappedResultSet) = {
+    val monitor = Monitor.withName(rs.string(1))
+    val monitorType = MonitorType.withName(rs.string(2).replace("A4", "A2"))
+    val startTime = rs.timestamp(3)
+    val endTime = rs.timestamp(4)
+    val span = rs.floatOpt(5)
+    val z_std = rs.floatOpt(6)
+    val z_val = rs.floatOpt(7)
+    val zd_val = rs.floatOpt(8)
+    val zd_pnt = rs.floatOpt(9)
+    val s_std = rs.floatOpt(10)
+    val s_sval = rs.floatOpt(11)
+    val sd_val = rs.floatOpt(12)
+    val sd_pnt = rs.floatOpt(13)
+    CalibrationItem(monitor, monitorType, startTime, endTime, span, z_std, z_val, zd_val, zd_pnt, s_std, s_sval, sd_val, sd_pnt)
   }
 
   def calibrationQueryReport(monitor: Monitor.Value, start: Timestamp, end: Timestamp) = {
-    val tab = getTabName(start.toDateTime.getYear)
     DB readOnly { implicit session =>
       sql"""
       SELECT *
-      FROM ${tab}
+      FROM Calibration
       Where DP_NO=${monitor.toString} and S_DateTime >= ${start} and S_DateTime < ${end}
       Order by S_DateTime
-      """.map { rs =>
-        val monitor = Monitor.withName(rs.string(1))
-        val monitorType = MonitorType.withName(rs.string(2).replace("A4", "A2"))
-        val startTime = rs.timestamp(3)
-        val endTime = rs.timestamp(4)
-        val span = rs.float(5)
-        val z_std = rs.float(6)
-        val z_val = rs.float(7)
-        val zd_val = rs.float(8)
-        val zd_pnt = rs.float(9)
-        val s_std = rs.float(10)
-        val s_sval = rs.float(11)
-        val sd_val = rs.float(12)
-        val sd_pnt = rs.float(13)
-        CalibrationItem(monitor, monitorType, startTime, endTime, span, z_std, z_val, zd_val, zd_pnt, s_std, s_sval, sd_val, sd_pnt)
-      }.list.apply
-
+      """.map { mapper }.list.apply
     }
   }
 
@@ -98,30 +93,14 @@ object Calibration {
   def calibrationMonthly(monitor: Monitor.Value, monitorType: MonitorType.Value, start: DateTime) = {
     val end = start + 1.month
     val mtStr = monitorType.toString().replace("A2", "A4")
-    val tab = getTabName(start.toDateTime.getYear)
     val report =
       DB readOnly { implicit session =>
         sql"""
       SELECT *
-      FROM ${tab}
+      FROM Calibration
       Where DP_NO=${monitor.toString} and S_DateTime >= ${start} and S_DateTime < ${end} and M_ITEM = ${mtStr}
       Order by S_DateTime
-      """.map { rs =>
-          val monitor = Monitor.withName(rs.string(1))
-          val monitorType = MonitorType.withName(rs.string(2).replace("A4", "A2"))
-          val startTime = rs.timestamp(3)
-          val endTime = rs.timestamp(4)
-          val span = rs.float(5)
-          val z_std = rs.float(6)
-          val z_val = rs.float(7)
-          val zd_val = rs.float(8)
-          val zd_pnt = rs.float(9)
-          val s_std = rs.float(10)
-          val s_sval = rs.float(11)
-          val sd_val = rs.float(12)
-          val sd_pnt = rs.float(13)
-          CalibrationItem(monitor, monitorType, startTime, endTime, span, z_std, z_val, zd_val, zd_pnt, s_std, s_sval, sd_val, sd_pnt)
-        }.list.apply
+      """.map { mapper }.list.apply
 
       }
     val pairs =
@@ -132,14 +111,27 @@ object Calibration {
   }
 
   def getLatestMonitorRecordTime(m: Monitor.Value) = {
-    val tab_name = getTabName(DateTime.now.getYear)
     DB readOnly { implicit session =>
       sql"""
       SELECT TOP 1 S_DateTime
-      FROM ${tab_name}
+      FROM Calibration
       WHERE DP_NO = ${m.toString}
       ORDER BY S_DateTime  DESC
       """.map { r => r.timestamp(1) }.single.apply
     }
   }
+  
+  def passStandard(vOpt: Option[Float], stdOpt: Option[Float]) = {
+    val retOpt =
+      for {
+        v <- vOpt
+        std <- stdOpt
+      } yield if (v < std)
+        true
+      else
+        false
+
+    retOpt.fold(true)(v => v)
+  }
+
 }

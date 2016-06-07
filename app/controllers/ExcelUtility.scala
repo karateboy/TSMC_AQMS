@@ -230,7 +230,7 @@ object ExcelUtility {
       fillOpt(stat.avg, 28)
       fillOpt(stat.max, 29)
       fillOpt(stat.min, 30)
-      fillOpt(stat.effectPercent.map { _*100 }, 31)
+      fillOpt(stat.effectPercent.map { _ * 100 }, 31)
     }
 
     //Hide col not in use
@@ -937,6 +937,7 @@ object ExcelUtility {
   }
 
   import Calibration._
+
   def calibrationDailyReport(title: String, reportDate: DateTime, report: List[CalibrationItem], displayDate: Boolean = false) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("calibration_daily.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
@@ -987,9 +988,11 @@ object ExcelUtility {
       cell.setCellStyle(styles(styleIdx)(idx))
     }
 
-    def fillCellF(cell: XSSFCell, v: Float, idx: Int) {
-      cell.setCellValue(v)
-      cell.setCellStyle(styles(styleIdx)(idx))
+    def fillCellF(cell: XSSFCell, vOpt: Option[Float], idx: Int) {
+      vOpt.fold(cell.setCellValue("-"))(v => {
+        cell.setCellValue(v)
+        cell.setCellStyle(styles(styleIdx)(idx))
+      })
     }
 
     for {
@@ -1006,43 +1009,38 @@ object ExcelUtility {
         fillCell(newRow.createCell(1), item.startTime.toString("YYYY-M-d HH:mm"), 0)
 
       fillCell(newRow.createCell(2), MonitorType.map(item.monitorType).desp, 0)
-      if (MonitorType.map(item.monitorType).zd_law.isDefined && item.z_val > MonitorType.map(item.monitorType).zd_law.get) {
+
+      if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law))
         fillCellF(newRow.createCell(3), item.z_val, 2)
-      } else if (MonitorType.map(item.monitorType).zd_internal.isDefined && item.z_val > MonitorType.map(item.monitorType).zd_internal.get) {
+      else if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal))
         fillCellF(newRow.createCell(3), item.z_val, 1)
-      } else
+      else
         fillCellF(newRow.createCell(3), item.z_val, 0)
 
-      if (MonitorType.map(item.monitorType).zd_internal.isDefined)
-        fillCellF(newRow.createCell(4), MonitorType.map(item.monitorType).zd_internal.get, 0)
-
-      if (MonitorType.map(item.monitorType).zd_law.isDefined)
-        fillCellF(newRow.createCell(5), MonitorType.map(item.monitorType).zd_law.get, 0)
+      fillCellF(newRow.createCell(4), MonitorType.map(item.monitorType).zd_internal, 0)
+      fillCellF(newRow.createCell(5), MonitorType.map(item.monitorType).zd_law, 0)
 
       fillCellF(newRow.createCell(6), item.s_std, 0)
       fillCellF(newRow.createCell(7), item.s_sval, 0)
-      if (MonitorType.map(item.monitorType).sd_law.isDefined && item.sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
+      if (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)) {
         fillCellF(newRow.createCell(8), item.sd_pnt, 2)
-      } else if (MonitorType.map(item.monitorType).sd_internal.isDefined && item.sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
+      } else if (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)) {
         fillCellF(newRow.createCell(8), item.sd_pnt, 1)
       } else
         fillCellF(newRow.createCell(8), item.sd_pnt, 0)
 
-      if (MonitorType.map(item.monitorType).sd_internal.isDefined)
-        fillCellF(newRow.createCell(9), MonitorType.map(item.monitorType).sd_internal.get, 0)
+      fillCellF(newRow.createCell(9), MonitorType.map(item.monitorType).sd_internal, 0)
+      fillCellF(newRow.createCell(10), MonitorType.map(item.monitorType).sd_law, 0)
 
-      if (MonitorType.map(item.monitorType).sd_law.isDefined)
-        fillCellF(newRow.createCell(10), MonitorType.map(item.monitorType).sd_law.get, 0)
-
-      if (MonitorType.map(item.monitorType).zd_law.isDefined && MonitorType.map(item.monitorType).sd_law.isDefined) {
-        if (item.z_val > MonitorType.map(item.monitorType).zd_law.get || item.sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
-          fillCell(newRow.createCell(11), "失敗", 2)
-        } else {
-          if (item.z_val > MonitorType.map(item.monitorType).zd_internal.get || item.sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
-            fillCell(newRow.createCell(11), "成功", 1)
-          } else
-            fillCell(newRow.createCell(11), "成功", 0)
-        }
+      if (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law) ||
+        !passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law)) {
+        fillCell(newRow.createCell(11), "失敗", 2)
+      } else {
+        if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal) ||
+          !passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)) {
+          fillCell(newRow.createCell(11), "成功", 1)
+        } else
+          fillCell(newRow.createCell(11), "成功", 0)
       }
     }
     finishExcel(reportFilePath, pkg, wb)
@@ -1060,6 +1058,11 @@ object ExcelUtility {
 
       val internalStyle = wb.getSheetAt(0).getRow(2).getCell(8).getCellStyle
       val lawStyle = wb.getSheetAt(0).getRow(2).getCell(8).getCellStyle
+      def fillCellF(cell: XSSFCell, vOpt: Option[Float]) {
+        vOpt.fold(cell.setCellValue("-"))(v => {
+          cell.setCellValue(v)
+        })
+      }
 
       for {
         row <- 4 to (4 + nDays - 1)
@@ -1069,34 +1072,43 @@ object ExcelUtility {
           val item = itemOpt.get
           sheet.getRow(row).getCell(1).setCellValue(item.startTime.toString("HH:mm"))
           sheet.getRow(row).getCell(2).setCellValue(MonitorType.map(item.monitorType).desp)
-          if (item.z_val > MonitorType.map(item.monitorType).zd_law.get) {
-            sheet.getRow(row).getCell(3).setCellStyle(lawStyle)
-          } else if (item.z_val > MonitorType.map(item.monitorType).zd_internal.get) {
-            sheet.getRow(row).getCell(3).setCellStyle(internalStyle)
+          if (item.z_val.isDefined && MonitorType.map(item.monitorType).zd_law.isDefined
+            && MonitorType.map(item.monitorType).zd_internal.isDefined) {
+            val z_val = item.z_val.get
+            if (z_val > MonitorType.map(item.monitorType).zd_law.get) {
+              sheet.getRow(row).getCell(3).setCellStyle(lawStyle)
+            } else if (z_val > MonitorType.map(item.monitorType).zd_internal.get) {
+              sheet.getRow(row).getCell(3).setCellStyle(internalStyle)
+            }
           }
-          sheet.getRow(row).getCell(3).setCellValue(item.z_val)
-          sheet.getRow(row).getCell(4).setCellValue(MonitorType.map(item.monitorType).zd_internal.get)
-          sheet.getRow(row).getCell(5).setCellValue(MonitorType.map(item.monitorType).zd_law.get)
-          sheet.getRow(row).getCell(6).setCellValue(item.s_std)
-          sheet.getRow(row).getCell(7).setCellValue(item.s_sval)
-          if (item.sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
-            sheet.getRow(row).getCell(8).setCellStyle(lawStyle)
-          } else if (item.sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
-            sheet.getRow(row).getCell(8).setCellStyle(lawStyle)
+          fillCellF(sheet.getRow(row).getCell(3), item.z_val)
+          fillCellF(sheet.getRow(row).getCell(4), MonitorType.map(item.monitorType).zd_internal)
+          fillCellF(sheet.getRow(row).getCell(5), MonitorType.map(item.monitorType).zd_law)
+          fillCellF(sheet.getRow(row).getCell(6), item.s_std)
+          fillCellF(sheet.getRow(row).getCell(7), item.s_sval)
+          if (item.sd_pnt.isDefined) {
+            val sd_pnt = item.sd_pnt.get
+            if (sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
+              sheet.getRow(row).getCell(8).setCellStyle(lawStyle)
+            } else if (sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
+              sheet.getRow(row).getCell(8).setCellStyle(lawStyle)
+            }
           }
-          sheet.getRow(row).getCell(8).setCellValue(item.sd_pnt)
-          sheet.getRow(row).getCell(9).setCellValue(MonitorType.map(item.monitorType).sd_internal.get)
-          sheet.getRow(row).getCell(10).setCellValue(MonitorType.map(item.monitorType).sd_law.get)
-          if (item.z_val > MonitorType.map(item.monitorType).zd_law.get || item.sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
+          fillCellF(sheet.getRow(row).getCell(8), item.sd_pnt)
+          fillCellF(sheet.getRow(row).getCell(9), MonitorType.map(item.monitorType).sd_internal)
+          fillCellF(sheet.getRow(row).getCell(10), MonitorType.map(item.monitorType).sd_law)
+
+          if ((!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law)) ||
+            (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law))) {
             sheet.getRow(row).getCell(11).setCellStyle(lawStyle)
             sheet.getRow(row).getCell(11).setCellValue("失敗")
           } else {
-            if (item.z_val > MonitorType.map(item.monitorType).zd_internal.get || item.sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
+            if ((!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal)) ||
+              (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal))) {
               sheet.getRow(row).getCell(11).setCellStyle(internalStyle)
             }
             sheet.getRow(row).getCell(11).setCellValue("成功")
           }
-
         }
       }
       sheet.getRow(36).getCell(0).setCellValue(s"${Monitor.map(monitor).name} (${MonitorType.map(monitorType).desp})零點校正趨勢圖")
@@ -1133,6 +1145,11 @@ object ExcelUtility {
 
     val internalStyle = wb.getSheetAt(0).getRow(2).getCell(8).getCellStyle
     val lawStyle = wb.getSheetAt(0).getRow(2).getCell(8).getCellStyle
+    def fillCellF(cell: XSSFCell, vOpt: Option[Float]) {
+      vOpt.fold(cell.setCellValue("-"))(v => {
+        cell.setCellValue(v)
+      })
+    }
 
     for {
       row <- 4 to (4 + nDays - 1)
@@ -1142,29 +1159,32 @@ object ExcelUtility {
         val item = itemOpt.get
         sheet.getRow(row).getCell(1).setCellValue(item.startTime.toString("HH:mm"))
         sheet.getRow(row).getCell(2).setCellValue(MonitorType.map(item.monitorType).desp)
-        if (item.z_val > MonitorType.map(item.monitorType).zd_law.get) {
+        if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law)) {
           sheet.getRow(row).getCell(3).setCellStyle(lawStyle)
-        } else if (item.z_val > MonitorType.map(item.monitorType).zd_internal.get) {
+        } else if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal)) {
           sheet.getRow(row).getCell(3).setCellStyle(internalStyle)
         }
-        sheet.getRow(row).getCell(3).setCellValue(item.z_val)
-        sheet.getRow(row).getCell(4).setCellValue(MonitorType.map(item.monitorType).zd_internal.get)
-        sheet.getRow(row).getCell(5).setCellValue(MonitorType.map(item.monitorType).zd_law.get)
-        sheet.getRow(row).getCell(6).setCellValue(item.s_std)
-        sheet.getRow(row).getCell(7).setCellValue(item.s_sval)
-        if (item.sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
+
+        fillCellF(sheet.getRow(row).getCell(3), item.z_val)
+        fillCellF(sheet.getRow(row).getCell(4), MonitorType.map(item.monitorType).zd_internal)
+        fillCellF(sheet.getRow(row).getCell(5), MonitorType.map(item.monitorType).zd_law)
+        fillCellF(sheet.getRow(row).getCell(6), item.s_std)
+        fillCellF(sheet.getRow(row).getCell(7), item.s_sval)
+        if (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)) {
           sheet.getRow(row).getCell(8).setCellStyle(lawStyle)
-        } else if (item.sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
+        } else if (!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)) {
           sheet.getRow(row).getCell(8).setCellStyle(lawStyle)
         }
-        sheet.getRow(row).getCell(8).setCellValue(item.sd_pnt)
-        sheet.getRow(row).getCell(9).setCellValue(MonitorType.map(item.monitorType).sd_internal.get)
-        sheet.getRow(row).getCell(10).setCellValue(MonitorType.map(item.monitorType).sd_law.get)
-        if (item.z_val > MonitorType.map(item.monitorType).zd_law.get || item.sd_pnt > MonitorType.map(item.monitorType).sd_law.get) {
+        fillCellF(sheet.getRow(row).getCell(8), item.sd_pnt)
+        fillCellF(sheet.getRow(row).getCell(9), MonitorType.map(item.monitorType).sd_internal)
+        fillCellF(sheet.getRow(row).getCell(10), MonitorType.map(item.monitorType).sd_law)
+        if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law) ||
+          !passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)) {
           sheet.getRow(row).getCell(11).setCellStyle(lawStyle)
           sheet.getRow(row).getCell(11).setCellValue("失敗")
         } else {
-          if (item.z_val > MonitorType.map(item.monitorType).zd_internal.get || item.sd_pnt > MonitorType.map(item.monitorType).sd_internal.get) {
+          if (!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal)|| 
+              !passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)) {
             sheet.getRow(row).getCell(11).setCellStyle(internalStyle)
           }
           sheet.getRow(row).getCell(11).setCellValue("成功")
@@ -2024,12 +2044,12 @@ object ExcelUtility {
 
     }
     finishExcel(reportFilePath, pkg, wb)
-  }  
+  }
 }
 
 /**
  * @author user
  */
-class ExcelUtility @Inject()(val messagesApi: MessagesApi) extends I18nSupport{
+class ExcelUtility @Inject() (val messagesApi: MessagesApi) extends I18nSupport {
   import ExcelUtility._
 }
