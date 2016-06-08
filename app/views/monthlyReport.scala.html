@@ -1,7 +1,7 @@
 @* monthlyReport Template File *@
 @import com.github.nscala_time.time.Imports._
 @import Report._
-@(monitor: Monitor.Value, reportDate:DateTime, report:MonthlyReport, nDays:Int)
+@(monitor: Monitor.Value, reportDate:DateTime, report:MonthlyReport, nDays:Int)(implicit messages:Messages)
 
 <h3>監測月報表</h3>
 <h4>監測站:@Monitor.map(monitor).name</h4>

@@ -246,7 +246,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def createMonthlyReport(monitor: Monitor.Value, reportDate: DateTime, data: MonthlyReport, nDay: Int) = {
+  def createMonthlyReport(monitor: Monitor.Value, reportDate: DateTime, data: MonthlyReport, nDay: Int)(implicit messages:Messages) = {
     implicit val (reportFilePath, pkg, wb) = prepareTemplate("monthly_report.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -657,7 +657,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def createMultipleSiteEffectiveReport(monitorType: MonitorType.Value, reportDate: DateTime, rateList: List[MonitorTypeEffectiveRate], statMap: Map[Monitor.Value, Stat]) = {
+  def createMultipleSiteEffectiveReport(monitorType: MonitorType.Value, reportDate: DateTime, rateList: List[MonitorTypeEffectiveRate], statMap: Map[Monitor.Value, Stat])(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("effective_mulitiple.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -698,7 +698,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def psiDailyReport(monitor: Monitor.Value, reportDate: DateTime, psiHourRecords: List[(Option[Float], Map[MonitorType.Value, (Option[Float], Option[Float])])]) = {
+  def psiDailyReport(monitor: Monitor.Value, reportDate: DateTime, psiHourRecords: List[(Option[Float], Map[MonitorType.Value, (Option[Float], Option[Float])])])(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("psi_daily.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -759,7 +759,7 @@ object ExcelUtility {
   }
 
   import models.Realtime._
-  def psiMonthlyReport(monitor: Monitor.Value, reportDate: DateTime, psiDailyList: List[PsiReport], nDays: Int) = {
+  def psiMonthlyReport(monitor: Monitor.Value, reportDate: DateTime, psiDailyList: List[PsiReport], nDays: Int)(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("psi_monthly.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -938,7 +938,7 @@ object ExcelUtility {
 
   import Calibration._
 
-  def calibrationDailyReport(title: String, reportDate: DateTime, report: List[CalibrationItem], displayDate: Boolean = false) = {
+  def calibrationDailyReport(title: String, reportDate: DateTime, report: List[CalibrationItem], displayDate: Boolean = false)(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("calibration_daily.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -1046,7 +1046,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def calibrationMonthlyAllReport(monitor: Monitor.Value, reportDate: DateTime, map: Map[MonitorType.Value, Map[String, Calibration.CalibrationItem]], nDays: Int) = {
+  def calibrationMonthlyAllReport(monitor: Monitor.Value, reportDate: DateTime, map: Map[MonitorType.Value, Map[String, Calibration.CalibrationItem]], nDays: Int)(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("all_calibration_monthly.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -1134,7 +1134,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def calibrationMonthlyReport(monitor: Monitor.Value, monitorType: MonitorType.Value, reportDate: DateTime, map: Map[String, Calibration.CalibrationItem], nDays: Int) = {
+  def calibrationMonthlyReport(monitor: Monitor.Value, monitorType: MonitorType.Value, reportDate: DateTime, map: Map[String, Calibration.CalibrationItem], nDays: Int)(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("calibration_monthly.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -1802,7 +1802,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def monitorAbnormalReport(date: DateTime, report: Seq[AbnormalEntry]) = {
+  def monitorAbnormalReport(date: DateTime, report: Seq[AbnormalEntry])(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("abnormalReport.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -1871,7 +1871,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def monitorJournalReport(report: MonitorJournal, invalidHourList: List[(MonitorType.Value, List[MonitorInvalidHour])], userList: List[User]) = {
+  def monitorJournalReport(report: MonitorJournal, invalidHourList: List[(MonitorType.Value, List[MonitorInvalidHour])], userList: List[User])(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("monitorJournal.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -1920,7 +1920,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def minMonthlyReport(monitors: List[Monitor.Value], start: DateTime, callback: (Int) => Unit) = {
+  def minMonthlyReport(monitors: List[Monitor.Value], start: DateTime, callback: (Int) => Unit)(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("minMonthlyReport.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
 
@@ -2018,7 +2018,7 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def equipmentHistoryReport(tickets: List[Ticket], start: DateTime, end: DateTime) = {
+  def equipmentHistoryReport(tickets: List[Ticket], start: DateTime, end: DateTime)(implicit messages:Messages) = {
     val (reportFilePath, pkg, wb) = prepareTemplate("equipHistory.xlsx")
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
     val sheet = wb.getSheetAt(0)

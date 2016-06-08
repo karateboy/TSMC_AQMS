@@ -7,6 +7,7 @@ import models._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Json
+import play.api.i18n._
 
 case class MonitorSummary(monitor: Monitor.Value, desc: String, explain: String)
 case class AggregateReport(date: DateTime, report: Seq[MonitorSummary])
@@ -51,7 +52,7 @@ object AggregateReport {
     }
   }
 
-  def generate(date: DateTime)(implicit session: DBSession = AutoSession) = {
+  def generate(date: DateTime)(implicit messages:Messages, session: DBSession = AutoSession) = {
     for {
       m <- Monitor.mvList
       dailyReport = Record.getDailyReport(m, date)

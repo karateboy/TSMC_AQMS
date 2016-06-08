@@ -1,5 +1,5 @@
 @* ticketReport Template File *@
-@(tickets: List[Ticket], userMap:Map[Int, User], showSelect:Boolean=false)
+@(tickets: List[Ticket], userMap:Map[Int, User], showSelect:Boolean=false)(implicit messages:Messages)
 <table id="ticketReport" class="table">
 <thead>
 	<tr>

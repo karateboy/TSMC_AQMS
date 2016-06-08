@@ -1,7 +1,7 @@
 @* yearlyReport Template File *@
 @import com.github.nscala_time.time.Imports._
 @import Report._
-@(monitor: Monitor.Value, reportDate:DateTime, report:IntervalReport)
+@(monitor: Monitor.Value, reportDate:DateTime, report:IntervalReport)(implicit messages:Messages)
 <h3>監測年報表</h3>
 <h4>監測站:@Monitor.map(monitor).name</h4>
 <h4>日期:@reportDate.toString("yyyy年")</h4>

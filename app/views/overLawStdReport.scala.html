@@ -1,6 +1,6 @@
 @* historyReport Template File *@
 @import com.github.nscala_time.time.Imports._
-@(monitorType:MonitorType.Value, start:DateTime, end:DateTime, report:Seq[OverLawStdEntry])
+@(monitorType:MonitorType.Value, start:DateTime, end:DateTime, report:Seq[OverLawStdEntry])(implicit messages:Messages)
 
 <H3>測項:@MonitorType.map(monitorType).desp (@MonitorType.map(monitorType).unit)</H3>
 <H5>開始:@start.toString("YYYY-MM-dd")</H5>

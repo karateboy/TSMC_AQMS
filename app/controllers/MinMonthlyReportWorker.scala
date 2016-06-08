@@ -5,12 +5,13 @@ import play.api.mvc._
 import com.github.nscala_time.time.Imports._
 import models._
 import javax.inject._
+import play.api.i18n._
 
 object MinMonthlyReportWorker {
-  def props(out: ActorRef) = Props(new MinMonthlyReportWorker(out))
+  def props(out: ActorRef)(implicit messages:Messages) = Props(new MinMonthlyReportWorker(out))
 }
  
-class MinMonthlyReportWorker (out: ActorRef) extends Actor {
+class MinMonthlyReportWorker (out: ActorRef)(implicit messages:Messages) extends Actor {
   object CmdType extends Enumeration{
     val start = Value
     val progress = Value

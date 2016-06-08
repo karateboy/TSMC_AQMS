@@ -1,6 +1,6 @@
 @* abnormalReport Template File *@
 @import com.github.nscala_time.time.Imports._
-@(date: DateTime, entires:Seq[AbnormalEntry])
+@(date: DateTime, entires:Seq[AbnormalEntry])(implicit messages:Messages)
 
 <table class="table table-striped" id="abnormalTab">
 <thead>

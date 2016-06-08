@@ -6,6 +6,7 @@ import play.api._
 import com.github.nscala_time.time.Imports._
 import models.ModelHelper._
 import models._
+import play.api.i18n._
 
 case class Alarm2(monitor: Monitor.Value, time: DateTime,
                   src: String, level: Int, info: String, ticketNo: Option[Long] = None)
@@ -22,7 +23,7 @@ object Alarm2 {
   def Src(mt: MonitorType.Value) = s"T:$mt"
   def Src() = "S:System"
 
-  def getSrcForDisplay(src: String) = {
+  def getSrcForDisplay(src: String)(implicit messages:Messages) = {
     val part = src.split(':')
     if (part.length >= 2) {
       val srcType = part(0) match {

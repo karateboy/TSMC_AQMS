@@ -2,7 +2,7 @@
 @import com.github.nscala_time.time.Imports._
 @import MonitorStatus._
 @import models.Alarm2._
-@(start:DateTime, end:DateTime, report:List[Alarm2])
+@(start:DateTime, end:DateTime, report:List[Alarm2])(implicit messages:Messages)
 
 <H3>警告報表</H3>
 <H5>開始:@start.toString("YYYY-MM-dd")</H5>

@@ -1,5 +1,5 @@
 @* monitorJournalReport Template File *@
-@(report: MonitorJournal, invalidHour: List[(MonitorType.Value, List[MonitorInvalidHour])], userList:List[User])
+@(report: MonitorJournal, invalidHour: List[(MonitorType.Value, List[MonitorInvalidHour])], userList:List[User])(implicit messages:Messages)
 <h3>測站工作日誌:@report.date.toString("YYYY-MM-d")</h3>
 <form class="form-horizontal">
 	<div class="form-group">

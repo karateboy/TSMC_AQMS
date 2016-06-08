@@ -1,7 +1,7 @@
 @* manualAuditQueryReport Template File *@
 @import com.github.nscala_time.time.Imports._
 @import MonitorStatus._
-@(start:DateTime, end:DateTime, report:List[ManualAuditLog])
+@(start:DateTime, end:DateTime, report:List[ManualAuditLog])(implicit messages:Messages)
 
 <H3>人工註記歷史報表</H3>
 <H5>開始:@start.toString("YYYY-MM-dd")</H5>

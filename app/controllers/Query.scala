@@ -31,7 +31,7 @@ case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: Da
 object Query{
   def trendHelper(monitors: Array[Monitor.Value], epaMonitors: Array[EpaMonitor.Value],
                   monitorTypes: Array[MonitorType.Value], reportUnit: ReportUnit.Value, monitorStatusFilter: MonitorStatusFilter.Value,
-                  start: DateTime, end: DateTime) = {
+                  start: DateTime, end: DateTime)(implicit messages:Messages) = {
     def statusFilter(data: (DateTime, (Option[Float], Option[String]))): Boolean = {
       if (data._2._2.isEmpty)
         return false

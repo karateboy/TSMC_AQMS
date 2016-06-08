@@ -2,7 +2,7 @@
 @import com.github.nscala_time.time.Imports._
 @import Report._
 @import Record._
-@(monitor: Monitor.Value, reportDate:DateTime, rateList:List[MonitorEffectiveRate], statMap: Map[MonitorType.Value, Stat])
+@(monitor: Monitor.Value, reportDate:DateTime, rateList:List[MonitorEffectiveRate], statMap: Map[MonitorType.Value, Stat])(implicit messages:Messages)
 
 <h3>有效率年報表</h3>
 <h4>監測站:@Monitor.map(monitor).name</h4>

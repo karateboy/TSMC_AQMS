@@ -1,7 +1,7 @@
 @* dailyReport Template File *@
 @import models.Realtime._
 @import com.github.nscala_time.time.Imports._
-@(monitor: Monitor.Value, reportDate:DateTime, psiDailyList: List[PsiReport], nDays: Int)
+@(monitor: Monitor.Value, reportDate:DateTime, psiDailyList: List[PsiReport], nDays: Int)(implicit messages:Messages)
 
 
 <h3>空氣品質PSI月報表</h3>

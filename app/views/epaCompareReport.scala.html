@@ -3,7 +3,7 @@
 @import models.Record._
 @import com.github.nscala_time.time.Imports._
 @import MonitorStatus._
-@(monitor:Monitor.Value, epaMonitor:EpaMonitor.Value, reportDate:DateTime, myMap:Map[MonitorType.Value, (Map[DateTime, (Option[Float], Option[String])], Stat)], epaMap: Map[MonitorType.Value, (Map[DateTime, EpaHourRecord], Stat)], hours:List[DateTime])
+@(monitor:Monitor.Value, epaMonitor:EpaMonitor.Value, reportDate:DateTime, myMap:Map[MonitorType.Value, (Map[DateTime, (Option[Float], Option[String])], Stat)], epaMap: Map[MonitorType.Value, (Map[DateTime, EpaHourRecord], Stat)], hours:List[DateTime])(implicit messages:Messages)
 
 <h3>測站比較報表</h3>
 <h4>監測站:@Monitor.map(monitor).name 環保署測站:@EpaMonitor.map(epaMonitor).name</h4>

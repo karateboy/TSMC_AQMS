@@ -170,21 +170,27 @@ object Monitor extends Enumeration {
   }
 }
 
-case class MonitorType(id: String, desp: String, unit: String,
+import play.api.i18n._
+case class MonitorType(id: String, unit: String,
                        std_internal_default: Option[Float], std_law: Option[Float], std_hour: Option[Float],
                        std_day: Option[Float], std_year: Option[Float],
                        zd_internal: Option[Float], zd_law: Option[Float],
                        sd_internal: Option[Float], sd_law: Option[Float],
                        epa_mapping: Option[String],
                        prec: Int, order: Int,
-                       level1: Option[Float], level2: Option[Float], level3: Option[Float], level4: Option[Float])
+                       level1: Option[Float], level2: Option[Float], level3: Option[Float], level4: Option[Float]){
+
+  def desp(implicit messages:Messages)={
+    val key = s"monitor.$id"
+    Messages(key)
+  }
+}
 
 object MonitorType extends Enumeration {
   implicit val mtReads: Reads[MonitorType.Value] = EnumUtils.enumReads(MonitorType)
   implicit val mtWrites: Writes[MonitorType.Value] = EnumUtils.enumWrites
 
   def mapper(r: WrappedResultSet) = MonitorType(id = r.string(1),
-    desp = r.string(2),
     unit = r.string(3),
     std_internal_default = r.floatOpt(5),
     std_law = r.floatOpt(6),

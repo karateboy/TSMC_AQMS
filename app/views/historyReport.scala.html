@@ -1,7 +1,7 @@
 @* historyReport Template File *@
 @import com.github.nscala_time.time.Imports._
 @import MonitorStatus._
-@(editable:Boolean, monitors:Seq[Monitor.Value], epaMonitors:Seq[EpaMonitor.Value], monitorType:MonitorType.Value, start:DateTime, end:DateTime, timeSeq:Seq[DateTime], recordMap: Map[Monitor.Value, Map[DateTime, (Option[Float], Option[String])]], epaRecordMap: Map[EpaMonitor.Value, Map[DateTime, Float]], showSec:Boolean = false, recordType:String="Hour")
+@(editable:Boolean, monitors:Seq[Monitor.Value], epaMonitors:Seq[EpaMonitor.Value], monitorType:MonitorType.Value, start:DateTime, end:DateTime, timeSeq:Seq[DateTime], recordMap: Map[Monitor.Value, Map[DateTime, (Option[Float], Option[String])]], epaRecordMap: Map[EpaMonitor.Value, Map[DateTime, Float]], showSec:Boolean = false, recordType:String="Hour")(implicit messages:Messages)
 
 <H3>測項:@MonitorType.map(monitorType).desp (@MonitorType.map(monitorType).unit)</H3>
 <H5>區間:@start.toString("YYYY-MM-dd HH:mm")~@end.toString("YYYY-MM-dd HH:mm")</H5>
