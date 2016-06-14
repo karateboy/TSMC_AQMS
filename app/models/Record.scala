@@ -6,6 +6,7 @@ import play.api._
 import com.github.nscala_time.time.Imports._
 import models.ModelHelper._
 import models._
+import play.api.i18n._
 
 case class Stat(
     avg: Option[Float],
@@ -26,7 +27,14 @@ object TableType extends Enumeration {
   val SixSec = Value("SixSec")
   val Min = Value("Min")
   val Hour = Value("Hour")
-  val map = Map((SixSec -> "六秒資料"), (Min -> "分鐘資料"), (Hour -> "小時資料"))
+  val defaultMap = Map((SixSec -> "六秒資料"), (Min -> "分鐘資料"), (Hour -> "小時資料"))
+  def map(key:TableType.Value)(implicit messages:Messages) = {
+    val messageKey = s"dataSet.$key"
+    if(Messages.isDefinedAt(messageKey))
+      Messages(messageKey)
+    else
+      defaultMap(key)    
+  }
 }
 
 object Record {

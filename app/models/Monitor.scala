@@ -181,7 +181,7 @@ case class MonitorType(id: String, unit: String,
                        level1: Option[Float], level2: Option[Float], level3: Option[Float], level4: Option[Float]){
 
   def desp(implicit messages:Messages)={
-    val key = s"monitor.$id"
+    val key = s"mt.$id"
     Messages(key)
   }
 }

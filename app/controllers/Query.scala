@@ -12,7 +12,8 @@ import models.MonitorStatusFilter
 import java.nio.file.Files
 import javax.inject._
 import play.api.i18n._
-
+import play.api.Play.current
+ 
 object ReportUnit extends Enumeration {
   val Min = Value("min")
   val TenMin = Value("ten_min")
@@ -31,7 +32,7 @@ case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: Da
 object Query{
   def trendHelper(monitors: Array[Monitor.Value], epaMonitors: Array[EpaMonitor.Value],
                   monitorTypes: Array[MonitorType.Value], reportUnit: ReportUnit.Value, monitorStatusFilter: MonitorStatusFilter.Value,
-                  start: DateTime, end: DateTime)(implicit messages:Messages) = {
+                  start: DateTime, end: DateTime)(implicit messages:Messages, request: RequestHeader) = {
     def statusFilter(data: (DateTime, (Option[Float], Option[String]))): Boolean = {
       if (data._2._2.isEmpty)
         return false
@@ -225,29 +226,10 @@ object Query{
       startName + mNames.mkString + mtNames.mkString
     }
 
-    val title = s"趨勢圖 (${start.toString("YYYY/MM/dd HH:mm")}~${end.toString("YYYY/MM/dd HH:mm")})"
-
-    val timeStrSeq = timeSeq.map { tWithIndex =>
-      val t = tWithIndex._1
-      reportUnit match {
-        case ReportUnit.Min =>
-          t.toString("YYYY/MM/dd HH:mm")
-        case ReportUnit.TenMin =>
-          t.toString("YYYY/MM/dd HH:mm")
-        case ReportUnit.Hour =>
-          t.toString("YYYY/MM/dd HH:mm")
-        case ReportUnit.EightHour =>
-          t.toString("YYYY/MM/dd HH:mm")
-        case ReportUnit.Day =>
-          t.toString("YYYY/MM/dd")
-        case ReportUnit.Week =>
-          t.toString("YYYY/MM/dd")
-        case ReportUnit.Month =>
-          t.toString("YYYY/MM")
-        case ReportUnit.Quarter =>
-          s"${t.getYear}/${1 + (t.getMonthOfYear - 1) / 3}Q"
-      }
-    }
+    //YYYY/MM/dd HH:mm
+    val lang = Lang.preferred(request.acceptLanguages)
+     
+    val title = Messages("trendChart.title", start.toString(Messages("datetime.fmt"), lang.toLocale), end.toString(Messages("datetime.fmt"), lang.toLocale))
 
     def getAxisLines(mt: MonitorType.Value) = {
       val mtCase = MonitorType.map(mt)

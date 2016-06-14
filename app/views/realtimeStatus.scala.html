@@ -142,29 +142,22 @@
 <table border="1" class="DIV_CENTER ALT_TABLE_EVENT">
 	<tbody><tr class="ALT">
 		<th>@Messages("rtStatus.explain.psi")</th>
-		<th nowrap="">0～50</th>
-		<th>51～100</th>
-		<th>101～199</th>
-		<th>200～299</th>
-		<th>&gt;=300</th>
+		<th class="text-center">0～50</th>
+		<th class="text-center">51～100</th>
+		<th class="text-center">101～199</th>
+		<th class="text-center">200～299</th>
+		<th class="text-center">&gt;=300</th>
 	</tr>
 	<tr>
 		<th rowspan="2" nowrap="">@Messages("rtStatus.explain.toHealth")</th>
-		<td><p align="center">@Messages("rtStatus.explain.1")</p></td>
-		<td><p align="center"></p>@Messages("rtStatus.explain.2")</td>
-		<td><p align="center"></p>@Messages("rtStatus.explain.3")</td>
-		<td><p align="center"></p>@Messages("rtStatus.explain.4")</td>
-		<td><p align="center"></p>@Messages("rtStatus.explain.5")</td>
-	</tr>
-	<tr class="ALT">
-		<td><p align="center">Good</p></td>
-		<td><p align="center">Moderate </p></td>
-		<td><p align="center">Unhealthful </p></td>
-		<td><p align="center">Very Unhealthful </p></td>
-		<td><p align="center">Hazardous</p></td>
+		<td class="text-center">@Messages("rtStatus.explain.1")</td>
+		<td class="text-center">@Messages("rtStatus.explain.2")</td>
+		<td class="text-center">@Messages("rtStatus.explain.3")</td>
+		<td class="text-center">@Messages("rtStatus.explain.4")</td>
+		<td class="text-center">@Messages("rtStatus.explain.5")</td>
 	</tr>
 	<tr>
-		<th>@Messages("rtStatus.psi.block")</th>
+		<th class="text-center">@Messages("rtStatus.psi.block")</th>
 		<td class="PSI1">&nbsp;</td>
 		<td class="PSI2">&nbsp;</td>
 		<td class="PSI3">&nbsp;</td>
@@ -212,9 +205,11 @@ $( document ).ready(function() {
 		"tableTools": {
             "aButtons": [ "copy", "print" ]
         },
-		language: {
-			url: '@routes.Assets.at("localization/zh_tw.json")',							
-		},
+        @if(Messages.isDefinedAt("datatable.l10n")){
+			language: {
+				url: '@routes.Assets.at("localization/"+Messages("datatable.l10n"))',							
+			},
+		}
 		"tableTools": {
         	"sSwfPath": "@routes.Assets.at("js/plugins/dataTables/swf/copy_csv_xls_pdf.swf")",
         	"aButtons": ["copy", "print", "csv", "xls"]
