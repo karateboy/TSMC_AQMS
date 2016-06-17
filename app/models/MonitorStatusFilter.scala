@@ -5,7 +5,6 @@ package models
  */
 object MonitorStatusFilter extends Enumeration {
   val All = Value("all")
-  val Normal_Over = Value("normal_over")
   val Normal = Value("normal")
   val Over = Value("over")
   val Calbrating = Value("calbrating")
@@ -36,14 +35,11 @@ object MonitorStatusFilter extends Enumeration {
     OverInternal -> MonitorStatus.CALBRATION_DIVERSION_STAT,
     DataLost -> MonitorStatus.DATA_LOSS_STAT,
     ValidData -> MonitorStatus.NORMAL_STAT)
-
+    
   def isMatched(msf: MonitorStatusFilter.Value, stat: String) = {
     msf match {
       case MonitorStatusFilter.All =>
         true
-
-      case MonitorStatusFilter.Normal_Over =>
-        MonitorStatus.isNormalStat(stat)
 
       case MonitorStatusFilter.Normal =>
         MonitorStatus.isNormal(stat)
