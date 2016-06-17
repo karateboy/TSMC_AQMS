@@ -147,23 +147,21 @@ object MonitorStatus {
   val REPAIR = "031"
   val INVALID_DATA = "032"
   
+
   def isRepairing(s: String)={
     getTagInfo(REPAIR) == getTagInfo(s)
   }
-  
+
+  def isMaintance(s: String) = isRepairing(s)
+    
   def isInvalidData(s:String)={
     getTagInfo(INVALID_DATA) == getTagInfo(s)
   }
   
   val DATA_LOSS_STAT = "036"
-  val MAINTANCE_STAT = "038"
-  
-  def isMaintance(s: String)={  
-    getTagInfo(MAINTANCE_STAT) == getTagInfo(s)
-  }
   
   def isError(s: String)={
-    !(isNormalStat(s)||isCalbration(s)||isRepairing(s)||isMaintance(s))  
+    !(isNormalStat(s)||isCalbration(s)||isRepairing(s))  
   }
   
   def isDataLost(s:String)={
@@ -203,8 +201,6 @@ object MonitorStatus {
             CalibrationColor
           else if(isRepairing(tag))
             RepairColor
-          else if(isMaintance(tag))
-            MaintanceColor
           else 
             AbnormalColor
         }

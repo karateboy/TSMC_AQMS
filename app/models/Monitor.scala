@@ -95,7 +95,7 @@ object Monitor extends Enumeration {
     val statusTypeMapOpt = map(Monitor.withName("A013")).instrumentStatusTypeMapOpt
     val mapOpt = statusTypeMapOpt.map { mapList => mapList.map { map => map.instrumentId -> map.statusTypeSeq } }.map(_.toMap)
     if (mapOpt.isDefined) {
-      mapOpt.get.keys.toList
+      mapOpt.get.keys.toList.sorted
     } else
       List.empty[String]
   }

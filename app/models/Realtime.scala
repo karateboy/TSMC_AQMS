@@ -10,20 +10,9 @@ import models.ModelHelper._
 import models.Record._
 
 case class RealtimeStatus(data: Map[Monitor.Value, Map[MonitorType.Value, (Option[Float], Option[String])]])
-case class SixSecRecord(c911: Array[(Option[Float], Option[String])], c912: Array[(Option[Float], Option[String])])
+//case class SixSecRecord(c911: Array[(Option[Float], Option[String])], c912: Array[(Option[Float], Option[String])])
+case class WeatherStat(windSpeed: Option[Float], windDir: Option[Float])
 object Realtime {
-  def SixSecRecordMapper(rs: WrappedResultSet) = {
-    val c911 =
-      for { i <- 0 to 9 } yield {
-        (rs.floatOpt(4 + 2 * i), rs.stringOpt(5 + 2 * i))
-      }
-    val c912 =
-      for { i <- 0 to 9 } yield {
-        (rs.floatOpt(24 + 2 * i), rs.stringOpt(25 + 2 * i))
-      }
-    SixSecRecord(c911.toArray, c912.toArray)
-  }
-
   def getRealtimeMinStatus(current:DateTime, privilege: Privilege) = {
 
     DB readOnly { implicit session =>
@@ -390,19 +379,17 @@ object Realtime {
     
   def getRealtimeWeatherMap(current:Timestamp)(implicit session: DBSession = AutoSession) = {
     val datetime = current.toDateTime 
-    val tab = Record.getTabName(TableType.SixSec)
     val records = sql"""
       SELECT *
-      FROM ${tab}
+      FROM MinRecord
       WHERE M_DateTime = ${current}
-      """.map { Record.sixSecMapper }.list.apply
+      """.map { Record.mapper }.list.apply
 
     val kvs =
       for { r <- records } yield {
-        r.monitor -> r
+        Monitor.withName(r.name) -> WeatherStat(r.wind_speed, r.wind_dir)
       }
     
     Map( kvs :_*)
   }
-  
 }

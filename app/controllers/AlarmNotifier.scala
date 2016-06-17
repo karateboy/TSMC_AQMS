@@ -12,12 +12,12 @@ import play.api.Play.current
 import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent.duration._
 
-
+import play.api.i18n._
 object AlarmNotifier {
-  def props(out: ActorRef) = Props(new AlarmNotifier(out))
+  def props(out: ActorRef)(implicit messages:Messages) = Props(new AlarmNotifier(out))
 }
 
-class AlarmNotifier(out: ActorRef) extends Actor {
+class AlarmNotifier(out: ActorRef)(implicit messages:Messages) extends Actor {
   var lastCheckTime = DateTime.now  
 
   object CmdType extends Enumeration{
@@ -49,6 +49,8 @@ class AlarmNotifier(out: ActorRef) extends Actor {
   }
   
   def checkAlarm() {
+    import Alarm2._
+    
     val userOpt = User.getUserById(userId)
     if (userOpt.isEmpty)
       return
@@ -63,7 +65,7 @@ class AlarmNotifier(out: ActorRef) extends Actor {
       val alarms = Alarm2.getAlarmByLevel(Monitor.mvList, 1, lastCheckTime, DateTime.now)
       for (ar <- alarms) {
         if (alarmConfig.monitorFilter.contains(ar.monitor)) {              
-          val msg = s"${CmdType.alert}!${ar.time.toString("MM-dd HH:mm")} ${Monitor.map(ar.monitor).name}:${ar.src}-${ar.info}}"
+          val msg = s"${CmdType.alert}!${ar.time.toString("MM-dd HH:mm")} ${Monitor.map(ar.monitor).name}:${getSrcForDisplay(ar.src)}-${ar.info}"
           out ! msg
         }
       }
