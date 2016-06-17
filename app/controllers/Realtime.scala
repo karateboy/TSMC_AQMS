@@ -204,11 +204,11 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
       val mapInfos =
         for {
           m <- Monitor.mvList
-          weather = weatherMap.getOrElse(m, Record.emptySixSecRecord(m, current, MonitorStatus.DATA_LOSS_STAT))
+          weather = weatherMap.getOrElse(m, WeatherStat(None, None))
           status = statusMap.get(m)
         } yield {
           val (statusIndex, statusStr) = getStatusIndex(status)
-          MonitorInfo(m.toString(), statusIndex, weather.winDir.last.getOrElse(0f), weather.winSpeed.last.getOrElse(0f), statusStr)
+          MonitorInfo(m.toString(), statusIndex, weather.windDir.getOrElse(0f), weather.windSpeed.getOrElse(0f), statusStr)
         }
 
       //EPA monitor
