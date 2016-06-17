@@ -223,7 +223,7 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
           m <- EpaMonitor.epaList
           weather = epaWeatherMap.getOrElse(m, Map.empty[MonitorType.Value, Float])
         } yield {
-          MonitorInfo(m.toString(), 0, weather.getOrElse(WIND_DIR, 0), weather.getOrElse(WIND_DIR, 0), "")
+          MonitorInfo(m.toString(), 0, weather.getOrElse(WIND_DIR, 0), weather.getOrElse(WIND_SPEED, 0), "")
         }
       Ok(Json.toJson(RealtimeMapInfo(mapInfos ++ epaMapInfos)))
   }
