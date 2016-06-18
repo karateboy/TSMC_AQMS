@@ -75,7 +75,7 @@ var statusIconUrl = [
  var mapLegendImgHTML = "<br/><img src='@routes.Assets.at("images/" + Messages("map_label.png"))' style='width:50%;height:50%' />";
 </script>
 <script>
-var mapCenter = new google.maps.LatLng(24.771172, 121.010949);
+var mapCenter = new google.maps.LatLng(@Monitor.getCenterLat, @Monitor.getCenterLng);
 
 // Define a property to hold the Home state.
 HomeControl.prototype.home_ = null;
