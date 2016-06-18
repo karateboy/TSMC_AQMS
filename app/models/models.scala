@@ -4,6 +4,7 @@ import scala.language.implicitConversions
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import scala.util.parsing.json.JSONFormat
+import play.api._
 
 /**
  * @author user
@@ -67,6 +68,12 @@ object ModelHelper {
     }
 
     buf.toList
+  }
+  
+  def errorHandler(prompt: String = "Error=>"): PartialFunction[Throwable, Any] = {
+    case ex: Throwable =>
+      Logger.error(prompt, ex)
+      throw ex
   }
 }
 

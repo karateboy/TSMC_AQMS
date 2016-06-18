@@ -189,8 +189,6 @@ GET		/PartManagement		controllers.Maintance.partManagement
 POST	/Part				controllers.Maintance.updatePart
 PUT		/Part				controllers.Maintance.newPart 
 DELETE  /Part/:id			controllers.Maintance.deletePart(id)
-GET		/EventLog			controllers.Maintance.eventLog
-GET		/EventLogReport/:start/:end	controllers.Maintance.eventLogReport(start, end)
 
 GET		/DutySchedule		controllers.Maintance.dutySchedule
 
