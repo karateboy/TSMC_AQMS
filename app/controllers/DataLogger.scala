@@ -125,6 +125,7 @@ class DataLogger extends Controller {
     }
     hr
   }
+
   def insertDataRecord(tabType: TableType.Value)(monitorStr: String) = Action(BodyParsers.parse.json) {
     implicit request =>
       val monitor = Monitor.withName(monitorStr)
@@ -135,7 +136,11 @@ class DataLogger extends Controller {
       },
         recordListSeq => {
           val hrList = recordListSeq.map { toHourRecord(monitor) }
-          hrList.foreach { hr => hr.save(tabType) }
+          hrList.foreach { hr =>
+            try {
+              hr.save(tabType)
+            } catch (ModelHelper.errorHandler("Failed to insert=>"))
+          }
           Ok(Json.obj("ok" -> true))
         })
   }
@@ -161,11 +166,11 @@ class DataLogger extends Controller {
     val mt = MonitorType.withName(mtCode)
 
     CalibrationItem(monitor, mt,
-      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.map{_.toFloat},
-      Some(0), json.zero_val.map{_.toFloat},
-      json.zero_dev.map{_.toFloat}, Some(0),
-      json.span_std.map{_.toFloat}, json.span_val.map{_.toFloat},
-      json.span_dev.map{_.toFloat}, json.span_dev_ratio.map{_.toFloat})
+      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.map { _.toFloat },
+      Some(0), json.zero_val.map { _.toFloat },
+      json.zero_dev.map { _.toFloat }, Some(0),
+      json.span_std.map { _.toFloat }, json.span_val.map { _.toFloat },
+      json.span_dev.map { _.toFloat }, json.span_dev_ratio.map { _.toFloat })
   }
 
   def insertCalibrationRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
@@ -178,7 +183,11 @@ class DataLogger extends Controller {
       },
         recordListSeq => {
           val calibrationList = recordListSeq.map { toCalibrationItem(_)(monitorStr) }
-          calibrationList.foreach { _.save }
+          calibrationList.foreach { calibration =>
+            try {
+              calibration.save
+            } catch (ModelHelper.errorHandler("Failed to insert calibration."))
+          }
           Ok(Json.obj("ok" -> true))
         })
   }

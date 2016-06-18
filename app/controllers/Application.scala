@@ -504,8 +504,6 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
           for (ma <- manualAuditList.list.reverse) {
             val now = DateTime.now
             val tagInfo = MonitorStatus.getTagInfo(ma.status)
-            EventLog.create(EventLog(now, EventLog.evtTypeManualAudit,
-              s"${user.name} 進行人工註記 :${new DateTime(ma.time).toString("YYYY/MM/dd HH:mm")}:${Monitor.map(ma.monitor).name}:${MonitorType.map(ma.monitorType).desp}-${MonitorStatus.map(ma.status).desp}"))
             if (tagInfo.statusType == StatusType.Manual) {
               val log = ManualAuditLog(tabType, ma.monitor, new DateTime(ma.time), ma.monitorType, now, ma.status, user.name, ma.reason)
               try {

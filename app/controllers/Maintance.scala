@@ -519,17 +519,6 @@ class Maintance @Inject()(val messagesApi: MessagesApi) extends Controller with 
     Ok(views.html.dutySchedule(""))
   }
   
-  def eventLog = Security.Authenticated {    
-    Ok(views.html.eventLog())
-  }
-  
-  def eventLogReport(startStr:String, endStr:String)= Security.Authenticated { 
-    val start = DateTime.parse(startStr)
-    val end = DateTime.parse(endStr) + 1.day
-    val logs = EventLog.getList(start, end)
-    Ok(views.html.eventLogReport(logs))
-  }
-
   def downloadNotification = Security.Authenticated {
     Ok(views.html.downloadNotification())
   }

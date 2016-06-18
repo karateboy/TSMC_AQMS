@@ -32,12 +32,9 @@ class AlarmWorker extends Actor{
           val userName = matchedUser.map { _.name}.mkString(",")
           try {
             sendAlarmEmail(matchedUser, ar)            
-            EventLog.create(EventLog(DateTime.now, EventLog.evtTypeInformAlarm,
-              s"送信警告信給${userName} ${Monitor.map(ar.monitor).name}- ${ar.time.toString("MM-dd HH:mm")} :${ar.src}-${ar.info}}"))
           } catch {
             case ex: Exception =>
               Console.print(ex.toString)
-              EventLog.create(EventLog(DateTime.now, EventLog.evtTypeInformAlarm, s"無法送信警告信給${userName}:${ex.getCause}"))
           }
         }
       }
