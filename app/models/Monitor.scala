@@ -168,6 +168,17 @@ object Monitor extends Enumeration {
     val newMap = map + (m -> newM)
     map = newMap
   }
+  
+  def getCenterLat = {
+    val monitorLatList = mvList.map{ map(_).lat}
+    monitorLatList.sum/monitorLatList.length
+  }
+  
+  def getCenterLng = {
+    val monitorLngList = mvList.map{ map(_).lng}
+    monitorLngList.sum/monitorLngList.length
+  }
+  
 }
 
 import play.api.i18n._
