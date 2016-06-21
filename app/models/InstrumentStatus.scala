@@ -34,12 +34,15 @@ object InstrumentStatus {
   implicit val jsonRead = Json.reads[InstrumentStatusJSON]
 
   def query(monitor: Monitor.Value, instrumentID: String, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
+    import java.sql.Timestamp
+    val startT:Timestamp = start
+    val endT:Timestamp = end
     DB readOnly {
       implicit session =>
         sql"""
         SELECT [instrumentID],[time],[json]
         FROM InstrumentStatus
-        WHERE monitor = ${monitor.toString} and instrumentID = ${instrumentID}
+        WHERE monitor = ${monitor.toString} and instrumentID = ${instrumentID} and time >= $startT and time < $endT
         """.map { rs =>
           val json = rs.string(3)
           Json.parse(json).validate[InstrumentStatusJSON].get }.list.apply
