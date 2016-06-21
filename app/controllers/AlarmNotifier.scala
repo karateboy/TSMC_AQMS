@@ -18,7 +18,7 @@ object AlarmNotifier {
 }
 
 class AlarmNotifier(out: ActorRef)(implicit messages:Messages) extends Actor {
-  var lastCheckTime = DateTime.now  
+  var lastId = Alarm2.getMaxId.getOrElse(0l)
 
   object CmdType extends Enumeration{
     val start = Value /* start:userId */
@@ -28,7 +28,6 @@ class AlarmNotifier(out: ActorRef)(implicit messages:Messages) extends Actor {
   val cancelable = Akka.system.scheduler.schedule(scala.concurrent.duration.Duration(10, SECONDS),
           scala.concurrent.duration.Duration(1, MINUTES), self, AlarmCheck)
 
-  var progress: Int = _
   var userId:Int = _
   def parseStartCmd(msg:String)={
     val param = msg.split(":")
@@ -62,18 +61,16 @@ class AlarmNotifier(out: ActorRef)(implicit messages:Messages) extends Actor {
     val alarmConfig = user.alarmConfig.get
 
     if (alarmConfig.enable) {
-      val alarms = Alarm2.getAlarmByLevel(Monitor.mvList, 1, lastCheckTime, DateTime.now)
+      val alarms = Alarm2.getAlarmAfterId(lastId)
       for (ar <- alarms) {
-        if (alarmConfig.monitorFilter.contains(ar.monitor)) {              
+        if (alarmConfig.monitorFilter.contains(ar.monitor) && ar.level >= Level.WARN) {              
           val msg = s"${CmdType.alert}!${ar.time.toString("MM-dd HH:mm")} ${Monitor.map(ar.monitor).name}:${getSrcForDisplay(ar.src)}-${ar.info}"
           out ! msg
         }
       }
 
       if (alarms.length != 0) {
-        val latestTime = alarms.last.time
-        lastCheckTime = latestTime.plusSeconds(1)
-
+        lastId = alarms.last.id
       }
     }
   }

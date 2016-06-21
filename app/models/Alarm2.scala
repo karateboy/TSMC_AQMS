@@ -9,7 +9,7 @@ import models._
 import play.api.i18n._
 
 case class Alarm2(monitor: Monitor.Value, time: DateTime,
-                  src: String, level: Int, info: String, ticketNo: Option[Long] = None)
+                  src: String, level: Int, info: String, ticketNo: Option[Long] = None, id:Long = 0)
 
 object Alarm2 {
   object Level {
@@ -47,7 +47,13 @@ object Alarm2 {
   }
 
   def mapper(rs: WrappedResultSet)={
-    Alarm2(Monitor.withName(rs.string("monitor")), rs.timestamp("time"), rs.string("src"), rs.int("important"), rs.string("info"), rs.longOpt("ticketNo"))
+    Alarm2(monitor=Monitor.withName(rs.string("monitor")), 
+        time = rs.timestamp("time"), 
+        src = rs.string("src"), 
+        level = rs.int("important"), 
+        info = rs.string("info"), 
+        ticketNo = rs.longOpt("ticketNo"), 
+        id = rs.long("id"))
   }
   
   def getAlarm(monitors: Seq[Monitor.Value], start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
@@ -64,6 +70,22 @@ object Alarm2 {
         """.map {mapper}.list.apply
   }
 
+  def getMaxId(implicit session: DBSession = AutoSession) = {
+    sql"""
+      SELECT max(id)
+      FROM Alarm
+      """.map { rs => rs.longOpt(1)}.single.apply.get
+  }
+  
+  def getAlarmAfterId(id:Long)(implicit session: DBSession = AutoSession) = {
+    sql"""
+        Select *
+        From alarm
+        Where id > $id
+        ORDER BY time ASC
+        """.map {mapper}.list.apply    
+  }
+  
   def getAlarmByLevel(monitors: Seq[Monitor.Value], level: Int, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
     val mStr = SQLSyntax.createUnsafely(monitors.mkString("('", "','", "')"))
     val startT: Timestamp = start
