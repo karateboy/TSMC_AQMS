@@ -182,9 +182,6 @@ class DataLogger extends Controller {
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
         recordListSeq => {
-          Logger.debug(s"Insert calibration #=${recordListSeq.length}")
-          Logger.debug(recordListSeq.toString())
-          
           val calibrationList = recordListSeq.map { toCalibrationItem(_)(monitorStr) }
           calibrationList.foreach { calibration =>
             try {
