@@ -25,7 +25,7 @@
 			<th>偏移法規值</th>
 			<th>讀值</th>
 			<th>標準值</th>
-			<th>偏移率</th>
+			<th>偏移率(%)</th>
 			<th>偏移率內控值</th>
 			<th>偏移率法規值</th>
 			<th>校正狀態</th>
@@ -33,7 +33,7 @@
 	</thead>
 	<tbody>
 		@for(item<-report){
-			<tr>
+			<tr class="align-right">
 				<td>@Monitor.map(item.monitor).name</td>
 				<td>@MonitorType.map(item.monitorType).desp</td>
 				<td>@item.startTime.toString("YYYY-MM-dd HH:mm")</td>				
