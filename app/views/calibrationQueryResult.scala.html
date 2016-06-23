@@ -43,39 +43,39 @@
 					<td>@item.endTime.toString("HH:mm")</td>
 				}
 				@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law)){
-					<td style="color:red" class="align-right">@MonitorType.format(item.monitorType, item.z_val)</td>
+					<td style="color:red" class="text-right">@MonitorType.format(item.monitorType, item.z_val)</td>
 				}else {
 					@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal)){
-						<td style="color:blue" class="align-right">@MonitorType.format(item.monitorType, item.z_val)</td>
+						<td style="color:blue" class="text-right">@MonitorType.format(item.monitorType, item.z_val)</td>
 					}else{
-						<td class="align-right">@MonitorType.format(item.monitorType, item.z_val)</td>	
+						<td class="text-right">@MonitorType.format(item.monitorType, item.z_val)</td>	
 					}
 				}
-				<td class="align-right">@MonitorType.map(item.monitorType).zd_internal</td>
-				<td class="align-right">@MonitorType.map(item.monitorType).zd_law</td>
-				<td class="align-right">@MonitorType.format(item.monitorType, item.s_sval)</td>
-				<td class="align-right">@MonitorType.format(item.monitorType, item.s_std)</td>
+				<td class="text-right">@MonitorType.map(item.monitorType).zd_internal</td>
+				<td class="text-right">@MonitorType.map(item.monitorType).zd_law</td>
+				<td class="text-right">@MonitorType.format(item.monitorType, item.s_sval)</td>
+				<td class="text-right">@MonitorType.format(item.monitorType, item.s_std)</td>
 				@if(!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)){
-					<td style="color:red" class="align-right">@MonitorType.format(item.monitorType, item.sd_pnt)</td>
+					<td style="color:red" class="text-right">@MonitorType.format(item.monitorType, item.sd_pnt)</td>
 				}else {
 					@if(!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)){
-						<td style="color:blue" class="align-right">@MonitorType.format(item.monitorType, item.sd_pnt)</td>
+						<td style="color:blue" class="text-right">@MonitorType.format(item.monitorType, item.sd_pnt)</td>
 					}else{
-						<td class="align-right">@MonitorType.format(item.monitorType, item.sd_pnt)</td>	
+						<td class="text-right">@MonitorType.format(item.monitorType, item.sd_pnt)</td>	
 					}
 				} 
 				
-				<td class="align-right">@MonitorType.map(item.monitorType).sd_internal</td>
-				<td class="align-right">@MonitorType.map(item.monitorType).sd_law</td>
+				<td class="text-right">@MonitorType.map(item.monitorType).sd_internal</td>
+				<td class="text-right">@MonitorType.map(item.monitorType).sd_law</td>
 				@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law) || 
 					!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)){
-					<td style="color:red" class="align-right">失敗</td>
+					<td style="color:red" class="text-right">失敗</td>
 				}else {
 					@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal) || 
 						!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)){
-						<td style="color:blue" class="align-right">成功</td>
+						<td style="color:blue" class="text-right">成功</td>
 					}else{
-						<td class="align-right">成功</td>	
+						<td class="text-right">成功</td>	
 					}
 				} 
 				
