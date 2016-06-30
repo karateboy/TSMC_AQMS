@@ -8,7 +8,7 @@
             		<a data-toggle="collapse" data-parent="#accordion" href="#reportParam">選擇測站 (僅提供監測現場網路使用)</a>	
                 </div>
             	<div class="panel-body panel-collapse in" id="reportParam">
-            		<img alt="image" class="img-circle" src='@routes.Assets.at("images/cctv.png")' />
+            		<img alt="image" class="img-circle" src='@routes.Assets.at("images/cctv.png")' />            		
             		<h5>測站</h5>
             		<div class="btn-group" data-toggle="buttons">
             			@for(m<-privilege.allowedMonitors){
@@ -24,6 +24,12 @@
             	<div class="panel-heading panel-title"" >
             		<a data-toggle="collapse" data-parent="#accordion" href="#monitorReport">測站影像</a>	
                 </div>
+                <div class="alert alert-info">
+            			<p>僅支援IE</p>
+ 						<p>device serial number : 0018AE5D2292</p> 
+ 						<p>username: admin</p>
+ 						<p>password: 123456</p>
+ 				</div>
                 <div id="realtimeImage" align='center'></div>
         	</div> <!-- end of panel group -->
     	</div>
