@@ -170,7 +170,7 @@ class DataLogger extends Controller {
       Some(0), json.zero_val.map { _.toFloat },
       json.zero_dev.map { _.toFloat }, Some(0),
       json.span_std.map { _.toFloat }, json.span_val.map { _.toFloat },
-      json.span_dev.map { _.toFloat }, json.span_dev_ratio.map { _.toFloat })
+      json.span_dev.map { _.toFloat }, json.span_dev_ratio.map { _.toFloat*100 })
   }
 
   def insertCalibrationRecord(monitorStr: String) = Action(BodyParsers.parse.json) {

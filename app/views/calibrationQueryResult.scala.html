@@ -9,7 +9,7 @@
 <span style="color:blue">超過內控值</span>
 <span style="color:red">超過法規值</span>
 
-<table id="calibrationReport" class="table compact">
+<table id="calibrationReport" class="table table-condensed table-hover">
 	<thead>
 		<tr>
 			<th rowspan='2'>測站名稱</th>
@@ -25,7 +25,7 @@
 			<th>偏移法規值</th>
 			<th>讀值</th>
 			<th>標準值</th>
-			<th>偏移率</th>
+			<th>偏移率(%)</th>
 			<th>偏移率內控值</th>
 			<th>偏移率法規值</th>
 			<th>校正狀態</th>
@@ -33,7 +33,7 @@
 	</thead>
 	<tbody>
 		@for(item<-report){
-			<tr>
+			<tr class="text-right">
 				<td>@Monitor.map(item.monitor).name</td>
 				<td>@MonitorType.map(item.monitorType).desp</td>
 				<td>@item.startTime.toString("YYYY-MM-dd HH:mm")</td>				
@@ -43,39 +43,39 @@
 					<td>@item.endTime.toString("HH:mm")</td>
 				}
 				@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law)){
-					<td style="color:red">@MonitorType.format(item.monitorType, item.z_val)</td>
+					<td style="color:red" >@MonitorType.format(item.monitorType, item.z_val)</td>
 				}else {
 					@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal)){
-						<td style="color:blue">@MonitorType.format(item.monitorType, item.z_val)</td>
+						<td style="color:blue" >@MonitorType.format(item.monitorType, item.z_val)</td>
 					}else{
-						<td>@MonitorType.format(item.monitorType, item.z_val)</td>	
+						<td >@MonitorType.format(item.monitorType, item.z_val)</td>	
 					}
 				}
-				<td>@MonitorType.map(item.monitorType).zd_internal</td>
-				<td>@MonitorType.map(item.monitorType).zd_law</td>
-				<td>@MonitorType.format(item.monitorType, item.s_sval)</td>
-				<td>@MonitorType.format(item.monitorType, item.s_std)</td>
+				<td >@MonitorType.map(item.monitorType).zd_internal</td>
+				<td >@MonitorType.map(item.monitorType).zd_law</td>
+				<td >@MonitorType.format(item.monitorType, item.s_sval)</td>
+				<td >@MonitorType.format(item.monitorType, item.s_std)</td>
 				@if(!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)){
-					<td style="color:red">@MonitorType.format(item.monitorType, item.sd_pnt)</td>
+					<td style="color:red" >@MonitorType.format(item.monitorType, item.sd_pnt)</td>
 				}else {
 					@if(!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)){
-						<td style="color:blue">@MonitorType.format(item.monitorType, item.sd_pnt)</td>
+						<td style="color:blue" >@MonitorType.format(item.monitorType, item.sd_pnt)</td>
 					}else{
-						<td>@MonitorType.format(item.monitorType, item.sd_pnt)</td>	
+						<td >@MonitorType.format(item.monitorType, item.sd_pnt)</td>	
 					}
 				} 
 				
-				<td>@MonitorType.map(item.monitorType).sd_internal</td>
-				<td>@MonitorType.map(item.monitorType).sd_law</td>
+				<td >@MonitorType.map(item.monitorType).sd_internal</td>
+				<td >@MonitorType.map(item.monitorType).sd_law</td>
 				@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_law) || 
 					!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_law)){
-					<td style="color:red">失敗</td>
+					<td style="color:red" >失敗</td>
 				}else {
 					@if(!passStandard(item.z_val, MonitorType.map(item.monitorType).zd_internal) || 
 						!passStandard(item.sd_pnt, MonitorType.map(item.monitorType).sd_internal)){
-						<td style="color:blue">成功</td>
+						<td style="color:blue" >成功</td>
 					}else{
-						<td>成功</td>	
+						<td >成功</td>	
 					}
 				} 
 				
