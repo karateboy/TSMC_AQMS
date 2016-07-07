@@ -58,6 +58,17 @@
 .PSI4_BG {border: outset 1px #a0a0a0}
 .PSI5_BG {border: outset 1px #a0a0a0}
 
+.FPMI1 { background-color:rgb(156, 255, 156); }
+.FPMI2 { background-color:rgb(49, 255, 0); }
+.FPMI3 { background-color:rgb(49, 207, 0); }
+.FPMI4 { background-color:rgb(255, 255, 0); }
+.FPMI5 { background-color:rgb(255, 207, 0); }
+.FPMI6 { background-color:rgb(255, 154, 0); }
+.FPMI7 { background-color:rgb(255, 100, 100); }
+.FPMI8 { background-color:rgb(255, 0, 0); color: rgb(255, 255, 255);}
+.FPMI9 { background-color:rgb(153, 0, 0); color: rgb(255, 255, 255);}
+.FPMI10 { background-color:rgb(206, 48, 255); color: rgb(255, 255, 255);}
+
 .pdf {
     color: red;
     text-shadow: 3px 3px 3px #0;    
