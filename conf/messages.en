@@ -71,6 +71,7 @@ dashboard.windDir=Wind Direction
 dashboard.legend=Legend
 rtStatus.title1=Air/Weather realtime data
 rtStatus.title2=PSI
+rtStatus.title3=PM2.5 Index
 rtStatus.monitor=Terminal
 rtStatus.LawStd=Regulation Standard
 rtStatus.internalStd=Internal Threshold

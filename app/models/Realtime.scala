@@ -13,12 +13,12 @@ case class RealtimeStatus(data: Map[Monitor.Value, Map[MonitorType.Value, (Optio
 //case class SixSecRecord(c911: Array[(Option[Float], Option[String])], c912: Array[(Option[Float], Option[String])])
 case class WeatherStat(windSpeed: Option[Float], windDir: Option[Float])
 object Realtime {
-  def getRealtimeMinStatus(current:DateTime, privilege: Privilege) = {
+  def getRealtimeMinStatus(current: DateTime, privilege: Privilege) = {
 
     DB readOnly { implicit session =>
       val tab_name = Record.getTabName(TableType.Min)
       val hrs =
-            sql"""
+        sql"""
               SELECT *
               FROM ${tab_name}
               WHERE M_DateTime = ${current}
@@ -37,8 +37,8 @@ object Realtime {
 
           val hr = hrMap.getOrElse(m, emptyRecord(Monitor.map(m).id, current))
           val type_record = monitorTypeProject2
-          .map(
-            t => (t._1 -> t._2(hr)))
+            .map(
+              t => (t._1 -> t._2(hr)))
           (m -> type_record)
         }
       Map(rt_result: _*)
@@ -53,15 +53,15 @@ object Realtime {
     MonitorStatusFilter.isMatched(msf, stat)
   }
 
-  def getMonitorTypeAvg(monitor: Monitor.Value, monitorType: MonitorType.Value, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
-
+  def getMonitorTypeAvg(monitor: Monitor.Value, monitorType: MonitorType.Value,
+                        start: DateTime, end: DateTime, validMin: Int)(implicit session: DBSession = AutoSession) = {
     val records = getHourRecords(monitor, start, end)
     val typeValues = records.map { hr => monitorTypeProject2(monitorType)(hr) }
     val duration = new Duration(start, end)
     val nHour = duration.getStandardHours
     val validValues = typeValues.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
     val total = validValues.length
-    if (total == 0 || total != nHour)
+    if (total < validMin)
       None
     else {
       val sum = validValues.sum
@@ -69,12 +69,11 @@ object Realtime {
     }
   }
 
-
-  def getMonitorTypeAvg(records: List[HourRecord], monitorType: MonitorType.Value) = {
+  def getMonitorTypeAvg(records: List[HourRecord], monitorType: MonitorType.Value, validMin: Int) = {
     val typeValues = records.map { hr => monitorTypeProject2(monitorType)(hr) }
     val validValues = typeValues.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
     val total = validValues.length
-    if (total == 0)
+    if (total < validMin)
       None
     else {
       Some(validValues.sum / total)
@@ -94,17 +93,16 @@ object Realtime {
 
   def getMonitorType8HourAvgMax(monitor: Monitor.Value, monitorType: MonitorType.Value, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
     def EightHourAvg(start: DateTime): List[Option[Float]] = {
-      if (start + 8.hour>= end)
+      if (start + 8.hour >= end)
         Nil
       else
-        getMonitorTypeAvg(monitor, monitorType, start, end) :: EightHourAvg(start + 1.hours)
+        getMonitorTypeAvg(monitor, monitorType, start, end, 8) :: EightHourAvg(start + 1.hours)
     }
 
     val avgs = EightHourAvg(start)
-    
+
     avgs.max
   }
-  
 
   def pm10PSI(ov: Option[Float]) = {
     if (ov.isEmpty)
@@ -215,19 +213,29 @@ object Realtime {
         }
       }
   }
-  
-  def getMonitorRealtimePSI(monitor: Monitor.Value, current:DateTime)(implicit session: DBSession = AutoSession) = {
-    val pm10_12 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), current - 11.hour, current + 1.hour)
-    val pm10_4 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), current - 3.hour, current + 1.hour)
-    val pm10 = if(pm10_12.isDefined && pm10_4.isDefined)
-          Some((pm10_12.get + pm10_4.get) / 2)
-        else
-          None
-          
-    val so2_24 = getMonitorTypeAvg(monitor, MonitorType.withName("A222"), current - 23.hour, current + 1.hour)
-    val co_8 = getMonitorTypeAvg(monitor, MonitorType.withName("A224"), current - 7.hour, current + 1.hour)
-    val o3 = getMonitorTypeAvg(monitor, MonitorType.withName("A225"), current, current + 1.hour)
-    val no2 = getMonitorTypeAvg(monitor, MonitorType.withName("A293"), current, current + 1.hour)
+
+  def getMonitorRealtimePm25(monitor: Monitor.Value, lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
+    val pm25_12Opt = getMonitorTypeAvg(monitor, MonitorType.withName("A215"), lastHour - 11.hour, lastHour + 1.hour, 8)
+    val pm25_4Opt = getMonitorTypeAvg(monitor, MonitorType.withName("A215"), lastHour - 3.hour, lastHour + 1.hour, 3)
+
+    for {
+      pm25_12 <- pm25_12Opt
+      pm25_4 <- pm25_4Opt
+    } yield Math.round(pm25_12 / 2 + pm25_4 / 2)
+  }
+
+  def getMonitorRealtimePSI(monitor: Monitor.Value, lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
+    val pm10_12 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), lastHour - 11.hour, lastHour + 1.hour, 8)
+    val pm10_4 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), lastHour - 3.hour, lastHour + 1.hour, 3)
+    val pm10 = if (pm10_12.isDefined && pm10_4.isDefined)
+      Some((pm10_12.get + pm10_4.get) / 2)
+    else
+      None
+
+    val so2_24 = getMonitorTypeAvg(monitor, MonitorType.withName("A222"), lastHour - 23.hour, lastHour + 1.hour, 16)
+    val co_8 = getMonitorTypeAvg(monitor, MonitorType.withName("A224"), lastHour - 7.hour, lastHour + 1.hour, 6)
+    val o3 = getMonitorTypeAvg(monitor, MonitorType.withName("A225"), lastHour, lastHour + 1.hour, 1)
+    val no2 = getMonitorTypeAvg(monitor, MonitorType.withName("A293"), lastHour, lastHour + 1.hour, 1)
     val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
       MonitorType.withName("A214") -> (pm10, pm10PSI(pm10)),
       MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
@@ -236,33 +244,33 @@ object Realtime {
       MonitorType.withName("A293") -> (no2, no2PSI(no2)))
     val sub_psi = result.values.map(_._2)
     val psi = sub_psi.toList.max
-    
+
     (psi, result)
   }
-  
-  case class PsiReport(psi:Option[Float], sub_map:Map[MonitorType.Value, (Option[Float], Option[Float])])
-  
-  def getMonitorMonthlyPSI(monitor: Monitor.Value, start:DateTime)={
+
+  case class PsiReport(psi: Option[Float], sub_map: Map[MonitorType.Value, (Option[Float], Option[Float])])
+
+  def getMonitorMonthlyPSI(monitor: Monitor.Value, start: DateTime) = {
     val end = start + 1.month
-    
-    def helper(day:DateTime):List[PsiReport]={
-      if(day >= end)
+
+    def helper(day: DateTime): List[PsiReport] = {
+      if (day >= end)
         Nil
       else
-        getMonitorDailyPSI(monitor, day)::helper(day + 1.day)
+        getMonitorDailyPSI(monitor, day) :: helper(day + 1.day)
     }
-    
+
     helper(start)
   }
-  
-  def getMonitorDailyPSI(monitor: Monitor.Value, current:DateTime)(implicit session: DBSession = AutoSession) = {
-    val day_hr_records = getHourRecords(monitor, current, current+1.day)
-    val pm10_24 = getMonitorTypeAvg(day_hr_records, MonitorType.withName("A214"))          
-    val so2_24 = getMonitorTypeAvg(day_hr_records, MonitorType.withName("A222"))
+
+  def getMonitorDailyPSI(monitor: Monitor.Value, current: DateTime)(implicit session: DBSession = AutoSession) = {
+    val day_hr_records = getHourRecords(monitor, current, current + 1.day)
+    val pm10_24 = getMonitorTypeAvg(day_hr_records, MonitorType.withName("A214"), 16)
+    val so2_24 = getMonitorTypeAvg(day_hr_records, MonitorType.withName("A222"), 16)
     val o3 = getMonitorTypeMax(day_hr_records, MonitorType.withName("A225"))
     val no2 = getMonitorTypeMax(day_hr_records, MonitorType.withName("A293"))
-    
-    val co_8 = getMonitorType8HourAvgMax(monitor, MonitorType.withName("A224"), current, current+1.day)
+
+    val co_8 = getMonitorType8HourAvgMax(monitor, MonitorType.withName("A224"), current, current + 1.day)
     val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
       MonitorType.withName("A214") -> (pm10_24, pm10PSI(pm10_24)),
       MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
@@ -271,29 +279,29 @@ object Realtime {
       MonitorType.withName("A293") -> (no2, no2PSI(no2)))
     val sub_psi = result.values.map(_._2)
     val psi = sub_psi.toList.max
-    
+
     PsiReport(psi, result)
   }
-  
-  def getPsiLevel(v:Float)={
-    if(v<=50)
+
+  def getPsiLevel(v: Float) = {
+    if (v <= 50)
       "PSI1"
-    else if(v<=100)
+    else if (v <= 100)
       "PSI2"
-    else if(v<=199)
+    else if (v <= 199)
       "PSI3"
-    else if(v<=299)
+    else if (v <= 299)
       "PSI4"
     else
-      "PSI5"      
+      "PSI5"
   }
-  
-  def getRealtimePSI(current:DateTime, monitorList:List[Monitor.Value] = Monitor.mvList)(implicit session: DBSession = AutoSession) = {
+
+  def getRealtimePSI(lastHour: DateTime, monitorList: List[Monitor.Value] = Monitor.mvList)(implicit session: DBSession = AutoSession) = {
     val result =
       for {
         m <- monitorList
-      } yield {        
-        m -> getMonitorRealtimePSI(m, current)
+      } yield {
+        m -> getMonitorRealtimePSI(m, lastHour)
       }
     Map(result: _*)
   }
@@ -313,28 +321,48 @@ object Realtime {
       getMonitorRealtimePSI(m, hr)
     }
   }
-  
-  def getLatestRecordTime(tabType:TableType.Value)(implicit session: DBSession = AutoSession) = {
+
+  def getPm25Level(v: Int) = {
+    val ceil_level = List(11, 23, 35, 41, 47, 53, 58, 64, 70).zipWithIndex
+
+    val ceil_levelOpt = ceil_level.find(c_l =>
+      v <= c_l._1)
+
+    val levelOpt = ceil_levelOpt.map(_._1 + 1)
+    levelOpt.getOrElse(10)
+  }
+
+  def getRealtimePm25(lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
+    val result =
+      for {
+        m <- Monitor.mvList
+      } yield {
+        m -> getMonitorRealtimePm25(m, lastHour).map { pm25 => (pm25, getPm25Level(pm25)) }
+      }
+    Map(result: _*)
+  }
+
+  def getLatestRecordTime(tabType: TableType.Value)(implicit session: DBSession = AutoSession) = {
     val tab_name = Record.getTabName(tabType)
     sql"""
       SELECT TOP 1 M_DateTime
       FROM ${tab_name}
       ORDER BY M_DateTime  DESC
-      """.map { r=>r.timestamp(1) }.single.apply  
+      """.map { r => r.timestamp(1) }.single.apply
   }
-  
-  def getLatestMonitorRecordTime(tabType:TableType.Value, m:Monitor.Value)(implicit session: DBSession = AutoSession) = {
+
+  def getLatestMonitorRecordTime(tabType: TableType.Value, m: Monitor.Value)(implicit session: DBSession = AutoSession) = {
     val tab_name = Record.getTabName(tabType)
     sql"""
       SELECT TOP 1 M_DateTime
       FROM ${tab_name}
       WHERE DP_NO = ${m.toString}
       ORDER BY M_DateTime  DESC
-      """.map { r=>r.timestamp(1) }.single.apply  
+      """.map { r => r.timestamp(1) }.single.apply
   }
-  
-  def getRealtimeMonitorValueMap(mt:MonitorType.Value, current:Timestamp)(implicit session: DBSession = AutoSession) = {
-    val datetime = current.toDateTime 
+
+  def getRealtimeMonitorValueMap(mt: MonitorType.Value, current: Timestamp)(implicit session: DBSession = AutoSession) = {
+    val datetime = current.toDateTime
     val tab = Record.getTabName(TableType.Min)
     val records = sql"""
       SELECT *
@@ -347,12 +375,12 @@ object Realtime {
         val t = Record.monitorTypeProject2(mt)(r)
         Monitor.withName(r.name) -> t
       }
-    
-    Map( kvs :_*)
+
+    Map(kvs: _*)
   }
-  
-  def getRealtimeMonitorStatusMap(current:Timestamp)(implicit session: DBSession = AutoSession) = {
-    val datetime = current.toDateTime 
+
+  def getRealtimeMonitorStatusMap(current: Timestamp)(implicit session: DBSession = AutoSession) = {
+    val datetime = current.toDateTime
     val tab = Record.getTabName(TableType.Min)
     val records = sql"""
       SELECT *
@@ -360,25 +388,23 @@ object Realtime {
       WHERE M_DateTime = ${current}
       """.map { Record.mapper }.list.apply
 
-    
     val kvs =
       for { r <- records } yield {
         val monitor = Monitor.withName(r.name)
-        val statusPairs = 
-          for(mt <- Monitor.map(monitor).monitorTypes)
-            yield{
-              mt->Record.monitorTypeProject2(mt)(r)._2
+        val statusPairs =
+          for (mt <- Monitor.map(monitor).monitorTypes) yield {
+            mt -> Record.monitorTypeProject2(mt)(r)._2
           }
-        
-        val statusMap = Map(statusPairs: _*) 
+
+        val statusMap = Map(statusPairs: _*)
         monitor -> statusMap
       }
-    
-    Map( kvs :_*)
+
+    Map(kvs: _*)
   }
-    
-  def getRealtimeWeatherMap(current:Timestamp)(implicit session: DBSession = AutoSession) = {
-    val datetime = current.toDateTime 
+
+  def getRealtimeWeatherMap(current: Timestamp)(implicit session: DBSession = AutoSession) = {
+    val datetime = current.toDateTime
     val records = sql"""
       SELECT *
       FROM MinRecord
@@ -389,7 +415,7 @@ object Realtime {
       for { r <- records } yield {
         Monitor.withName(r.name) -> WeatherStat(r.wind_speed, r.wind_dir)
       }
-    
-    Map( kvs :_*)
+
+    Map(kvs: _*)
   }
 }

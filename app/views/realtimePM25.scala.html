@@ -1,0 +1,107 @@
+@* realtimePM25 Template File *@
+@(pm25Map: Map[Monitor.Value, Option[(Int, Int)]], privilege: Privilege)(implicit messages:Messages)
+<div class="row">
+	<div class = "col-lg-offset-1 col-lg-10">
+	<br/>
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>@Messages("rtStatus.monitor")</th>
+				<th>指標等級</th>
+				<th>PM2.5濃度(μg/m3)</th>
+			</tr>
+		</thead>
+		<tbody>
+			@for(m <- privilege.allowedMonitors){
+				<tr>
+					<td>@Monitor.map(m).name</td>
+					@if(pm25Map(m).isDefined){
+						<td class="FPMI@pm25Map(m).get._2">@pm25Map(m).get._2</td>
+						<td class="FPMI@pm25Map(m).get._2">@pm25Map(m).get._1</td>
+					}else{
+						<td>-</td>
+						<td>-</td>					
+					}
+				</tr> 
+			}
+		</tbody>	
+	</table>
+	</div>
+</div>
+<br/>
+<div class="row">
+	<div class = "col-lg-offset-1 col-lg-10">
+<h2>細懸浮微粒(PM2.5)指標對照表與活動建議</h2>
+<table class="table table-bordered">
+<tbody>
+	<tr>
+		<th>指標等級</th>
+		<td>1</td>
+		<td>2</td>
+		<td>3</td>
+		<td>4</td>
+		<td>5</td>
+		<td>6</td>
+		<td>7</td>
+		<td>8</td>
+		<td>9</td>
+		<td>10</td>
+	</tr>	
+	<tr>
+		<th>分類</th>
+		<td class="FPMI1">低</td>
+		<td class="FPMI2">低</td>
+		<td class="FPMI3">低</td>
+		<td class="FPMI4">中</td>
+		<td class="FPMI5">中</td>
+		<td class="FPMI6">中</td>
+		<td class="FPMI7">高</td>
+		<td class="FPMI8">高</td>
+		<td class="FPMI9">高</td>
+		<td class="FPMI10">非常高</td>		
+	</tr>
+		<tr>
+		<th>PM2.5濃度(μg/m3)</th>
+		<td class="FPMI1">0-11</td>
+		<td class="FPMI2">12-23</td>
+		<td class="FPMI3">24-35</td>
+		<td class="FPMI4">36-41</td>
+		<td class="FPMI5">42-47</td>
+		<td class="FPMI6">48-53</td>
+		<td class="FPMI7">54-58</td>
+		<td class="FPMI8">59-64</td>
+		<td class="FPMI9">65-70</td>
+		<td class="FPMI10">≧71</td>		
+	</tr>	
+	<tr>
+		<th>一般民眾活動建議</th>
+		<td colspan="3">正常戶外活動。</td>
+		<td colspan="3">正常戶外活動。</td>
+		<td colspan="3">任何人如果有不適，如眼痛，咳嗽或喉嚨痛等，應該考慮減少戶外活動。</td>
+		<td colspan="3">任何人如果有不適，如眼痛，咳嗽或喉嚨痛等，應減少體力消耗，特別是減少戶外活動。</td>
+	</tr>
+	<tr>
+		<th>敏感性族群活動建議</th>
+		<td colspan="3">正常戶外活動。</td>
+		<td colspan="3">有心臟、呼吸道及心血管疾病的成人與孩童感受到癥狀時，應考慮減少體力消耗，特別是減少戶外活動。</td>
+		<td colspan="3">
+			1. 有心臟、呼吸道及心血管疾病的成人與孩童，應減少體力消耗，特別是減少戶外活動。<br/>
+			2. 老年人應減少體力消耗。<br/> 
+			3. 具有氣喘的人可能需增加使用吸入劑的頻率。
+		</td>
+		<td colspan="3">
+			1. 有心臟、呼吸道及心血管疾病的成人與孩童，以及老年人應避免體力消耗，特別是避免戶外活動。<br/>
+			2. 具有氣喘的人可能需增加使用吸入劑的頻率。
+		</td>
+	</tr>
+</tbody>
+</table>
+<br/> 
+<h2>細懸浮微粒(PM2.5)指標說明</h2>
+<ul class="text-justify">
+	<li>本署發現在東北季風盛行的秋、冬季節，懸浮微粒往往造成成空氣品質不良主因，而粒徑小於2.5微米的細懸浮微粒，對健康影響更大，因此環保署在網站上提供即時簡單易懂的細懸浮微粒(PM2.5)空氣品質指標資訊。</li>
+	<li>本署蒐集分析主要國家的空氣品質指中細懸浮微粒(PM2.5)項目，參採英國每日空氣品質指標(Daily Air Quality Index, DAQI)的細懸浮微粒(PM2.5)預警濃度分級，將指標區分為10級並以顏色示警，例如當細懸浮微粒濃度達36 μg/m3（第4級）起，敏感性族群需開始注意戶外活動及身體情況，而一般健康民眾則於第7級(54 μg/m3)需開始注意戶外活動的強度，相關即時空氣品質訊息於環保署空氣品質監測網參閱(http://taqm.epa.gov.tw/)。</li>
+	<li>本署自2014年10月1日起實施「細懸浮微粒(PM2.5)指標」，提供民眾日常生活上之行動建議，在即將到來的秋、冬季節前，與現有空氣污染指標(PSI)併行，提升對民眾的健康保障。即時細懸浮微粒(PM2.5)指標計算方式：0.5 × 前12小時平均 + 0.5 × 前4小時平均 (前4小時3筆有效，前12小時8筆有效）</li>
+</ul>
+</div>
+</div>

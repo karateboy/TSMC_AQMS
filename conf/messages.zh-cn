@@ -71,6 +71,7 @@ dashboard.windDir= 风向
 dashboard.legend= 图例
 rtStatus.title1= 空气质量 / 气象 实时数据
 rtStatus.title2=PSI 实时数据
+rtStatus.title3=PM2.5实时数据
 rtStatus.monitor= 测站
 rtStatus.LawStd= 法规值
 rtStatus.internalStd= 内控值
