@@ -328,7 +328,7 @@ object Realtime {
     val ceil_levelOpt = ceil_level.find(c_l =>
       v <= c_l._1)
 
-    val levelOpt = ceil_levelOpt.map(_._1 + 1)
+    val levelOpt = ceil_levelOpt.map(_._2 + 1)
     levelOpt.getOrElse(10)
   }
 
