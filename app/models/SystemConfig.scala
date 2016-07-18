@@ -14,6 +14,7 @@ import EnumUtils._
 object SystemConfig{
   val AutoAuditAsNormal = "AutoAuditAsNormal"
   val DownloadLink = "DownloadLink"
+  val ApplyCalibration = "ApplyCalibration"
   
   private val MaxFileLink = 10
   def getFreeDownloadLink():Int = {
@@ -41,7 +42,9 @@ object SystemConfig{
     val path = SystemConfig.getConfig(DownloadLink + n, "")
     new File(path)
   }
-    
+  
+  def getApplyCalibration = SystemConfig.getConfig(ApplyCalibration, "True").toBoolean
+  
   var map = {
     val configPair =
       DB readOnly {
