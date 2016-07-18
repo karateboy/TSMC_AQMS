@@ -44,6 +44,7 @@ object SystemConfig{
   }
   
   def getApplyCalibration = SystemConfig.getConfig(ApplyCalibration, "True").toBoolean
+  def setApplyCalibration(apply:Boolean) = SystemConfig.setConfig(ApplyCalibration, apply.toString())
   
   var map = {
     val configPair =

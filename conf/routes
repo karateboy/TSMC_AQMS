@@ -160,6 +160,8 @@ GET		/InstrumentReport/:monitor/:instrument/:start/:end controllers.Application.
 GET		/PDF/InstrumentReport/:monitor/:instrument/:start/:end controllers.Application.instrumentReport(monitor, instrument, start, end, outputTypeStr="pdf")
 
 POST	/AutoAuditNormal/:boolStr	controllers.Application.setAutoAuditNormal(boolStr)
+POST	/ApplyCalibration/:boolStr	controllers.Application.setApplyCalibration(boolStr)
+
 GET		/MyTicket			controllers.Maintance.myTicket
 GET		/NewTicket			controllers.Maintance.newTicket
 POST	/NewTicket/:id		controllers.Maintance.newTicketAction(id)
