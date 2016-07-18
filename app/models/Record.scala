@@ -28,12 +28,12 @@ object TableType extends Enumeration {
   val Min = Value("Min")
   val Hour = Value("Hour")
   val defaultMap = Map((SixSec -> "六秒資料"), (Min -> "分鐘資料"), (Hour -> "小時資料"))
-  def map(key:TableType.Value)(implicit messages:Messages) = {
+  def map(key: TableType.Value)(implicit messages: Messages) = {
     val messageKey = s"dataSet.$key"
-    if(Messages.isDefinedAt(messageKey))
+    if (Messages.isDefinedAt(messageKey))
       Messages(messageKey)
     else
-      defaultMap(key)    
+      defaultMap(key)
   }
 }
 
@@ -787,6 +787,9 @@ object Record {
                      monitorStatusFilter: MonitorStatusFilter.Value = MonitorStatusFilter.ValidData) = {
 
     DB readOnly { implicit session =>
+      //Apply calibration 
+      val calibrationMap = Calibration.getDailyCalibrationMap(monitor, start)
+
       val originalList = getHourRecords(monitor, start, start + 1.day)
       val recordMap = Map(originalList.map { r => r.date -> r }: _*)
 
@@ -823,7 +826,13 @@ object Record {
           mt <- includeTypes
           t = monitorTypeProject2(mt)
           total = recordMap.size
-          projections = reportList.map(rs => (rs.date, t(rs)._1, t(rs)._2))
+          projections = reportList.map { rs =>
+            if (SystemConfig.getApplyCalibration && calibrationMap.contains(mt)){
+              val calibrated = calibrationMap(mt).calibrate(t(rs)._1) 
+              (rs.date, calibrated, t(rs)._2)
+            }else
+              (rs.date, t(rs)._1, t(rs)._2)
+          }
           validStat = { t: (Timestamp, Option[Float], Option[String]) =>
             statusFilter(t._1, (t._2, t._3))
           }
@@ -956,13 +965,14 @@ object Record {
     Map(statList: _*)
   }
 
-  def getWindRose(monitor: Enumeration#Value, epa: Boolean, monitorType:MonitorType.Value, start: DateTime, end: DateTime, level: List[Float], nDiv: Int = 16) = {
+  def getWindRose(monitor: Enumeration#Value, epa: Boolean, monitorType: MonitorType.Value, start: DateTime, end: DateTime, level: List[Float], nDiv: Int = 16) = {
     val windRecords = if (!epa) {
       val records = getHourRecords(monitor.asInstanceOf[Monitor.Value], start, end)
       Record.monitorTypeProject2(monitorType)
       records.map { r =>
         val mtValue = Record.monitorTypeProject2(monitorType)(r)._1
-        (r.wind_dir, mtValue) }
+        (r.wind_dir, mtValue)
+      }
     } else {
       val mtValue = getEpaHourRecord(monitor.asInstanceOf[EpaMonitor.Value], monitorType, start, end)
       val mtValueMap = mtValue.map { r => r.time -> r.value }.toMap

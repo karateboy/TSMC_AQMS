@@ -51,6 +51,20 @@ object Calibration {
             """.update.apply
       }
     }
+
+    def success = {
+      passStandard(z_val, MonitorType.map(monitorType).zd_law) &&
+        passStandard(sd_pnt, MonitorType.map(monitorType).sd_law)
+    }
+
+    def calibrate(valueOpt: Option[Float]) = {
+      for {
+        value <- valueOpt
+        zero <- z_val
+        standard_span <- s_std
+        calibration_span <- s_sval
+      } yield (value - zero) * (standard_span/calibration_span)
+    }
   }
 
   def mapper(rs: WrappedResultSet) = {
@@ -120,7 +134,7 @@ object Calibration {
       """.map { r => r.timestamp(1) }.single.apply
     }
   }
-  
+
   def passStandard(vOpt: Option[Float], stdOpt: Option[Float]) = {
     val retOpt =
       for {
@@ -134,4 +148,21 @@ object Calibration {
     retOpt.fold(true)(v => v)
   }
 
+  def getDailyCalibrationMap(monitor: Monitor.Value, date: DateTime) = {
+    val begin = date.toDate
+    val end = (date + 1.day).toDate
+
+    val calibrationList =
+      DB readOnly { implicit session =>
+        sql"""
+      SELECT *
+      FROM Calibration
+      Where DP_NO=${monitor.toString} and S_DateTime between ${begin} and ${end}
+      Order by S_DateTime
+      """.map { mapper }.list.apply
+
+      }
+
+    calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
+  }
 }
