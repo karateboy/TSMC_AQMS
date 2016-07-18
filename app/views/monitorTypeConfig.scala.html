@@ -1,6 +1,6 @@
 @* monitorTypeConfig Template File *@
 @import MonitorType._
-@(autoAuditNormal:Boolean)(implicit messages:Messages)
+@(autoAuditNormal:Boolean, applyCalibration:Boolean)(implicit messages:Messages)
 <div class="row">
     <div class="col-lg-12">
     	<div class="panel panel-primary">
@@ -29,6 +29,26 @@
 							<div class="col-lg-1">
                 				<input id="autoAuditNormal" name='autoAuditNormal' type="checkbox" class="form-control" readonly
                 					@if(autoAuditNormal){
+                						checked
+                					}
+                				>
+                			</div>																										
+						</div>						
+				</form>        		
+        	</div>
+    	</div>
+    	<div class="panel panel-primary">
+    		<div class="panel-heading panel-title"" >
+        		<a data-toggle="collapse" data-parent="#accordion">報表使用前日校正結果計算</a>	
+        	</div>
+        	<div class="panel-body panel-collapse">
+        		<form id="autoAuditNormalForm" class="form-horizontal">
+						<br/>
+						<div class="form-group">
+							<label class="col-lg-1 control-label">使用前日校正:</label>
+							<div class="col-lg-1">
+                				<input id="applyCalibration" name='applyCalibration' type="checkbox" class="form-control" readonly
+                					@if(applyCalibration){
                 						checked
                 					}
                 				>
@@ -145,6 +165,7 @@ var dataTableL10N = '@routes.Assets.at("localization/zh_tw.json")';
 		alert("成功");
 		event.preventDefault();
 	});
+	
 	$("#autoAuditNormal").change(function(evt){
 		var $ctrl = $(this);
 		var v = $ctrl.prop("checked");
@@ -152,6 +173,36 @@ var dataTableL10N = '@routes.Assets.at("localization/zh_tw.json")';
 			value: v
 		};
 		var url = "/AutoAuditNormal/" + v;
+		console.log(url);
+		
+		$.ajax({
+			url: url,
+			data: JSON.stringify(obj),
+			contentType: "application/json; charset=utf-8",
+			method:"POST",			
+			dataType: "json",
+			success: function(result){
+				if(result.ok)
+					alert("設定成功");
+				else
+					alert("無法設定");
+			},
+			error: function(xhr, status, errorThrown){
+				alert(status + ":" + errorThrown);
+			},
+
+			complete: function(xhr, status){
+			}					
+		});	
+	});
+
+	$("#applyCalibration").change(function(evt){
+		var $ctrl = $(this);
+		var v = $ctrl.prop("checked");
+		var obj ={
+			value: v
+		};
+		var url = "/ApplyCalibration/" + v;
 		console.log(url);
 		
 		$.ajax({

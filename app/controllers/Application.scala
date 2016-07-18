@@ -148,12 +148,19 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
   def monitorTypeConfig = Security.Authenticated {
     implicit request =>
       val autoAuditNormal = SystemConfig.getConfig(SystemConfig.AutoAuditAsNormal, "False").toBoolean
-      Ok(views.html.monitorTypeConfig(autoAuditNormal))
+      val applyCalibration = SystemConfig.getApplyCalibration
+      Ok(views.html.monitorTypeConfig(autoAuditNormal, applyCalibration))
   }
 
   def setAutoAuditNormal(booleanStr: String) = Security.Authenticated {
     implicit request =>
       SystemConfig.setConfig(SystemConfig.AutoAuditAsNormal, booleanStr)
+      Ok(Json.obj("ok" -> true))
+  }
+  
+  def setApplyCalibration(booleanStr: String) = Security.Authenticated {
+    implicit request =>
+      SystemConfig.setApplyCalibration(booleanStr.toBoolean)
       Ok(Json.obj("ok" -> true))
   }
 
