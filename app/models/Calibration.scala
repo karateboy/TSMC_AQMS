@@ -106,7 +106,7 @@ object Calibration {
 
   def calibrationMonthly(monitor: Monitor.Value, monitorType: MonitorType.Value, start: DateTime) = {
     val end = start + 1.month
-    val mtStr = monitorType.toString().replace("A2", "A4")
+    val mtStr = monitorType.toString()
     val report =
       DB readOnly { implicit session =>
         sql"""
