@@ -13,7 +13,7 @@ import java.nio.file.Files
 import javax.inject._
 import play.api.i18n._
 import play.api.Play.current
- 
+
 object ReportUnit extends Enumeration {
   val Min = Value("min")
   val TenMin = Value("ten_min")
@@ -29,10 +29,10 @@ object ReportUnit extends Enumeration {
 case class OverLawStdEntry(monitor: Monitor.Value, time: DateTime, value: Float)
 case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: DateTime, maxDate: DateTime)
 
-object Query{
+object Query {
   def trendHelper(monitors: Array[Monitor.Value], epaMonitors: Array[EpaMonitor.Value],
                   monitorTypes: Array[MonitorType.Value], reportUnit: ReportUnit.Value, monitorStatusFilter: MonitorStatusFilter.Value,
-                  start: DateTime, end: DateTime)(implicit messages:Messages, request: RequestHeader) = {
+                  start: DateTime, end: DateTime)(implicit messages: Messages, request: RequestHeader) = {
     def statusFilter(data: (DateTime, (Option[Float], Option[String]))): Boolean = {
       if (data._2._2.isEmpty)
         return false
@@ -157,9 +157,10 @@ object Query{
           timeData = timeSeq.map { t =>
             val time = t._1
             val x = t._2
-            if (recordMap(m)(mt).contains(time))
-              Seq(Some(time.getMillis.toDouble), Some(recordMap(m)(mt)(time)._1.get.toDouble))
-            else
+            if (recordMap(m)(mt).contains(time)){
+              val value = recordMap(m)(mt)(time)._1.map{_.toDouble}
+              Seq(Some(time.getMillis.toDouble), value)
+            }else
               Seq(Some(time.getMillis.toDouble), None)
           }
           timeStatus = timeSeq.map { t =>
@@ -228,7 +229,7 @@ object Query{
 
     //YYYY/MM/dd HH:mm
     val lang = Lang.preferred(request.acceptLanguages)
-     
+
     val title = Messages("trendChart.title", start.toString(Messages("datetime.fmt"), lang.toLocale), end.toString(Messages("datetime.fmt"), lang.toLocale))
 
     def getAxisLines(mt: MonitorType.Value) = {
@@ -337,12 +338,12 @@ object Query{
 
     chart
   }
-  
+
 }
 
-class Query @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport{
+class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
   import Query._
-  
+
   def history() = Security.Authenticated {
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
@@ -428,29 +429,17 @@ class Query @Inject()(val messagesApi: MessagesApi) extends Controller with I18n
 
       var timeSet = Set[DateTime]()
       val pairs =
-        if (tableType == TableType.Hour || tableType == TableType.Min) {
-          for {
-            m <- monitors
-            records = if (tableType == TableType.Hour)
-              Record.getHourRecords(m, start, end)
-            else
-              Record.getMinRecords(m, start, end)
-            mtRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
-            timeMap = Map(mtRecords: _*)
-          } yield {
-            timeSet ++= timeMap.keySet
-            (m -> timeMap)
-          }
-        } else {
-          for {
-            m <- monitors
-            records = Record.getSecRecords(m, start, end)
-            mtRecords = records.flatMap { rs => Record.secRecordProject(monitorType)(rs) }
-            timeMap = Map(mtRecords: _*)
-          } yield {
-            timeSet ++= timeMap.keySet
-            (m -> timeMap)
-          }
+        for {
+          m <- monitors
+          records = if (tableType == TableType.Hour)
+            Record.getHourRecords(m, start, end)
+          else
+            Record.getMinRecords(m, start, end)
+          mtRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
+          timeMap = Map(mtRecords: _*)
+        } yield {
+          timeSet ++= timeMap.keySet
+          (m -> timeMap)
         }
 
       val recordMap = Map(pairs: _*)
@@ -467,9 +456,6 @@ class Query @Inject()(val messagesApi: MessagesApi) extends Controller with I18n
       val epaRecordMap = Map(epa_pairs: _*)
       val title = "歷史資料查詢"
       val output =
-        if (tableType == TableType.SixSec)
-          views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, true, tableType.toString)
-        else
           views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, false, tableType.toString)
       outputType match {
         case OutputType.html =>
@@ -774,7 +760,7 @@ class Query @Inject()(val messagesApi: MessagesApi) extends Controller with I18n
         mtLevel.map { _.get }
       else
         List(1f, 2f, 5f, 15f)
-        
+
       val windMap = Record.getWindRose(monitor, epa, monitorType, start, end, level, nWay)
 
       val nRecord = windMap.values.map { _.length }.sum
