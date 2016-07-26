@@ -24,10 +24,9 @@ case class DailyReport(
   typeList: Array[MonitorTypeRecord])
 
 object TableType extends Enumeration {
-  val SixSec = Value("SixSec")
   val Min = Value("Min")
   val Hour = Value("Hour")
-  val defaultMap = Map((SixSec -> "六秒資料"), (Min -> "分鐘資料"), (Hour -> "小時資料"))
+  val defaultMap = Map((Min -> "分鐘資料"), (Hour -> "小時資料"))
   def map(key: TableType.Value)(implicit messages: Messages) = {
     val messageKey = s"dataSet.$key"
     if (Messages.isDefinedAt(messageKey))
@@ -488,24 +487,6 @@ object Record {
     }
   }
 
-  def getSecRecords(monitor: Monitor.Value, startTime: DateTime, endTime: DateTime)(implicit session: DBSession = AutoSession): List[Record.SixSecRecord] = {
-    val start: Timestamp = startTime
-    val end: Timestamp = endTime
-    if (startTime == endTime)
-      List.empty[SixSecRecord]
-    else {
-
-      val monitorName = monitor.toString()
-      val tab_name = getTabName(TableType.SixSec)
-      sql"""
-        Select * 
-        From ${tab_name}
-        Where DP_NO=${monitorName} and M_DateTime >= ${start} and M_DateTime < ${end}
-        ORDER BY M_DateTime ASC
-      """.map { sixSecMapper }.list().apply()
-    }
-  }
-
   def secRecordProject(mt: MonitorType.Value) =
     (rs: SixSecRecord) => {
       assert(mt == MonitorType.withName("C211") || mt == MonitorType.withName("C212"))
@@ -535,9 +516,6 @@ object Record {
         SQLSyntax.createUnsafely(s"${head}5${tail}s")
       case TableType.Min =>
         SQLSyntax.createUnsafely(s"${head}2${tail}s")
-      case TableType.SixSec =>
-        val idx = recordTime.toDateTime.getSecondOfMinute / 6
-        SQLSyntax.createUnsafely(s"${head}9${tail}_${idx}s")
     }
 
   }
@@ -547,23 +525,11 @@ object Record {
     val monitorName = monitor.toString()
     val tab_name = getTabName(tabType)
     val field_name = getFieldName(tabType, monitorType, recordTime)
-    if (tabType != TableType.SixSec) {
       sql""" 
           Update ${tab_name}
           Set ${field_name}=${status}
           Where DP_NO=${monitorName} and ${field_name} IS NOT NULL and M_DateTime = ${recordTime}        
         """.update.apply
-    } else {
-      val rt = recordTime.toDateTime()
-      val rt1 = rt - rt.getSecondOfDay.second
-      val tt: Timestamp = rt1
-
-      sql""" 
-          Update ${tab_name}
-          Set ${field_name}=${status}
-          Where DP_NO=${monitorName} and ${field_name} IS NOT NULL and M_DateTime = ${tt}        
-        """.update.apply
-    }
   }
 
   lazy val monitorTypeProject2: Map[MonitorType.Value, HourRecord => (Option[Float], Option[String])] = Map(
@@ -618,8 +584,7 @@ object Record {
 
   case class RecordValidationReport(start: DateTime, end: DateTime,
                                     hourReport: Map[Monitor.Value, Int],
-                                    minReport: Map[Monitor.Value, Int],
-                                    sixSecReport: Map[Monitor.Value, Int])
+                                    minReport: Map[Monitor.Value, Int])
 
   def getRecordValidationReport(start: DateTime, end: DateTime) = {
     DB readOnly { implicit session =>
@@ -645,18 +610,7 @@ object Record {
 
       val minReport = Map(minRecords: _*)
 
-      val sectab_name = getTabName(TableType.SixSec)
-      val sixSecRecords =
-        sql"""
-        SELECT DP_NO, count(DP_NO)
-        FROM ${sectab_name}
-        Where M_DateTime >= ${start} and M_DateTime < ${end}
-        GROUP BY DP_NO
-      """.map { rs => (Monitor.withName(rs.string(1)), rs.int(2)) }.list().apply()
-
-      val sixSecReport = Map(sixSecRecords: _*)
-
-      RecordValidationReport(start, end, hourReport, minReport, sixSecReport)
+      RecordValidationReport(start, end, hourReport, minReport)
     }
   }
 
@@ -1060,8 +1014,6 @@ object Record {
         SQLSyntax.createUnsafely(s"[HourRecord]")
       case TableType.Min =>
         SQLSyntax.createUnsafely(s"[MinRecord]")
-      case TableType.SixSec =>
-        SQLSyntax.createUnsafely(s"[SecRecord]")
     }
   }
 

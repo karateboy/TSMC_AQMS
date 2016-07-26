@@ -18,9 +18,9 @@
 			<th>@Messages("rtStatus.LawStd")</th>			
 			@for(mt <- MonitorType.realtimeList.filter(privilege.allowedMonitorTypes.contains)){
 				@if(MonitorType.map(mt).std_law.isDefined){
-					<th style="color:@OverLawColor">@MonitorType.map(mt).std_law</th>	
+					<th>@MonitorType.map(mt).std_law</th>	
 				}else{
-					<th style="color:@OverLawColor">-</th>
+					<th>-</th>
 				}				
 			}
 		</tr>	

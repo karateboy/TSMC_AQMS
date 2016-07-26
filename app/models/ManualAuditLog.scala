@@ -10,7 +10,6 @@ case class ManualAuditLog(tabType:TableType.Value, monitor:Monitor.Value, dataTi
     modified_time:DateTime, changed_status:String, operator:String, reason:Option[String])
 object ManualAuditLog {
   val mapping = List(
-      1-> TableType.SixSec,
       2-> TableType.Min,
       3 -> TableType.Hour
       )
