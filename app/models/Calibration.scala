@@ -57,13 +57,22 @@ object Calibration {
         passStandard(sd_pnt, MonitorType.map(monitorType).sd_law)
     }
 
+    def canCalibrate = {
+      z_val.isDefined &&
+        s_std.isDefined && s_std.get != 0 &&
+        s_sval.isDefined && s_sval.get != 0
+    }
+
     def calibrate(valueOpt: Option[Float]) = {
-      for {
-        value <- valueOpt
-        zero <- z_val
-        standard_span <- s_std
-        calibration_span <- s_sval
-      } yield (value - zero) * (standard_span/calibration_span)
+      if (canCalibrate)
+        for {
+          value <- valueOpt
+          zero <- z_val
+          standard_span <- s_std
+          calibration_span <- s_sval
+        } yield (value - zero) * (standard_span / calibration_span)
+      else
+        valueOpt
     }
   }
 
