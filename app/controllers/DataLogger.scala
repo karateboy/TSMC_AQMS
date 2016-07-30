@@ -141,7 +141,7 @@ class DataLogger extends Controller {
               hr.save(tabType)
             } catch {
               case ex: Throwable =>
-                ModelHelper.errorHandler("Failed to insert=>")
+                Logger.error("Failed to insert=>", ex)
             }
           }
           Ok(Json.obj("ok" -> true))
@@ -189,7 +189,10 @@ class DataLogger extends Controller {
           calibrationList.foreach { calibration =>
             try {
               calibration.save
-            } catch (ModelHelper.errorHandler("Failed to insert calibration."))
+            } catch {
+              case ex: Throwable =>
+                Logger.error("Failed to insert calibration.", ex)
+            }
           }
           Ok(Json.obj("ok" -> true))
         })
