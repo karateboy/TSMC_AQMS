@@ -198,22 +198,6 @@
 	            </div>	            			            		
 	        </div>
 	        <div class="form-group">
-	        	<label class="col-lg-2 control-label">警報項目篩選</label>
-	            <div class="col-lg-10">
-	            <div id="alarmConfigStatus" class="btn-group" data-toggle="buttons">	            					            				
-	            	@for(a<-MonitorStatus.alarmList){
-	            		@if(user.alarmConfig.get.statusFilter.contains(a)){
-	            			<label class="btn btn-outline btn-primary dim active">
-	            			<input type="checkbox" name="monitorStatus" id="@a" checked>@MonitorStatus.map(a).desp</label>
-	            		}else{
-            				<label class="btn btn-outline btn-primary dim">
-            				<input type="checkbox" name="monitorStatus" id="@a">@MonitorStatus.map(a).desp</label>
-            			}								
-            		}
-	            </div>
-	            </div>	            			            		
-	        </div>
-	        <div class="form-group">
 	        	<label class="col-lg-2 control-label">即時畫面控制項</label>
 	            <div class="col-lg-10">
 	            <div id="widgets" class="btn-group" data-toggle="buttons">	            					            				
@@ -330,19 +314,6 @@ $( document ).ready(function(){
 				$label.addClass('active');
 			}
 		}
-		
-		var $StatusLabels = $('#alarmConfigStatus').children();
-		for (var i = 0; i < $StatusLabels.length; i++) {
-			var $label = $StatusLabels.eq(i);
-			var $checkbox = $label.children();
-			if (user.alarmConfig.statusFilter.indexOf($checkbox.prop('id')) == -1) {
-				$checkbox.prop('checked', false);
-				$label.removeClass('active');
-			} else {
-				$checkbox.prop('checked', true);
-				$label.addClass('active');
-			}
-		}
 
 		var $widgets = $('#widgets').children();
 		for (var i = 0; i < $widgets.length; i++) {
@@ -404,11 +375,7 @@ $( document ).ready(function(){
 			monitorFilter.push($monitors[i].id);
 		}
 
-		var $statuss = $("#alarmConfigStatus :input[name='monitorStatus']:checked");
-		var statusFilter = [];
-		for (var i = 0; i < $statuss.length; i++) {
-			statusFilter.push($statuss[i].id);
-		}
+		var statusFilter = [];		
 
 		var $widgets = $("#widgets :input[name='widget']:checked");
 		var widgets = [];

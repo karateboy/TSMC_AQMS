@@ -278,7 +278,7 @@ class Maintance @Inject()(val messagesApi: MessagesApi) extends Controller with 
         case TicketType.maintance_year =>
           Ok(views.html.yearForm(ID, t.getForm))
         case TicketType.repair =>
-          val equipList = Equipment.map(t.monitor)
+          val equipList = Equipment.map.getOrElse(t.monitor, List.empty[Equipment])
           val partIdNameMap = Part.getIdNameMap()
           val partEquipMap = Part.getEquipPartMap()
           if (t.getRepairForm.equipmentId.length() != 0) {
