@@ -108,11 +108,12 @@ object Record {
       var h2s: Option[Float] = None,
       var h2s_stat: Option[String] = None) {
 
-    def save(tab: TableType.Value)(implicit session: DBSession = AutoSession) {
+    def save(tab: TableType.Value) {
       val tab_name = Record.getTabName(tab)
 
-      if (tab == TableType.Hour) {
-        sql"""
+      DB localTx { implicit session =>
+        if (tab == TableType.Hour) {
+          sql"""
           INSERT INTO $tab_name
            ([DP_NO]
            ,[M_DateTime]
@@ -222,8 +223,8 @@ object Record {
            ,$air_pressure
            ,$air_pressure_stat)
             """.update.apply
-      } else {
-        sql"""
+        } else {
+          sql"""
           INSERT INTO $tab_name
            ([DP_NO]
            ,[M_DateTime]
@@ -333,7 +334,10 @@ object Record {
            ,$air_pressure
            ,$air_pressure_stat)
             """.update.apply
+        }
+
       }
+
     }
   }
 
@@ -525,7 +529,7 @@ object Record {
     val monitorName = monitor.toString()
     val tab_name = getTabName(tabType)
     val field_name = getFieldName(tabType, monitorType, recordTime)
-      sql""" 
+    sql""" 
           Update ${tab_name}
           Set ${field_name}=${status}
           Where DP_NO=${monitorName} and ${field_name} IS NOT NULL and M_DateTime = ${recordTime}        
@@ -781,10 +785,10 @@ object Record {
           t = monitorTypeProject2(mt)
           total = recordMap.size
           projections = reportList.map { rs =>
-            if (SystemConfig.getApplyCalibration && calibrationMap.contains(mt)){
-              val calibrated = calibrationMap(mt).calibrate(t(rs)._1) 
+            if (SystemConfig.getApplyCalibration && calibrationMap.contains(mt)) {
+              val calibrated = calibrationMap(mt).calibrate(t(rs)._1)
               (rs.date, calibrated, t(rs)._2)
-            }else
+            } else
               (rs.date, t(rs)._1, t(rs)._2)
           }
           validStat = { t: (Timestamp, Option[Float], Option[String]) =>

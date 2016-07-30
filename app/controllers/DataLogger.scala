@@ -136,7 +136,6 @@ class DataLogger extends Controller {
       },
         recordListSeq => {          
           val hrList = recordListSeq.map { toHourRecord(monitor) }
-          Logger.debug(s"${hrList.length} records to be inserted")
           hrList.foreach { hr =>
             try {
               hr.save(tabType)
