@@ -134,8 +134,9 @@ class DataLogger extends Controller {
         Logger.error(JsError(err).toString())
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
-        recordListSeq => {
+        recordListSeq => {          
           val hrList = recordListSeq.map { toHourRecord(monitor) }
+          Logger.debug(s"${hrList.length} records to be inserted")
           hrList.foreach { hr =>
             try {
               hr.save(tabType)
