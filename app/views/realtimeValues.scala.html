@@ -23,7 +23,13 @@
 					<th>-</th>
 				}				
 			}
-		</tr>	
+		</tr>
+		<tr>			  
+			<th>單位</th>			
+			@for(mt <- MonitorType.realtimeList.filter(privilege.allowedMonitorTypes.contains)){
+				<th>@MonitorType.map(mt).unit</th>	
+			}
+		</tr>
 	</tfoot>	
 	<tbody>
 		@for(m <- privilege.allowedMonitors){
