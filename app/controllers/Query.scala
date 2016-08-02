@@ -145,10 +145,17 @@ object Query {
               None
           }
         } yield {
-          if (mt != windMtv)
-            seqData(name = Monitor.map(m).name + "_" + MonitorType.map(mt).desp, data = timeData, status = Some(timeStatus))
+          val mtCase = MonitorType.map(mt)
+          val standard = if(mtCase.std_law.isDefined)
+            s"(法規值:${mtCase.std_law.get} ${mtCase.unit})"
           else
-            seqData(name = Monitor.map(m).name + "_" + MonitorType.map(mt).desp, data = timeData, yAxis = 1, chartType = Some("scatter"), status = Some(timeStatus))
+            ""
+            
+          val seqName = Monitor.map(m).name + "_" + mtCase.desp + standard
+          if (mt != windMtv)
+            seqData(name = seqName, data = timeData, status = Some(timeStatus))
+          else
+            seqData(name = seqName, data = timeData, yAxis = 1, chartType = Some("scatter"), status = Some(timeStatus))
         }
       } else {
         for {
