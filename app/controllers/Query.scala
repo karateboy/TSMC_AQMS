@@ -149,7 +149,7 @@ object Query {
           val standard = if(mtCase.std_law.isDefined)
             s"(法規值:${mtCase.std_law.get} ${mtCase.unit})"
           else
-            ""
+            "(法規值:-)"
             
           val seqName = Monitor.map(m).name + "_" + mtCase.desp + standard
           if (mt != windMtv)
@@ -179,7 +179,14 @@ object Query {
               None
           }
         } yield {
-          seqData(name = Monitor.map(m).name + "_" + MonitorType.map(mt).desp, data = timeData, status = Some(timeStatus))
+          val mtCase = MonitorType.map(mt)
+          val standard = if(mtCase.std_law.isDefined)
+            s"(法規值:${mtCase.std_law.get} ${mtCase.unit})"
+          else
+            "(法規值:-)"
+            
+          val seqName = Monitor.map(m).name + "_" + mtCase.desp + standard
+          seqData(name = seqName, data = timeData, status = Some(timeStatus))
         }
       }
 
