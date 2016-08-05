@@ -12,7 +12,6 @@
             			<div class="form-group">
 	            			<label class="col-lg-1 control-label">測站</label>
 	            			<div class="col-lg-11">
-	            				<button id="select-all-monitors" class="btn btn-info" type="button">全選</button>
 	            				<div class="btn-group" data-toggle="buttons">	            					            				
 	            					@for(m<-Monitor.myMvList(privilege)){
 	            						@if(m == Monitor.myMvList(privilege).head){
@@ -30,14 +29,15 @@
             		    <div class="form-group">
 	            			<label class="col-lg-1 control-label">測項</label>
 	            			<div class="col-lg-11">
+	            				<button id="select-all-monitorTypes" class="btn btn-info" type="button">全選</button>
 	            				<div class="btn-group" data-toggle="buttons">	            				
 	            				@for(mt<-MonitorType.myMtvList(privilege)){
 	            					@if(mt == MonitorType.myMtvList(privilege).head){
 	            						<label class="btn btn-outline btn-primary dim active">
-										<input type="radio" name="monitorType" id="@mt" checked>@MonitorType.map(mt).desp</label>
+										<input type="checkbox" name="monitorType" id="@mt" checked>@MonitorType.map(mt).desp</label>
 	            					}else{
 	            						<label class="btn btn-outline btn-primary dim">
-										<input type="radio" name="monitorType" id="@mt">@MonitorType.map(mt).desp</label>
+										<input type="checkbox" name="monitorType" id="@mt">@MonitorType.map(mt).desp</label>
 	            					}
 	            					
 	            				}
@@ -92,7 +92,16 @@ $( document ).ready(function() {
 	        });
 	});
 
-	var monitors, monitorType, reportStart, reportEnd;
+	$('#select-all-monitorTypes').click(function(){
+		$('.btn-group input[name="monitorType"]').each(function(){
+	            // toggle checkbox
+	            $(this).prop('checked',!$(this).prop('checked'));
+	            // toggle class
+	            $(this).parents('label').toggleClass('active');
+	        });
+	});
+	
+	var monitors, monitorTypes, reportStart, reportEnd;
 	
 	function validate(){
 		monitors = $("input[name='monitor']:checked");
@@ -103,8 +112,8 @@ $( document ).ready(function() {
 		}
 
 
-		monitorType = $("input[name='monitorType']:checked").attr('id');
-		if(!monitorType) {
+		monitorTypes = $("input[name='monitorType']:checked");
+		if(monitorTypes.length == 0) {
 			alert('請選擇測項');
 			return false;
 		}
@@ -140,8 +149,16 @@ $( document ).ready(function() {
 			else
 				monitorParam += ':' + monitors[i].id;
 		}
-			
-		var url = "/OverLawStdReport/" + monitorParam + "/" + monitorType + "/" + reportStart + "/" + reportEnd;
+
+		var monitorTypeParam='';
+		for (var i = 0; i < monitorTypes.length; i++) {
+			if(monitorTypeParam=='')
+				monitorTypeParam = monitorTypes[i].id;
+			else
+				monitorTypeParam += ':' + monitorTypes[i].id;
+		}
+		
+		var url = "/OverLawStdReport/" + monitorParam + "/" + monitorTypeParam + "/" + reportStart + "/" + reportEnd;
 		console.log(url);
 		$.ajax({
 			url: url,

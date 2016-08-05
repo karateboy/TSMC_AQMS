@@ -2,10 +2,11 @@
 @import controllers.Report._
 @import com.github.nscala_time.time.Imports._
 @import MonitorStatus._
-@(monitor:Monitor.Value, mt:MonitorType.Value, reportDate:DateTime, report: MonthHourReport, nDays:Int)
+@(monitor:Monitor.Value, mt:MonitorType.Value, reportDate:DateTime, report: MonthHourReport, nDays:Int)(implicit messages:Messages)
 
 <h3>監測月分時報表</h3>
 <h4>監測站:@Monitor.map(monitor).name</h4>
+<h4>測項:@MonitorType.map(mt).desp</h4>
 <h4>日期:@reportDate.toString("yyyy年MM月")</h4>
 
 <div class="col-lg-offset-6 col-lg-6">
