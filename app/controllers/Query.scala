@@ -26,7 +26,7 @@ object ReportUnit extends Enumeration {
   val map = Map((Min -> "分"), (TenMin -> "十分"), (Hour -> "小時"), (EightHour -> "八小時"), (Day -> "日"), (Week -> "週"), (Month -> "月"), (Quarter -> "季"))
 }
 
-case class OverLawStdEntry(monitor: Monitor.Value, time: DateTime, value: Float)
+case class OverLawStdEntry(monitor: Monitor.Value, mt:MonitorType.Value, time: DateTime, value: Float)
 case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: DateTime, maxDate: DateTime)
 
 object Query {
@@ -645,33 +645,32 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       import scala.collection.JavaConverters._
       val monitorStrArray = monitorStr.split(':')
       val monitors = monitorStrArray.map { Monitor.withName }.filter { group.privilege.allowedMonitors.contains }
-      val monitorType = MonitorType.withName(monitorTypeStr)
-      val mtCase = MonitorType.map(monitorType)
+      val monitorTypesStrArray = monitorTypeStr.split(':')
+      val monitorTypes = monitorTypesStrArray.map { MonitorType.withName }.filter { group.privilege.allowedMonitorTypes.contains } 
       val start = DateTime.parse(startStr)
       val end = DateTime.parse(endStr) + 1.day
 
-      if (mtCase.std_law.isEmpty)
-        BadRequest("法規值未定義!")
-      else {
         import models.Record._
         import scala.collection.mutable.ListBuffer
         val result = ListBuffer[OverLawStdEntry]()
         for {
           m <- monitors
           records = Record.getHourRecords(m, start, end)
-          typeRecords = records.map { r => (Record.timeProjection(r), Record.monitorTypeProject2(monitorType)(r)) }
+
+          mt <- monitorTypes if(MonitorType.map(mt).sd_law.isDefined) 
+          typeRecords = records.map { r => (Record.timeProjection(r), Record.monitorTypeProject2(mt)(r)) }
           overLawRecords = typeRecords.filter {
             r =>
               (r._2._1.isDefined && r._2._2.isDefined &&
                 MonitorStatus.isNormalStat(r._2._2.get) &&
-                r._2._1.get >= mtCase.std_law.get)
+                r._2._1.get >= MonitorType.map(mt).sd_law.get)
           }
-          overList = overLawRecords.map { r => OverLawStdEntry(m, r._1, r._2._1.get) }
+          overList = overLawRecords.map { r => OverLawStdEntry(m, mt, r._1, r._2._1.get) }
         } {
           result ++= overList
         }
 
-        val output = views.html.overLawStdReport(monitorType, start, end - 1.day, result)
+        val output = views.html.overLawStdReport(start, end - 1.day, result)
         val title = "超過法規報表"
         outputType match {
           case OutputType.html =>
@@ -681,7 +680,6 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
               fileName = _ =>
                 play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
         }
-      }
   }
 
   def effectivePercentage() = Security.Authenticated {
