@@ -2,25 +2,17 @@
 @(ID:Int, f:FormData)
 <form class="form-horizontal" id="weekForm">
 	<li class="list-group-item">
-		零氣體產生器 (Zero air)
-		<ol>
-			<li><input type="checkbox" @f.getBoolSeq>DFU檢查，不良更換</li>
-		</ol>
-	</li>
-	<li class="list-group-item">
 		氮氧化物分析儀 (NOx)
 		<ol>
-			<li><input type="checkbox" @f.getBoolSeq>PMT Cell乾燥劑更換</li>
-			<li><input type="checkbox" @f.getBoolSeq>反應室Cell清潔及檢查</li>
+			<li><input type="checkbox" @f.getBoolSeq>電磁閥門清潔</li>
 			<li><input type="checkbox" @f.getBoolSeq>活性碳更換</li>						
 		</ol>
 	</li>
 	<li class="list-group-item">
 		二氧化硫分析儀 (SO2)
 		<ol>
-			<li><input type="checkbox" @f.getBoolSeq>PMT Cell乾燥劑更換</li>
-			<li><input type="checkbox" @f.getBoolSeq>反應室Cell清潔及檢查</li>
-			<li><input type="checkbox" @f.getBoolSeq>HC去除器（Kicker）測試</li>
+			<li><input type="checkbox" @f.getBoolSeq>電磁閥門清潔</li>
+			<li><input type="checkbox" @f.getBoolSeq>HC去除器（Kicker）檢查</li>
 		</ol>
 	</li>
 	<li class="list-group-item">
@@ -34,7 +26,7 @@
 		臭氧分析儀 (O3)
 		<ol>
 			<li><input type="checkbox" @f.getBoolSeq>反應室Cell清潔及檢查</li>
-			<li><input type="checkbox" @f.getBoolSeq>使用經認證的臭氧傳輸標準儀進行校正</li>
+			<li><input type="checkbox" @f.getBoolSeq>臭氧傳輸標準儀進行校正</li>
 		</ol>
 	</li>
 	<li class="list-group-item">
@@ -51,7 +43,7 @@
 		<ol>		
 			<li>站房外
 				<ol>
-					<li><input type="checkbox" @f.getBoolSeq>檢查H型鋼銹蝕狀況</li>
+					<li><input type="checkbox" @f.getBoolSeq>檢查銹蝕狀況</li>
 					<li><input type="checkbox" @f.getBoolSeq>檢查漏水情況</li>
 					<li><input type="checkbox" @f.getBoolSeq>檢查樓梯、欄干固定是否良好及銹蝕情況</li>
 					<li><input type="checkbox" @f.getBoolSeq>溫濕度計是否固定</li>
@@ -70,7 +62,6 @@
 					<li><input type="checkbox" @f.getBoolSeq>檢查冷凝器、揮發器是否須清洗</li>
 					<li><input type="checkbox" @f.getBoolSeq>檢查支架是否須除銹</li>
 					<li><input type="checkbox" @f.getBoolSeq>檢查線路固定良好</li>
-					<li><input type="checkbox" @f.getBoolSeq>檢查定時開關及溫度控制開關設定</li>
 					<li><input type="checkbox" @f.getBoolSeq>檢查冷媒檢漏、測定及補足</li>
 					<li><input type="checkbox" @f.getBoolSeq>送風方向檢查及調整</li>
 				</ol>						

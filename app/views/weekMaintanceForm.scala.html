@@ -49,9 +49,9 @@
 					<li><input type="checkbox" @f.getBoolSeq>DRK Lamp<input type="text" value="@f.getStrSeq">mv, -50~200mv</li>
 					<li><input type="checkbox" @f.getBoolSeq>SO2 Slope<input type="text" value="@f.getStrSeq"> 1.0±0.5</li>
 					<li><input type="checkbox" @f.getBoolSeq>SO2 Offset<input type="text" value="@f.getStrSeq">&lt;250</li>
-					<li><input type="checkbox" @f.getBoolSeq>HVPS<input type="text" value="@f.getStrSeq">1.0±0.3</li>
-					<li><input type="checkbox" @f.getBoolSeq>Rx Cell TMP<input type="text" value="@f.getStrSeq">VDC, 400~900</li>
-					<li><input type="checkbox" @f.getBoolSeq>PMT TEMP.<input type="text" value="@f.getStrSeq"> ℃,50±1</li>
+					<li><input type="checkbox" @f.getBoolSeq>HVPS<input type="text" value="@f.getStrSeq">VDC, 400~900</li>
+					<li><input type="checkbox" @f.getBoolSeq>Rx Cell TMP<input type="text" value="@f.getStrSeq"> ℃,50±1</li>
+					<li><input type="checkbox" @f.getBoolSeq>PMT TEMP.<input type="text" value="@f.getStrSeq"> ℃,9±2</li>
 				</ol>
 			</li>
 			<li><input type="checkbox" @f.getBoolSeq>確認無警訊顯示</li>
@@ -92,10 +92,9 @@
 			<li><input type="checkbox" @f.getBoolSeq>更換Filter</li>
 			<li>功能性檢查
 				<ol>
-					<li><input type="checkbox" @f.getBoolSeq>Sample flow<input type="text" value="@f.getStrSeq">c.c/min, >35</li>
-					<li><input type="checkbox" @f.getBoolSeq>Zero presser<input type="text" value="@f.getStrSeq">Bar, 1±0.1</li>
-					<li><input type="checkbox" @f.getBoolSeq>H2 presser<input type="text" value="@f.getStrSeq">Bar, 1±0.1</li>
-					<li><input type="checkbox" @f.getBoolSeq>Sample presser<input type="text" value="@f.getStrSeq">Bar, 0.5±0.1</li>
+					<li><input type="checkbox" @f.getBoolSeq>Sample flow<input type="text" value="@f.getStrSeq">c.c/min, 30~50</li>
+					<li><input type="checkbox" @f.getBoolSeq>Air flow<input type="text" value="@f.getStrSeq">cc/min, 150~220</li>
+					<li><input type="checkbox" @f.getBoolSeq>H2 flow<input type="text" value="@f.getStrSeq">cc/min, 30~50</li>
 				</ol>
 			</li>
 			<li><input type="checkbox" @f.getBoolSeq>檢查點火功能正常</li>
@@ -117,7 +116,6 @@
 			<li><input type="checkbox" @f.getBoolSeq>目視檢查風速風向運轉正常</li>
 			<li><input type="checkbox" @f.getBoolSeq>確認溫濕度計運作正常，記錄現場值. 溫度:<input type="text" value="@f.getStrSeq"> 濕度:<input type="text" value="@f.getStrSeq"></li>			
 			<li><input type="checkbox" @f.getBoolSeq>清潔溫濕度計進氣口</li>
-			<li><input type="checkbox" @f.getBoolSeq>確認雨量計固定良好</li>
 		</ol>
 	</li>
 	<li class="list-group-item">站房
@@ -125,11 +123,8 @@
 			<li>站內
 				<ol>
 					<li><input type="checkbox" @f.getBoolSeq>站房溫度正常, <input type="text" value="@f.getStrSeq">℃</li>
-					<li><input type="checkbox" @f.getBoolSeq>門禁刷卡正常</li>
-					<li><input type="checkbox" @f.getBoolSeq>測站單周用電量計算, 用電量<input type="text" value="@f.getStrSeq"></li>
 					<li><input type="checkbox" @f.getBoolSeq>門鎖開關正常</li>
 					<li><input type="checkbox" @f.getBoolSeq>清潔室內及設備</li>
-					<li><input type="checkbox" @f.getBoolSeq>文件歸位(維護報表及操作手冊)</li>
 					<li><input type="checkbox" @f.getBoolSeq>警報器、攝影機等設備運作正常</li>
 					<li><input type="checkbox" @f.getBoolSeq>測站內無堆放雜物</li>
 				</ol>
@@ -152,12 +147,12 @@
 					<li><input type="checkbox" @f.getBoolSeq>鋼瓶室及排風扇濾網清潔</li>
 				</ol>			
 			</li>
-			<li>電力及AVR系統
+			<li>電力及UPS系統
 				<ol>
 					<li><input type="checkbox" @f.getBoolSeq>指示燈正常</li>
 					<li><input type="checkbox" @f.getBoolSeq>輸入及輸出電壓正常</li>
 					<li><input type="checkbox" @f.getBoolSeq>檢查無漏電現象</li>
-					<li><input type="checkbox" @f.getBoolSeq>AVR動作正常</li>
+					<li><input type="checkbox" @f.getBoolSeq>UPS動作正常</li>
 				</ol>			
 			</li>
 			<li>採樣系統
@@ -168,12 +163,6 @@
 					<li><input type="checkbox" @f.getBoolSeq>採樣風扇運轉正常</li>
 					<li><input type="checkbox" @f.getBoolSeq>採樣及校正鐵氟龍管無積水現象</li>
 					<li><input type="checkbox" @f.getBoolSeq>管路連接正常</li>
-				</ol>			
-			</li>
-			<li>PLC系統
-				<ol>
-					<li><input type="checkbox" @f.getBoolSeq>數據機傳送正常(TX，RX燈號正常)</li>
-					<li><input type="checkbox" @f.getBoolSeq>時間設定正常</li>
 				</ol>			
 			</li>
 		</ol>
