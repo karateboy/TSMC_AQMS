@@ -31,7 +31,7 @@
 	            			<div class="col-lg-11">
 	            				<button id="select-all-monitorTypes" class="btn btn-info" type="button">全選</button>
 	            				<div class="btn-group" data-toggle="buttons">	            				
-	            				@for(mt<-MonitorType.myMtvList(privilege)){
+	            				@for(mt<-MonitorType.myMtvList(privilege).filter(MonitorType.map(_).std_law.isDefined)){
 	            					@if(mt == MonitorType.myMtvList(privilege).head){
 	            						<label class="btn btn-outline btn-primary dim active">
 										<input type="checkbox" name="monitorType" id="@mt" checked>@MonitorType.map(mt).desp</label>

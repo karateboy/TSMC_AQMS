@@ -169,6 +169,19 @@ object Monitor extends Enumeration {
     map = newMap
   }
   
+  def updateLocation(m: Monitor.Value, lat:Double, lng:Double)(implicit session: DBSession = AutoSession) = {
+    val oldM = map(m)
+    val newM = Monitor(oldM.id, oldM.name, lat, lng, oldM.url, oldM.autoAudit, oldM.monitorTypes,
+      oldM.monitorTypeStds, oldM.instrumentStatusTypeMapOpt)
+    sql"""
+        Update Monitor
+        Set monitorY=${lat}, monitorX=${lng} 
+        Where DP_NO=${oldM.id}  
+        """.update.apply
+    val newMap = map + (m -> newM)
+    map = newMap
+  }
+  
   def getCenterLat = {
     val monitorLatList = mvList.map{ map(_).lat}
     monitorLatList.sum/monitorLatList.length

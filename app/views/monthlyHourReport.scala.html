@@ -8,21 +8,7 @@
 <h4>監測站:@Monitor.map(monitor).name</h4>
 <h4>測項:@MonitorType.map(mt).desp</h4>
 <h4>日期:@reportDate.toString("yyyy年MM月")</h4>
-
-<div class="col-lg-offset-6 col-lg-6">
-<table class="table">
-<tbody>
-<tr>
-	<td class="col-lg-1" style="color:black;background-color:@CalibrationColor">校正</td>
-	<td class="col-lg-1" style="color:black;background-color:@RepairColor">維修</td>
-	<td class="col-lg-1" style="color:black;background-color:@MaintanceColor">定保</td>
-	<td class="col-lg-1" style="color:black;background-color:@AbnormalColor">異常</td>
-	<td class="col-lg-1" style="color:black;background-color:@AutoAuditColor">自動檢核</td>
-	<td class="col-lg-1" style="color:black;background-color:@ManualAuditColor">人工註記</td>
-</tr>
-</tbody>
-</table>
-</div>
+@legend()
 <table id="reportTable" class="table" cellspacing="0" width="100%">
 	<thead>
 		<tr>

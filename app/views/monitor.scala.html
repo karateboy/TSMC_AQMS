@@ -33,6 +33,9 @@
 		</li>
 		<li>
 			<a data-toggle="tab" href="#monitorBiosTab"> <span class="glyphicons glyphicons-hotspot"></span>測站基本資料</a>
+		</li>
+		<li>
+			<a data-toggle="tab" href="#monitorLocation"> <span class="glyphicons glyphicons-hotspot"></span>測站位置</a>
 		</li>		
 	</ul>
 	<div class="tab-content">
@@ -104,9 +107,27 @@
 								<button class="btn btn-primary" type="submit">確認</button>								
 							</div>													
 						</div>
-					</form>
-				</div>
-				<div id="equipmentTab" class="tab-pane @if(hightlightEquip){active}">
+			</form>
+		</div>
+		<div id="monitorLocation" class="tab-pane">
+			<form id="locationForm" class="form-horizontal">
+				<br/>
+				<input name='monitor' type="hidden" class="form-control" value="@monitor">
+						<div class="form-group">
+							<label class="col-lg-1 control-label">經度</label>
+							<input class="col-lg-2" id="lat">
+							<label class="col-lg-1 control-label">緯度</label>
+							<input class="col-lg-2" id="lng">																				
+						</div>
+						<div class="form-group">
+							<div class="col-lg-1 col-lg-offset-1">
+								<button class="btn btn-primary" type="submit">確認</button>								
+							</div>													
+						</div>
+			</form>
+		</div>
+		
+		<div id="equipmentTab" class="tab-pane @if(hightlightEquip){active}">
 					<br/>
 						<div class="col-lg-1 col-lg-offset-1">
 							<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newEquipModal">新增</button>							
@@ -236,6 +257,8 @@ function() {
 		}
 
 		$("#imgUrl").val(mInfo.imgUrl);
+		$("#lat").val(mInfo.location[0]);
+		$("#lng").val(mInfo.location[1]);
 		updateEquipment(mInfo.equipments);
 		$("#monitorBiosDiv").load("/MonitorBios/"+monitor);
 	}
@@ -535,5 +558,26 @@ function() {
 						});
 			});
 
+	$("#locationForm").submit(
+			function(event) {
+				var lat = parseFloat($("#lat").val());
+				var lng = parseFloat($("#lng").val());
+				var location = [lat, lng];
+				$.ajax({
+					url : "/MonitorLocation/" + activeMonitor,
+						data : JSON.stringify(location),
+						contentType : "application/json; charset=utf-8",
+						method : "POST",
+						dataType : "json",
+						success : function(result) {
+								alert("成功");
+							},
+						error : function(xhr,status,errorThrown) {
+							alert("失敗:"+ errorThrown);
+							},
+						complete : function(xhr, status) {}
+			});
+	});
+		
 });
 </script>

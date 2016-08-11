@@ -219,6 +219,26 @@ $( document ).ready(function() {
 				$epa.parent().removeClass("disabled");				  
 			}
 		}
+
+		//Set default date
+		var reportStartCtrl = $('#reportStart').data("DateTimePicker"); 
+		if(me.attr('id') == 'ten_min'){
+			reportStartCtrl.date(moment().subtract(10, 'hours'));
+		}else if(me.attr('id') == 'min'){
+			reportStartCtrl.date(moment().subtract(1, 'hours'));
+		}else if(me.attr('id') == 'hour'){
+			reportStartCtrl.date(moment().subtract(1, 'days'));
+		}else if(me.attr('id') == 'eight_hour'){
+			reportStartCtrl.date(moment().subtract(7, 'days'));
+		}else if(me.attr('id') == 'day'){
+			reportStartCtrl.date(moment().subtract(1, 'months'));
+		}else if(me.attr('id') == 'week'){
+			reportStartCtrl.date(moment().subtract(1, 'months'));
+		}else if(me.attr('id') == 'month'){
+			reportStartCtrl.date(moment().subtract(1, 'months'));
+		}else if(me.attr('id') == 'quarter'){
+			reportStartCtrl.date(moment().subtract(3, 'months'));
+		}
 	});
 	
 	var monitors, epaMonitors, monitorTypes, reportUnit, monitorStatusFilter, reportStart, reportEnd, chartType;

@@ -58,14 +58,17 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
       Ok(views.html.monitor(m))
   }
 
-  case class MonitorInfo(mt: Seq[MonitorType.Value], imgUrl: String, equipments: List[Equipment])
+  case class MonitorInfo(mt: Seq[MonitorType.Value], imgUrl: String, equipments: List[Equipment], location:Seq[Double])
   implicit val equipmentWrite = Json.writes[Equipment]
   implicit val mInfoWrite = Json.writes[MonitorInfo]
 
   def getMonitorInfo(monitorStr: String) = Security.Authenticated {
     implicit request =>
       val m = Monitor.withName(monitorStr)
-      val info = MonitorInfo(Monitor.map(m).monitorTypes, Monitor.map(m).url, Equipment.map.getOrElse(m, List.empty))
+      val mCase = Monitor.map(m)
+      val info = MonitorInfo(mCase.monitorTypes, mCase.url, Equipment.map.getOrElse(m, List.empty),
+          Seq(mCase.lat,mCase.lng)
+          )
 
       Ok(Json.toJson(info))
   }
@@ -141,6 +144,23 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
         },
         imgUrl => {
           Monitor.updateImgUrl(monitor, imgUrl)
+          Ok(Json.obj("ok" -> true))
+        })
+  }
+
+  def setMonitorLocation(monitorStr: String) = Security.Authenticated(BodyParsers.parse.json) {
+    implicit request =>
+      val monitor = Monitor.withName(monitorStr)
+      val locationResult = request.body.validate[Seq[Double]]
+
+      locationResult.fold(
+        error => {
+          Logger.error(JsError.toJson(error).toString())
+          BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
+        },
+        location => {
+          Monitor.updateLocation(monitor, location(0), location(1))
+          Logger.info(s"location set to $location")
           Ok(Json.obj("ok" -> true))
         })
   }

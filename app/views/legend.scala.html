@@ -1,0 +1,23 @@
+@* legend Template File *@
+@import MonitorStatus._
+@(displayAduit:Boolean = true)(implicit messages:Messages)
+<div class="row">
+<div class="col-lg-offset-4 col-lg-8">
+<table class="table">
+<tbody>
+<tr>
+	<td class="col-lg-1" style="color:black"><strong>@Messages("rtStatus.prompt")</strong></td>
+	<td class="col-lg-1" style="color:@OverInternalColor">@Messages("rtStatus.overInternal")</td>
+	<td class="col-lg-1" style="color:@OverLawColor">@Messages("rtStatus.overLaw")</td>	
+	<td class="col-lg-1" style="color:black;background-color:@CalibrationColor">@Messages("rtStatus.calibration")</td>
+	<td class="col-lg-1" style="color:black;background-color:@RepairColor">@Messages("rtStatus.repair")</td>
+	<td class="col-lg-1" style="color:black;background-color:@AbnormalColor">@Messages("rtStatus.abnormal")</td>
+@if(displayAduit){
+	<td class="col-lg-1" style="color:black;background-color:@AutoAuditColor">自動檢核</td>
+	<td class="col-lg-1" style="color:black;background-color:@ManualAuditColor">人工註記</td>	
+}
+</tr>
+</tbody>
+</table>
+</div>
+</div>
