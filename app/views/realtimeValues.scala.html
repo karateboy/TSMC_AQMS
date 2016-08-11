@@ -57,21 +57,7 @@
 		}
 	</tbody>
 </table>
-<div>
-<table class="table">
-<tbody>
-<tr>
-	<td class="col-lg-1" style="color:black"><strong>@Messages("rtStatus.prompt")</strong></td>
-	<td class="col-lg-1" style="color:@OverInternalColor">@Messages("rtStatus.overInternal")</td>
-	<td class="col-lg-1" style="color:@OverLawColor">@Messages("rtStatus.overLaw")</td>	
-	<td class="col-lg-1" style="color:black;background-color:@CalibrationColor">@Messages("rtStatus.calibration")</td>
-	<td class="col-lg-1" style="color:black;background-color:@RepairColor">@Messages("rtStatus.repair")</td>
-	<td class="col-lg-1" style="color:black;background-color:@MaintanceColor">@Messages("rtStatus.maintance")</td>
-	<td class="col-lg-1" style="color:black;background-color:@AbnormalColor">@Messages("rtStatus.abnormal")</td>
-</tr>
-</tbody>
-</table>
-</div>
+@legend(false)
 <script>
 $( document ).ready(function() {
 	$('[data-toggle="tooltip"]').tooltip();

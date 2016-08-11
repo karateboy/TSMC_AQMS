@@ -657,13 +657,13 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
           m <- monitors
           records = Record.getHourRecords(m, start, end)
 
-          mt <- monitorTypes if(MonitorType.map(mt).sd_law.isDefined) 
+          mt <- monitorTypes if(MonitorType.map(mt).std_law.isDefined) 
           typeRecords = records.map { r => (Record.timeProjection(r), Record.monitorTypeProject2(mt)(r)) }
           overLawRecords = typeRecords.filter {
             r =>
               (r._2._1.isDefined && r._2._2.isDefined &&
                 MonitorStatus.isNormalStat(r._2._2.get) &&
-                r._2._1.get >= MonitorType.map(mt).sd_law.get)
+                r._2._1.get >= MonitorType.map(mt).std_law.get)
           }
           overList = overLawRecords.map { r => OverLawStdEntry(m, mt, r._1, r._2._1.get) }
         } {

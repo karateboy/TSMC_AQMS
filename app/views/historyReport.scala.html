@@ -6,23 +6,7 @@
 <H3>測項:@MonitorType.map(monitorType).desp (@MonitorType.map(monitorType).unit)</H3>
 <H5>區間:@start.toString("YYYY-MM-dd HH:mm")~@end.toString("YYYY-MM-dd HH:mm")</H5>
 
-<div class="col-lg-offset-4 col-lg-8">
-<table class="table">
-<tbody>
-<tr>
-	<td class="col-lg-1" style="color:black"><strong>標示說明:</strong></td>	
-	<td class="col-lg-1" style="color:@OverInternalColor">超過內控值</td>
-	<td class="col-lg-1" style="color:@OverLawColor">超過法規值</td>
-	<td class="col-lg-1" style="color:black;background-color:@CalibrationColor">校正</td>
-	<td class="col-lg-1" style="color:black;background-color:@RepairColor">維修</td>
-	<td class="col-lg-1" style="color:black;background-color:@MaintanceColor">定保</td>
-	<td class="col-lg-1" style="color:black;background-color:@AbnormalColor">異常</td>
-	<td class="col-lg-1" style="color:black;background-color:@AutoAuditColor">自動檢核</td>
-	<td class="col-lg-1" style="color:black;background-color:@ManualAuditColor">人工註記</td>
-</tr>
-</tbody>
-</table>
-</div>
+@legend()
 
 <table id="historyReport" class="table">
 <thead>
