@@ -90,7 +90,6 @@ object Alarm2 {
     val mStr = SQLSyntax.createUnsafely(monitors.mkString("('", "','", "')"))
     val startT: Timestamp = start
     val endT: Timestamp = end
-    assert(start <= end)
 
     sql"""
         Select *
