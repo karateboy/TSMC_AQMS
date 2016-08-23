@@ -233,11 +233,11 @@ $( document ).ready(function() {
 		}else if(me.attr('id') == 'day'){
 			reportStartCtrl.date(moment().subtract(1, 'months'));
 		}else if(me.attr('id') == 'week'){
-			reportStartCtrl.date(moment().subtract(1, 'months'));
+			reportStartCtrl.date(moment().subtract(2, 'months'));
 		}else if(me.attr('id') == 'month'){
-			reportStartCtrl.date(moment().subtract(1, 'months'));
-		}else if(me.attr('id') == 'quarter'){
 			reportStartCtrl.date(moment().subtract(3, 'months'));
+		}else if(me.attr('id') == 'quarter'){
+			reportStartCtrl.date(moment().subtract(6, 'months'));
 		}
 	});
 	
