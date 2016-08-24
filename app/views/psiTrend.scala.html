@@ -43,7 +43,7 @@
 	            				<div class="input-daterange input-group" id="datepicker">
                     				<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" class="input-sm form-control" name="start" id="reportStart" value='@((DateTime.now-1.day).toString("YYYY-MM-dd"))' required/>
                        				<span class="input-group-addon">至</span>
-                        			<input type="text" class="input-sm form-control" name="end" id="reportEnd" value='@((DateTime.now-1.day).toString("YYYY-MM-dd"))' required/>                        
+                        			<input type="text" class="input-sm form-control" name="end" id="reportEnd" required/>                        
                     			</div>                        
                     		</div>
 	            		</div>
@@ -94,13 +94,31 @@ $( document ).ready(function() {
 	        });
 	});
 
-	$('#datepicker').datepicker({
-		format: 'yyyy-mm-dd',
-	    todayBtn: "linked",
-	    language: "zh-TW"
+
+	$('#reportStart').datetimepicker({
+		format: 'YYYY-M-D',
+		defaultDate: moment().subtract(1, 'days'),
+    	locale: "zh-TW"
+	});
+	$('#reportEnd').datetimepicker({
+		format: 'YYYY-M-D',
+		defaultDate: moment(),
+    	locale: "zh-TW"
 	});
 
-
+    $("input[name='psiType']").change(function(){
+		var me = $(this)
+		
+		//Set default date
+		var reportStartCtrl = $('#reportStart').data("DateTimePicker"); 
+		if(me.attr('id') == 'hourlyPSI'){
+			reportStartCtrl.date(moment().subtract(1, 'days'));
+		}else if(me.attr('id') == 'dailyPSI'){
+			reportStartCtrl.date(moment().subtract(7, 'days'));
+		}
+	});
+	
+	
 	var monitors, reportStart, reportEnd, dailyPsi;
 	
 	function validate(){
