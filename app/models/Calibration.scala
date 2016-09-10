@@ -192,8 +192,8 @@ object Calibration {
           z_val = z_val,
           zd_val = Some(1.0f),
           zd_pnt = Some(1.0f),
-          s_std = Some(1.0f),
-          s_sval = Some(1.0f),
+          s_std = caliNO.s_std,
+          s_sval = caliNO.s_sval,
           sd_val = Some(1.0f),
           sd_pnt = Some(1.0f)))
       } else
