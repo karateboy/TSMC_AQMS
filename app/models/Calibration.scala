@@ -172,6 +172,42 @@ object Calibration {
 
       }
 
-    calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
+    val map = calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
+
+    val no2Calibration = {
+      val mtNO2 = MonitorType.A293
+      val mtNOX = MonitorType.A293
+      val mtNO = MonitorType.A283
+      // NOX = NO + NO2
+      if (map.contains(mtNOX) && map.contains(mtNO)) {
+        val caliNOX = map(mtNOX)
+        val caliNO = map(mtNO)
+
+        val z_val = for (nox <- caliNOX.z_val; no <- caliNO.z_val) yield (nox - no)
+
+        Some(CalibrationItem(caliNO.monitor, mtNO2,
+          caliNO.startTime, caliNO.endTime,
+          span = Some(1.0f),
+          z_std = Some(1.0f),
+          z_val = z_val,
+          zd_val = Some(1.0f),
+          zd_pnt = Some(1.0f),
+          s_std = Some(1.0f),
+          s_sval = Some(1.0f),
+          sd_val = Some(1.0f),
+          sd_pnt = Some(1.0f)))
+      } else
+        None
+    }
+    
+    //Remove NO2
+    if (no2Calibration.isDefined)
+      map + (MonitorType.A293 -> no2Calibration.get)
+    else
+      map - MonitorType.A293
   }
+
+  //A293 => NO2, A296=>NMHC
+  val interpolatedMonitorTypes = List(MonitorType.A293, MonitorType.A296)
+
 }
