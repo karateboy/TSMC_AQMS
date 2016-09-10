@@ -39,13 +39,13 @@
     	</div>
     	<div class="panel panel-primary">
     		<div class="panel-heading panel-title"" >
-        		<a data-toggle="collapse" data-parent="#accordion">報表使用前日校正結果計算</a>	
+        		<a data-toggle="collapse" data-parent="#accordion">報表使用校正回歸</a>	
         	</div>
         	<div class="panel-body panel-collapse">
         		<form id="autoAuditNormalForm" class="form-horizontal">
 						<br/>
 						<div class="form-group">
-							<label class="col-lg-1 control-label">使用前日校正:</label>
+							<label class="col-lg-1 control-label">使用校正回歸:</label>
 							<div class="col-lg-1">
                 				<input id="applyCalibration" name='applyCalibration' type="checkbox" class="form-control" readonly
                 					@if(applyCalibration){
@@ -73,6 +73,10 @@
             				<th>小時標準</th>
             				<th>日標準</th>
             				<th>小數位數</th>
+            				<th>零點校正內控</th>
+            				<th>零點校正法規</th>
+            				<th>全幅校正內控</th>
+            				<th>全幅校正法規</th>            				
             				<th>標準1</th>
             				<th>標準2</th>
             				<th>標準3</th>
@@ -107,8 +111,27 @@
             					}else{
             						<td col="std_day">@map(mt).std_day</td>
             					}
-            					
-            					<td col="precision">@map(mt).prec</td> 
+            					<td col="precision">@map(mt).prec</td>
+            					@if(map(mt).zd_internal.isEmpty){
+            						<td col="zd_internal">-</td>
+            					}else{
+            						<td col="zd_internal">@map(mt).zd_internal</td>
+            					}
+            					@if(map(mt).zd_law.isEmpty){
+            						<td col="zd_law">-</td>
+            					}else{
+            						<td col="zd_law">@map(mt).zd_law</td>
+            					}
+            					@if(map(mt).sd_internal.isEmpty){
+            						<td col="SD_Percent_Internal">-</td>
+            					}else{
+            						<td col="SD_Percent_Internal">@map(mt).sd_internal</td>
+            					}
+            					@if(map(mt).sd_law.isEmpty){
+            						<td col="SD_Percent_Law">-</td>
+            					}else{
+            						<td col="SD_Percent_Law">@map(mt).sd_law</td>
+            					}            					 
             					<td col="level1">@MonitorType.format(mt, map(mt).level1)</td>
             					<td col="level2">@MonitorType.format(mt, map(mt).level2)</td>
             					<td col="level3">@MonitorType.format(mt, map(mt).level3)</td>
