@@ -149,7 +149,7 @@ object Calibration {
       for {
         v <- vOpt
         std <- stdOpt
-      } yield if (v < std)
+      } yield if (Math.abs(v) < Math.abs(std))
         true
       else
         false
