@@ -4,9 +4,9 @@ package models
  * @author user
  */
 object MonitorStatusFilter extends Enumeration {
-  val All = Value("all")
   val Normal = Value("normal")
   val ValidData = Value("valid")
+  val All = Value("all")
 
   val map = Map(
     All -> "全部",
