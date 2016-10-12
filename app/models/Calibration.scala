@@ -158,7 +158,7 @@ object Calibration {
   }
 
   def getDailyCalibrationMap(monitor: Monitor.Value, date: DateTime) = {
-    val begin = date.toDate
+    val begin = (date - 5.day).toDate
     val end = (date + 1.day).toDate
 
     val calibrationList =
@@ -172,10 +172,21 @@ object Calibration {
 
       }
 
-    val map = calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
+    import scala.collection.mutable._
+    val resultMap = Map.empty[MonitorType.Value, ListBuffer[(DateTime, Calibration.CalibrationItem)]]
+    for (item <- calibrationList.filter { _.success } if item.monitorType != MonitorType.A293) {
+      val lb = resultMap.getOrElseUpdate(item.monitorType, ListBuffer.empty[(DateTime, Calibration.CalibrationItem)])
+      lb.append((item.endTime, item))
+    }
     
+    resultMap.map(kv=> kv._1 -> kv._2.toList).toMap
+    /*
+    val map = calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
+
     //Remove NO2
-      map - MonitorType.A293
+    map - MonitorType.A293
+    * 
+    */
   }
 
   //A293 => NO2, A296=>NMHC
