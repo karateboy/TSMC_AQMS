@@ -780,40 +780,56 @@ object Record {
           usedMonitoredTypes
 
       val interpolatedMonitorTypes = List(
-         //A293=> NO2, A223=>NOX, A283=> NO
+        //A293=> NO2, A223=>NOX, A283=> NO
         (MonitorType.A293, (MonitorType.A223, MonitorType.A283)),
         //A296=>NMHC, A286=>CH4, A226=>THC
-        (MonitorType.A296, (MonitorType.A286, MonitorType.A226))
-      )
-            
+        (MonitorType.A296, (MonitorType.A286, MonitorType.A226)))
+
       val typeResultList =
         for {
           mt <- includeTypes
           t = monitorTypeProject2(mt)
           total = recordMap.size
           projections = reportList.map { rs =>
-            if (SystemConfig.getApplyCalibration && calibrationMap.contains(mt)) {
-              val calibrated = calibrationMap(mt).calibrate(t(rs)._1)
+            def canCalibrate(mt: MonitorType.Value) = {
+              calibrationMap.contains(mt) &&
+                findCalibration(calibrationMap(mt)).isDefined
+            }
+
+            def doCalibrate(mt:MonitorType.Value)={
+              findCalibration(calibrationMap(mt)).get._2.calibrate(monitorTypeProject2(mt)(rs)._1)
+            }
+            
+            def findCalibration(calibrationList: List[(DateTime, Calibration.CalibrationItem)]) = {
+              val candidate = calibrationList.takeWhile(p => p._1 < rs.date)
+              if (candidate.length == 0)
+                None
+              else
+                Some(candidate.last)
+            }
+
+            if (SystemConfig.getApplyCalibration && canCalibrate(mt)) {
+              val calibrated = doCalibrate(mt)
               (rs.date, calibrated, t(rs)._2)
             } else if (SystemConfig.getApplyCalibration && mt == MonitorType.A293 &&
-                calibrationMap.contains(MonitorType.A223) && calibrationMap.contains(MonitorType.A283)) {
+              canCalibrate(MonitorType.A223) && canCalibrate(MonitorType.A283)) {
               //A293=> NO2, A223=>NOX, A283=> NO
-              val calibratedNOx = calibrationMap(MonitorType.A223).calibrate(monitorTypeProject2(MonitorType.A223)(rs)._1)
-              val calibratedNO = calibrationMap(MonitorType.A283).calibrate(monitorTypeProject2(MonitorType.A283)(rs)._1)
-              val interpolatedNO2 = 
-                for(NOx <- calibratedNOx; NO <- calibratedNO)
+              val calibratedNOx = doCalibrate(MonitorType.A223)
+              val calibratedNO = doCalibrate(MonitorType.A283)
+              val interpolatedNO2 =
+                for (NOx <- calibratedNOx; NO <- calibratedNO)
                   yield NOx - NO
-                  
-              (rs.date, interpolatedNO2, t(rs)._2)    
+
+              (rs.date, interpolatedNO2, t(rs)._2)
             } else if (SystemConfig.getApplyCalibration && mt == MonitorType.A296 &&
-               calibrationMap.contains(MonitorType.A286) && calibrationMap.contains(MonitorType.A226)){
+              canCalibrate(MonitorType.A286) && canCalibrate(MonitorType.A226)) {
               //A296=>NMHC, A286=>CH4, A226=>THC
-              val calibratedCH4 = calibrationMap(MonitorType.A286).calibrate(monitorTypeProject2(MonitorType.A286)(rs)._1)
-              val calibratedTHC = calibrationMap(MonitorType.A226).calibrate(monitorTypeProject2(MonitorType.A226)(rs)._1)
-              val interpolatedNMHC = 
-                for(ch4 <- calibratedCH4; thc <- calibratedTHC)
+              val calibratedCH4 = doCalibrate(MonitorType.A286)
+              val calibratedTHC = doCalibrate(MonitorType.A226)
+              val interpolatedNMHC =
+                for (ch4 <- calibratedCH4; thc <- calibratedTHC)
                   yield thc - ch4
-                  
+
               (rs.date, interpolatedNMHC, t(rs)._2)
             } else
               (rs.date, t(rs)._1, t(rs)._2)
