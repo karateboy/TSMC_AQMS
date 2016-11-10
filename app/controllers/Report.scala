@@ -601,6 +601,13 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
       val group = Group.getGroup(userInfo.groupID).get
       Ok(views.html.psiReport(group.privilege))
   }
+  
+  def psiExplain = Security.Authenticated {
+    implicit request =>
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
+      Ok(views.html.psiExplain())
+  }
 
   def psiReportReport(monitorStr: String, reportTypeStr: String, startDateStr: String, outputTypeStr: String) = Security.Authenticated {
     implicit request =>

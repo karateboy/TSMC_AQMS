@@ -111,14 +111,6 @@ object MonitorStatus {
     }
   }
   
-  def isNormal(s:String)={
-    getTagInfo(NORMAL_STAT) == getTagInfo(s)
-  }
-  
-  def isOver(s:String)={
-    getTagInfo(OVER_STAT) == getTagInfo(s)
-  }
-  
   val CALBRATION_STAT = "020"
   val CALBRATION_SPAN_STAT = "021"
   val CALBRATION_BACK_STAT = "026"

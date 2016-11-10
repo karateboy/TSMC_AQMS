@@ -41,6 +41,7 @@ GET		/PsiQuery					controllers.Report.psiReportPrompt
 GET		/PsiQueryReport/:monitor/:reportType/:start	controllers.Report.psiReportReport(monitor, reportType, start, outputTypeStr="html")
 GET		/PDF/PsiQueryReport/:monitor/:reportType/:start	controllers.Report.psiReportReport(monitor, reportType, start, outputTypeStr="pdf")
 GET		/Excel/PsiQueryReport/:monitor/:reportType/:start	controllers.Report.psiReportReport(monitor, reportType, start, outputTypeStr="excel")
+GET		/PsiExplain					controllers.Report.psiExplain
 
 GET		/EffectiveQuery			controllers.Report.effectiveQuery
 GET		/EffectiveAnnualReport/:reportType/:start/:param	controllers.Report.effectiveAnnualReport(reportType, start, param, outputTypeStr="html")

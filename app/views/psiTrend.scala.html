@@ -146,8 +146,8 @@ $( document ).ready(function() {
 		var end = new Date(reportEnd);
 		var diff = end.getTime()-start.getTime();
 		if(dailyPsi){
-			if(diff > 7 * 24*60*60*1000){
-				alert("查詢區間必須小於7天");
+			if(diff > 31 * 24*60*60*1000){
+				alert("查詢區間必須小於一個月");
 				return false;
 			}				
 		}else{
