@@ -548,7 +548,24 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
     implicit request =>
       import scala.collection.JavaConverters._
       val monitorStrArray = monitorStr.split(':')
-      val monitors = monitorStrArray.map { Monitor.withName }
+      val monitors = monitorStrArray.flatMap { name =>
+        try {
+          Some(Monitor.withName(name))
+        }catch{
+          case _:Throwable=>
+            None
+        }
+      }
+      
+      val epaMonitors  = monitorStrArray.flatMap { name =>
+        try {
+          Some(EpaMonitor.withName(name))
+        }catch{
+          case _:Throwable=>
+            None
+        }
+      }
+      
       val start = DateTime.parse(startStr)
       val end = DateTime.parse(endStr) + 1.day
       val outputType = OutputType.withName(outputTypeStr)
@@ -579,16 +596,48 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         map
       }
 
+      def getEpaPsiMap(m: EpaMonitor.Value) = {
+        import models.Realtime._
+        var current = start
+
+        val map = Map.empty[DateTime, Float]
+        while (current < end) {
+          if (isDailyPsi) {
+            val v = getEpaDailyPSI(m, current)
+            if (v.psi.isDefined) {
+              val psi = v.psi.get
+              map += (current -> psi)
+            }
+            current += 1.day
+          } else {
+            val v = getEpaRealtimePSI(m, current)
+            if (v._1.isDefined) {
+              val psi = v._1.get
+              map += (current -> psi)
+            }
+            current += 1.hour
+          }
+        }
+        map
+      }
+
       val monitorPsiMap = Map.empty[Monitor.Value, Map[DateTime, Float]]
-      var timeSet = Set.empty[DateTime]
+      val epaPsiMap = Map.empty[EpaMonitor.Value, Map[DateTime, Float]]
+      val timeSet = if (isDailyPsi)
+          getPeriods(start, end, 1.day)
+        else
+          getPeriods(start, end, 1.hour)
 
       for (m <- monitors) {
         monitorPsiMap += (m -> getPsiMap(m))
-        timeSet ++= getPsiMap(m).keys.toSet
       }
+      
+      for (m <-epaMonitors){
+        epaPsiMap += m -> getEpaPsiMap(m)
+      }            
 
       val title = "PSI歷史趨勢圖"
-      val timeSeq = timeSet.toList.sorted.zipWithIndex
+      val timeSeq = timeSet.zipWithIndex
       import Realtime._
 
       val series = for {
@@ -605,6 +654,20 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         seqData(Monitor.map(m).name, timeData)
       }
 
+      val epaSeries = for {
+        m <- epaMonitors
+        timeData = timeSeq.map { t =>
+          val time = t._1
+          val x = t._2
+          if (epaPsiMap(m).contains(time))
+            Seq(Some(time.getMillis.toDouble), Some(epaPsiMap(m)(time).toDouble))
+          else
+            Seq(Some(time.getMillis.toDouble), None)
+        }
+      } yield {
+        seqData(EpaMonitor.map(m).name, timeData)
+      }
+      
       val timeStrSeq =
         if (isDailyPsi)
           timeSeq.map(_._1.toString("YY/MM/dd"))
@@ -616,7 +679,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         scala.collection.immutable.Map("text" -> title),
         XAxis(None),
         Seq(YAxis(None, AxisTitle(Some(Some(""))), None)),
-        series)
+        series++epaSeries)
 
       if (outputType == OutputType.excel) {
         val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1))
