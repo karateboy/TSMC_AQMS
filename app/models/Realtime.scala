@@ -80,6 +80,15 @@ object Realtime {
     }
   }
 
+  def getEpaMTypeAvg(records: List[EpaHourRecord], validMin: Int) = {
+    val values = records.map { _.value }
+    if (values.length < validMin)
+      None
+    else {
+      Some(values.sum / values.length)
+    }
+  }
+
   def getMonitorTypeMax(records: List[HourRecord], monitorType: MonitorType.Value) = {
     val typeValues = records.map { hr => monitorTypeProject2(monitorType)(hr) }
     val validValues = typeValues.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
@@ -91,12 +100,36 @@ object Realtime {
     }
   }
 
+  def getEpaMTypeMax(records: List[EpaHourRecord], validMin: Int) = {
+    val values = records.map { _.value }
+    if (values.length < validMin)
+      None
+    else {
+      Some(values.max)
+    }
+  }
+
   def getMonitorType8HourAvgMax(monitor: Monitor.Value, monitorType: MonitorType.Value, start: DateTime, end: DateTime)(implicit session: DBSession = AutoSession) = {
     def EightHourAvg(start: DateTime): List[Option[Float]] = {
       if (start + 8.hour >= end)
         Nil
       else
-        getMonitorTypeAvg(monitor, monitorType, start, end, 8) :: EightHourAvg(start + 1.hours)
+        getMonitorTypeAvg(monitor, monitorType, start, start + 8.hour, 8) :: EightHourAvg(start + 1.hours)
+    }
+
+    val avgs = EightHourAvg(start)
+
+    avgs.max
+  }
+
+  def getEpa8HourAvgMax(records: List[EpaHourRecord], start: DateTime, end: DateTime) = {
+    def EightHourAvg(start: DateTime): List[Option[Float]] = {
+      if (start + 8.hour >= end)
+        Nil
+      else {
+        val recs = records.filter { r => r.time >= start && r.time < start + 8.hour }
+        getEpaMTypeMax(recs, 8) :: EightHourAvg(start + 1.hours)
+      }
     }
 
     val avgs = EightHourAvg(start)
@@ -248,6 +281,30 @@ object Realtime {
     (psi, result)
   }
 
+  def getEpaRealtimePSI(monitor: EpaMonitor.Value, lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
+
+    val pm10_12 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A214"), lastHour - 11.hour, lastHour + 1.hour), 8)
+    val pm10_4 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A214"), lastHour - 3.hour, lastHour + 1.hour), 3)
+    val pm10 = if (pm10_12.isDefined && pm10_4.isDefined)
+      Some((pm10_12.get + pm10_4.get) / 2)
+    else
+      None
+
+    val so2_24 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A222"), lastHour - 23.hour, lastHour + 1.hour), 16)
+    val co_8 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A224"), lastHour - 7.hour, lastHour + 1.hour), 6)
+    val o3 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A225"), lastHour, lastHour + 1.hour), 1)
+    val no2 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A293"), lastHour, lastHour + 1.hour), 1)
+    val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
+      MonitorType.withName("A214") -> (pm10, pm10PSI(pm10)),
+      MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
+      MonitorType.withName("A224") -> (co_8, coPSI(co_8)),
+      MonitorType.withName("A225") -> (o3, o3PSI(o3)),
+      MonitorType.withName("A293") -> (no2, no2PSI(no2)))
+    val sub_psi = result.values.map(_._2)
+    val psi = sub_psi.toList.max
+
+    (psi, result)
+  }
   case class PsiReport(psi: Option[Float], sub_map: Map[MonitorType.Value, (Option[Float], Option[Float])])
 
   def getMonitorMonthlyPSI(monitor: Monitor.Value, start: DateTime) = {
@@ -271,6 +328,25 @@ object Realtime {
     val no2 = getMonitorTypeMax(day_hr_records, MonitorType.withName("A293"))
 
     val co_8 = getMonitorType8HourAvgMax(monitor, MonitorType.withName("A224"), current, current + 1.day)
+    val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
+      MonitorType.withName("A214") -> (pm10_24, pm10PSI(pm10_24)),
+      MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
+      MonitorType.withName("A224") -> (co_8, coPSI(co_8)),
+      MonitorType.withName("A225") -> (o3, o3PSI(o3)),
+      MonitorType.withName("A293") -> (no2, no2PSI(no2)))
+    val sub_psi = result.values.map(_._2)
+    val psi = sub_psi.toList.max
+
+    PsiReport(psi, result)
+  }
+
+  def getEpaDailyPSI(monitor: EpaMonitor.Value, current: DateTime)(implicit session: DBSession = AutoSession) = {
+    val pm10_24 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A214"), current, current + 1.day), 16)
+    val so2_24 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A222"), current, current + 1.day), 16)
+    val o3 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A225"), current, current + 1.day), 16)
+    val no2 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A293"), current, current + 1.day), 16)
+
+    val co_8 = getEpa8HourAvgMax(getEpaHourRecord(monitor, MonitorType.withName("A224"), current, current + 1.day), current, current + 1.day)
     val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
       MonitorType.withName("A214") -> (pm10_24, pm10PSI(pm10_24)),
       MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
