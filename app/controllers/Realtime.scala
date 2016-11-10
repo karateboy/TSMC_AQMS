@@ -154,7 +154,7 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
       import controllers.Query.trendHelper
       val chart = trendHelper(Monitor.mvList.toArray, Array.empty[EpaMonitor.Value], Array(mt), ReportUnit.Min,
-        MonitorStatusFilter.Normal, currentDateTime - 1.hour, currentDateTime)
+        MonitorStatusFilter.ValidData, currentDateTime - 1.hour, currentDateTime)
       Ok(Json.toJson(chart))
   }
 

@@ -1039,7 +1039,7 @@ object Record {
       for {
         i <- 0 to nYear - 1
         records = getHourRecords(monitor, start - i.year, end - i.year)
-      } yield records.map(f).filter(t => t._2._1.isDefined && t._2._2.isDefined && MonitorStatus.isNormal(t._2._2.get))
+      } yield records.map(f).filter(t => t._2._1.isDefined && t._2._2.isDefined && MonitorStatus.isValid(t._2._2.get))
 
     result
   }
@@ -1121,7 +1121,7 @@ object Record {
         mtMap = Map(mtRecord: _*)
       } yield {
         val data = mtRecord.filter(
-          r => r._2._1.isDefined && r._2._2.isDefined && MonitorStatus.isNormal(r._2._2.get)).map(_._2._1.get)
+          r => r._2._1.isDefined && r._2._2.isDefined && MonitorStatus.isValid(r._2._2.get)).map(_._2._1.get)
         val count = data.length
         val stat =
           if (count != 0) {
