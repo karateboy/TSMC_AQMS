@@ -257,18 +257,57 @@ object Realtime {
     } yield Math.round(pm25_12 / 2 + pm25_4 / 2)
   }
 
-  def getMonitorRealtimePSI(monitor: Monitor.Value, lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
-    val pm10_12 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), lastHour - 11.hour, lastHour + 1.hour, 8)
-    val pm10_4 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), lastHour - 3.hour, lastHour + 1.hour, 3)
+  def getMonitorRealtimePSIfromMap(thisHour: Int,
+                                   map: Map[MonitorType.Value, List[(Option[Float], Option[String])]]) = {
+    def getMonitorTypeAvg(mt: MonitorType.Value,
+                          start: Int, end: Int, validMin: Int) = {
+      val records = map(mt).slice(start, end)
+      val validValues = records.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
+      val total = validValues.length
+      if (total < validMin)
+        None
+      else {
+        val sum = validValues.sum
+        Some(sum / total)
+      }
+    }
+
+    val pm10_12 = getMonitorTypeAvg(MonitorType.A214, thisHour - 11, thisHour + 1, 8)
+    val pm10_4 = getMonitorTypeAvg(MonitorType.A214, thisHour - 3, thisHour + 1, 3)
     val pm10 = if (pm10_12.isDefined && pm10_4.isDefined)
       Some((pm10_12.get + pm10_4.get) / 2)
     else
       None
 
-    val so2_24 = getMonitorTypeAvg(monitor, MonitorType.withName("A222"), lastHour - 23.hour, lastHour + 1.hour, 16)
-    val co_8 = getMonitorTypeAvg(monitor, MonitorType.withName("A224"), lastHour - 7.hour, lastHour + 1.hour, 6)
-    val o3 = getMonitorTypeAvg(monitor, MonitorType.withName("A225"), lastHour, lastHour + 1.hour, 1)
-    val no2 = getMonitorTypeAvg(monitor, MonitorType.withName("A293"), lastHour, lastHour + 1.hour, 1)
+    val so2_24 = getMonitorTypeAvg(MonitorType.A222, thisHour - 23, thisHour + 1, 16)
+    val co_8 = getMonitorTypeAvg(MonitorType.A224, thisHour - 7, thisHour + 1, 6)
+    val o3 = getMonitorTypeAvg(MonitorType.A225, thisHour, thisHour + 1, 1)
+    val no2 = getMonitorTypeAvg(MonitorType.A293, thisHour, thisHour + 1, 1)
+    val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
+      MonitorType.withName("A214") -> (pm10, pm10PSI(pm10)),
+      MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
+      MonitorType.withName("A224") -> (co_8, coPSI(co_8)),
+      MonitorType.withName("A225") -> (o3, o3PSI(o3)),
+      MonitorType.withName("A293") -> (no2, no2PSI(no2)))
+    val sub_psi = result.values.map(_._2)
+    val psi = sub_psi.toList.max
+
+    (psi, result)
+
+  }
+
+  def getMonitorRealtimePSI(monitor: Monitor.Value, thisHour: DateTime)(implicit session: DBSession = AutoSession) = {
+    val pm10_12 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), thisHour - 11.hour, thisHour + 1.hour, 8)
+    val pm10_4 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), thisHour - 3.hour, thisHour + 1.hour, 3)
+    val pm10 = if (pm10_12.isDefined && pm10_4.isDefined)
+      Some((pm10_12.get + pm10_4.get) / 2)
+    else
+      None
+
+    val so2_24 = getMonitorTypeAvg(monitor, MonitorType.withName("A222"), thisHour - 23.hour, thisHour + 1.hour, 16)
+    val co_8 = getMonitorTypeAvg(monitor, MonitorType.withName("A224"), thisHour - 7.hour, thisHour + 1.hour, 6)
+    val o3 = getMonitorTypeAvg(monitor, MonitorType.withName("A225"), thisHour, thisHour + 1.hour, 1)
+    val no2 = getMonitorTypeAvg(monitor, MonitorType.withName("A293"), thisHour, thisHour + 1.hour, 1)
     val result = Map[MonitorType.Value, (Option[Float], Option[Float])](
       MonitorType.withName("A214") -> (pm10, pm10PSI(pm10)),
       MonitorType.withName("A222") -> (so2_24, so2PSI(so2_24)),
@@ -383,18 +422,29 @@ object Realtime {
   }
 
   def getDailyPsiReport(m: Monitor.Value, start: DateTime)(implicit session: DBSession = AutoSession) = {
-    val end = start + 1.day
-    def hourRange(start: DateTime): List[DateTime] = {
-      if (start >= end)
-        Nil
-      else
-        start :: hourRange(start + 1.hours)
-    }
+    import Record._
+    val lastDayReport = getDailyReport(m, start - 1.day, MonitorType.psiList)
+    val todayReport = getDailyReport(m, start, MonitorType.psiList)
+    val mapPair =
+      for {
+        mtRecords <- lastDayReport.typeList.zipWithIndex
+        mtRecord = mtRecords._1
+        mtIdx = mtRecords._2
+      } yield {
+        val mt = mtRecord.monitorType
+        val dataList = mtRecord.dataList ++ todayReport.typeList(mtIdx).dataList
+        assert(mt == todayReport.typeList(mtIdx).monitorType)
+        assert(dataList.length == 48)
+
+        mt -> dataList.map(d => (d._2, d._3))
+      }
+
+    val dailyMap = mapPair.toMap
 
     for {
-      hr <- hourRange(start)
+      hr <- 24 to 48
     } yield {
-      getMonitorRealtimePSI(m, hr)
+      getMonitorRealtimePSIfromMap(hr, dailyMap)
     }
   }
 
