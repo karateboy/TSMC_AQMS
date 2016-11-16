@@ -621,7 +621,7 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
         val (title, excelFile) =
           reportType match {
             case PeriodReport.DailyReport =>
-              val psiList = getDailyPsiReport(monitor, startDate)
+              val psiList = getDailyPsiReport(monitor, startDate).toList
               ("PSI日報表", ExcelUtility.psiDailyReport(monitor, startDate, psiList))
 
             case PeriodReport.MonthlyReport =>
@@ -639,7 +639,7 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
         val (title, output) =
           reportType match {
             case PeriodReport.DailyReport =>
-              val psiList = getDailyPsiReport(monitor, startDate)
+              val psiList = getDailyPsiReport(monitor, startDate).toList
               ("PSI日報表", views.html.psiDailyReport(monitor, startDate, psiList))
             case PeriodReport.MonthlyReport =>
               val adjustStartDate = DateTime.parse(startDate.toString("YYYY-MM-1"))
