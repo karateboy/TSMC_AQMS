@@ -101,12 +101,12 @@ $( document ).ready(function() {
 
 	$('#reportStart').datetimepicker({
 		format: 'YYYY-M-D',
-		defaultDate: moment().subtract(1, 'days'),
+		defaultDate: moment().subtract(3, 'days'),
     	locale: "zh-TW"
 	});
 	$('#reportEnd').datetimepicker({
 		format: 'YYYY-M-D',
-		defaultDate: moment(),
+		defaultDate: moment().subtract(1, 'days'),
     	locale: "zh-TW"
 	});
 
