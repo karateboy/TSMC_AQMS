@@ -626,7 +626,7 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
 
             case PeriodReport.MonthlyReport =>
               val adjustStartDate = DateTime.parse(startDate.toString("YYYY-MM-1"))
-              val monthlyPsiList = getMonitorMonthlyPSI(monitor, adjustStartDate)
+              val monthlyPsiList = getMonitorMonthlyPSI(monitor, adjustStartDate).toList
               val nDays = monthlyPsiList.length
               ("PSI月報表", ExcelUtility.psiMonthlyReport(monitor, adjustStartDate, monthlyPsiList, nDays))
           }
@@ -643,7 +643,7 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
               ("PSI日報表", views.html.psiDailyReport(monitor, startDate, psiList))
             case PeriodReport.MonthlyReport =>
               val adjustStartDate = DateTime.parse(startDate.toString("YYYY-MM-1"))
-              val monthlyPsiList = getMonitorMonthlyPSI(monitor, adjustStartDate)
+              val monthlyPsiList = getMonitorMonthlyPSI(monitor, adjustStartDate).toList
               val nDays = monthlyPsiList.length
               ("PSI月報表", views.html.psiMonthlyReport(monitor, adjustStartDate, monthlyPsiList, nDays))
           }
