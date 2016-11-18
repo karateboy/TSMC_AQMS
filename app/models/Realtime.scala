@@ -421,7 +421,7 @@ object Realtime {
     Map(result: _*)
   }
 
-  def getDailyPsiReport(m: Monitor.Value, start: DateTime)(implicit session: DBSession = AutoSession) = {
+  def getDailyPsiReport(m: Monitor.Value, start: DateTime) = {
     import Record._
     val lastDayReport = getDailyReport(m, start - 1.day, MonitorType.psiList)
     val todayReport = getDailyReport(m, start, MonitorType.psiList)
@@ -446,6 +446,45 @@ object Realtime {
     } yield {
       getMonitorRealtimePSIfromMap(hr, dailyMap)
     }
+  }
+
+  def getRealtimePsiTrend(m: Monitor.Value, start: DateTime, end: DateTime) = {
+    import Record._
+    val duration = new Duration(start, end)
+    val dayReports =
+      for (delta <- 0 to duration.getStandardDays.toInt) yield {
+        getDailyReport(m, start + delta.day, MonitorType.psiList)
+      }
+    val lastDayReport = getDailyReport(m, start - 1.day, MonitorType.psiList)
+
+    val totalReport = dayReports.foldLeft(lastDayReport)((d1, d2) =>
+      {
+        val zipList = d1.typeList.zip(d2.typeList)
+        val newTlist = zipList.map { z =>
+          MonitorTypeRecord(z._1.monitorType, z._1.dataList ++ z._2.dataList, z._1.stat)
+
+        }
+        DailyReport(newTlist)
+      })
+
+    val mapPair =
+      for {
+        mtRecord <- totalReport.typeList
+      } yield {
+        val mt = mtRecord.monitorType
+        val dataList = mtRecord.dataList map (d => (d._2, d._3))
+        mt -> dataList
+      }
+
+    val dailyMap = mapPair.toMap
+
+    val timePsiPair = 
+    for {
+      hr <- 24 to (24 + duration.getStandardDays.toInt * 24)
+    } yield {
+      start + (hr-24).hour ->getMonitorRealtimePSIfromMap(hr, dailyMap)._1
+    }
+    timePsiPair.filter(_._2.isDefined).map(p=>p._1->p._2.get).toMap
   }
 
   def getPm25Level(v: Int) = {

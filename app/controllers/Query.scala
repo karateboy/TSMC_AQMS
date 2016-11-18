@@ -26,7 +26,7 @@ object ReportUnit extends Enumeration {
   val map = Map((Min -> "分"), (TenMin -> "十分"), (Hour -> "小時"), (EightHour -> "八小時"), (Day -> "日"), (Week -> "週"), (Month -> "月"), (Quarter -> "季"))
 }
 
-case class OverLawStdEntry(monitor: Monitor.Value, mt:MonitorType.Value, time: DateTime, value: Float)
+case class OverLawStdEntry(monitor: Monitor.Value, mt: MonitorType.Value, time: DateTime, value: Float)
 case class PeriodStat(avg: Float, min: Float, max: Float, sd: Float, minDate: DateTime, maxDate: DateTime)
 
 object Query {
@@ -146,11 +146,11 @@ object Query {
           }
         } yield {
           val mtCase = MonitorType.map(mt)
-          val standard = if(mtCase.std_law.isDefined)
+          val standard = if (mtCase.std_law.isDefined)
             s"(法規值:${mtCase.std_law.get} ${mtCase.unit})"
           else
             "(法規值:-)"
-            
+
           val seqName = Monitor.map(m).name + "_" + mtCase.desp + standard
           if (mt != windMtv)
             seqData(name = seqName, data = timeData, status = Some(timeStatus))
@@ -164,10 +164,10 @@ object Query {
           timeData = timeSeq.map { t =>
             val time = t._1
             val x = t._2
-            if (recordMap(m)(mt).contains(time)){
-              val value = recordMap(m)(mt)(time)._1.map{_.toDouble}
+            if (recordMap(m)(mt).contains(time)) {
+              val value = recordMap(m)(mt)(time)._1.map { _.toDouble }
               Seq(Some(time.getMillis.toDouble), value)
-            }else
+            } else
               Seq(Some(time.getMillis.toDouble), None)
           }
           timeStatus = timeSeq.map { t =>
@@ -180,11 +180,11 @@ object Query {
           }
         } yield {
           val mtCase = MonitorType.map(mt)
-          val standard = if(mtCase.std_law.isDefined)
+          val standard = if (mtCase.std_law.isDefined)
             s"(法規值:${mtCase.std_law.get} ${mtCase.unit})"
           else
             "(法規值:-)"
-            
+
           val seqName = Monitor.map(m).name + "_" + mtCase.desp + standard
           seqData(name = seqName, data = timeData, status = Some(timeStatus))
         }
@@ -470,7 +470,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       val epaRecordMap = Map(epa_pairs: _*)
       val title = "歷史資料查詢"
       val output =
-          views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, false, tableType.toString)
+        views.html.historyReport(edit, monitors, epaMonitors, monitorType, start, end, timeSet.toList.sorted, recordMap, epaRecordMap, false, tableType.toString)
       outputType match {
         case OutputType.html =>
           Ok(output)
@@ -551,54 +551,50 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       val monitors = monitorStrArray.flatMap { name =>
         try {
           Some(Monitor.withName(name))
-        }catch{
-          case _:Throwable=>
+        } catch {
+          case _: Throwable =>
             None
         }
       }
-      
-      val epaMonitors  = monitorStrArray.flatMap { name =>
+
+      val epaMonitors = monitorStrArray.flatMap { name =>
         try {
           Some(EpaMonitor.withName(name))
-        }catch{
-          case _:Throwable=>
+        } catch {
+          case _: Throwable =>
             None
         }
       }
-      
+
       val start = DateTime.parse(startStr)
       val end = DateTime.parse(endStr) + 1.day
       val outputType = OutputType.withName(outputTypeStr)
 
-      import scala.collection.mutable.Map
       def getPsiMap(m: Monitor.Value) = {
         import models.Realtime._
         var current = start
 
-        val map = Map.empty[DateTime, Float]
-        while (current < end) {
-          if (isDailyPsi) {
+        if (isDailyPsi) {
+          import scala.collection.mutable.Map
+          val map = Map.empty[DateTime, Float]
+          while (current < end) {
             val v = getMonitorDailyPSI(m, current)
             if (v.psi.isDefined) {
               val psi = v.psi.get
               map += (current -> psi)
             }
             current += 1.day
-          } else {
-            val v = getRealtimePSI(current, List(m))
-            if (v(m)._1.isDefined) {
-              val psi = v(m)._1.get
-              map += (current -> psi)
-            }
-            current += 1.hour
           }
+          map
+        } else {
+          getRealtimePsiTrend(m, start, end)
         }
-        map
       }
 
       def getEpaPsiMap(m: EpaMonitor.Value) = {
         import models.Realtime._
         var current = start
+        import scala.collection.mutable.Map
 
         val map = Map.empty[DateTime, Float]
         while (current < end) {
@@ -621,20 +617,22 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         map
       }
 
-      val monitorPsiMap = Map.empty[Monitor.Value, Map[DateTime, Float]]
-      val epaPsiMap = Map.empty[EpaMonitor.Value, Map[DateTime, Float]]
       val timeSet = if (isDailyPsi)
-          getPeriods(start, end, 1.day)
-        else
-          getPeriods(start, end, 1.hour)
+        getPeriods(start, end, 1.day)
+      else
+        getPeriods(start, end, 1.hour)
 
-      for (m <- monitors) {
-        monitorPsiMap += (m -> getPsiMap(m))
-      }
+      val monitorPsiPair =
+      for (m <- monitors) yield
+        m -> getPsiMap(m)
       
-      for (m <-epaMonitors){
-        epaPsiMap += m -> getEpaPsiMap(m)
-      }            
+      val monitorPsiMap = monitorPsiPair.toMap 
+
+      val epaPsiPair = 
+      for (m <- epaMonitors) yield
+        m -> getEpaPsiMap(m)
+      
+      val epaPsiMap = epaPsiPair.toMap
 
       val title = "PSI歷史趨勢圖"
       val timeSeq = timeSet.zipWithIndex
@@ -667,7 +665,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       } yield {
         seqData(EpaMonitor.map(m).name, timeData)
       }
-      
+
       val timeStrSeq =
         if (isDailyPsi)
           timeSeq.map(_._1.toString("YY/MM/dd"))
@@ -679,7 +677,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         scala.collection.immutable.Map("text" -> title),
         XAxis(None),
         Seq(YAxis(None, AxisTitle(Some(Some(""))), None)),
-        series++epaSeries)
+        series ++ epaSeries)
 
       if (outputType == OutputType.excel) {
         val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1))
@@ -709,40 +707,40 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       val monitorStrArray = monitorStr.split(':')
       val monitors = monitorStrArray.map { Monitor.withName }.filter { group.privilege.allowedMonitors.contains }
       val monitorTypesStrArray = monitorTypeStr.split(':')
-      val monitorTypes = monitorTypesStrArray.map { MonitorType.withName }.filter { group.privilege.allowedMonitorTypes.contains } 
+      val monitorTypes = monitorTypesStrArray.map { MonitorType.withName }.filter { group.privilege.allowedMonitorTypes.contains }
       val start = DateTime.parse(startStr)
       val end = DateTime.parse(endStr) + 1.day
 
-        import models.Record._
-        import scala.collection.mutable.ListBuffer
-        val result = ListBuffer[OverLawStdEntry]()
-        for {
-          m <- monitors
-          records = Record.getHourRecords(m, start, end)
+      import models.Record._
+      import scala.collection.mutable.ListBuffer
+      val result = ListBuffer[OverLawStdEntry]()
+      for {
+        m <- monitors
+        records = Record.getHourRecords(m, start, end)
 
-          mt <- monitorTypes if(MonitorType.map(mt).std_law.isDefined) 
-          typeRecords = records.map { r => (Record.timeProjection(r), Record.monitorTypeProject2(mt)(r)) }
-          overLawRecords = typeRecords.filter {
-            r =>
-              (r._2._1.isDefined && r._2._2.isDefined &&
-                MonitorStatus.isNormalStat(r._2._2.get) &&
-                r._2._1.get >= MonitorType.map(mt).std_law.get)
-          }
-          overList = overLawRecords.map { r => OverLawStdEntry(m, mt, r._1, r._2._1.get) }
-        } {
-          result ++= overList
+        mt <- monitorTypes if (MonitorType.map(mt).std_law.isDefined)
+        typeRecords = records.map { r => (Record.timeProjection(r), Record.monitorTypeProject2(mt)(r)) }
+        overLawRecords = typeRecords.filter {
+          r =>
+            (r._2._1.isDefined && r._2._2.isDefined &&
+              MonitorStatus.isNormalStat(r._2._2.get) &&
+              r._2._1.get >= MonitorType.map(mt).std_law.get)
         }
+        overList = overLawRecords.map { r => OverLawStdEntry(m, mt, r._1, r._2._1.get) }
+      } {
+        result ++= overList
+      }
 
-        val output = views.html.overLawStdReport(start, end - 1.day, result)
-        val title = "超過法規報表"
-        outputType match {
-          case OutputType.html =>
-            Ok(output)
-          case OutputType.pdf =>
-            Ok.sendFile(creatPdfWithReportHeader(title, output),
-              fileName = _ =>
-                play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
-        }
+      val output = views.html.overLawStdReport(start, end - 1.day, result)
+      val title = "超過法規報表"
+      outputType match {
+        case OutputType.html =>
+          Ok(output)
+        case OutputType.pdf =>
+          Ok.sendFile(creatPdfWithReportHeader(title, output),
+            fileName = _ =>
+              play.utils.UriEncoding.encodePathSegment(title + start.toString("YYMMdd") + "_" + end.toString("MMdd") + ".pdf", "UTF-8"))
+      }
   }
 
   def effectivePercentage() = Security.Authenticated {
