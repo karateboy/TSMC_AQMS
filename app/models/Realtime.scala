@@ -347,36 +347,10 @@ object Realtime {
   case class PsiReport(psi: Option[Float], sub_map: Map[MonitorType.Value, (Option[Float], Option[Float])])
 
   def getMonitorMonthlyPSI(monitor: Monitor.Value, start: DateTime) = {
-    val duration = new Duration(start, start + 1.month)
-    val dayReports =
-      for (delta <- 1 to (duration.getStandardDays.toInt - 1)) yield {
-        getDailyReport(monitor, start + delta.day, MonitorType.psiList)
-      }
-    val firstDayReport = getDailyReport(monitor, start, MonitorType.psiList)
-
-    val totalReport = dayReports.foldLeft(firstDayReport)((d1, d2) =>
-      {
-        val zipList = d1.typeList.zip(d2.typeList)
-        val newTlist = zipList.map { z =>
-          MonitorTypeRecord(z._1.monitorType, z._1.dataList ++ z._2.dataList, z._1.stat)
-
-        }
-        DailyReport(newTlist)
-      })
-
-    val mapPair =
-      for {
-        mtRecord <- totalReport.typeList
-      } yield {
-        val mt = mtRecord.monitorType
-        val dataList = mtRecord.dataList map (d => (d._2, d._3))
-        mt -> dataList
-      }
-
-    val dailyMap = mapPair.toMap
-
-    for (day <- (0 to duration.getStandardDays.toInt - 1))
-      yield getMonitorDailyPSIfromMap(day, dailyMap)
+    val days = getPeriods(start, start+1.month, 1.day)
+    for(day<-days)
+      yield
+      getMonitorDailyPSI(monitor, day)
   }
 
   def getMonitorDailyPSIfromMap(dayStartHour: Int,
