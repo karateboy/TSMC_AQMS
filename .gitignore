@@ -22,3 +22,4 @@ server.pid
 /conf/application.conf
 /conf/system.properties
 /notification
+/public/images/realtime.jpg
