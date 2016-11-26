@@ -95,7 +95,7 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
       def listAllFiles = {
         //import java.io.FileFilter
-        val allFiles = new java.io.File("Z:/").listFiles().toList
+        val allFiles = new java.io.File("\\\\PC-PC\\tsmc").listFiles().toList
         allFiles.filter(p => p != null).sortBy { f => f.lastModified() }.reverse
       }
       val imgFileList = listAllFiles
