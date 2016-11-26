@@ -98,7 +98,9 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
         val srcPath = Paths.get(imgFileList.head.getAbsolutePath)
 
         imgFileList.drop(1).foreach { f => f.delete() }
-        val destPath = Paths.get(routes.Assets.at("images/realtime.jpg").absoluteURL())
+
+        val realtimeImgPath = s"${current.path.getAbsolutePath}/public/images/realtime.jpg"
+        val destPath = Paths.get(realtimeImgPath)
 
         Files.move(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING)
       }
