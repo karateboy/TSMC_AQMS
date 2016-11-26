@@ -85,6 +85,24 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
       val group = Group.getGroup(userInfo.groupID).get
+      def listAllFiles = {
+        //import java.io.FileFilter
+        val allFiles = new java.io.File("\\\\PC-PC\\tsmc\\").listFiles().toList
+        allFiles.filter(p => p != null).sortBy { f => f.lastModified() }.reverse
+      }
+      val imgFileList = listAllFiles
+      if (!imgFileList.isEmpty) {
+        import java.nio.file._
+        Logger.info(imgFileList.head.getAbsolutePath)
+
+        val srcPath = Paths.get(imgFileList.head.getAbsolutePath)
+
+        imgFileList.drop(1).foreach { f => f.delete() }
+        val destPath = Paths.get(routes.Assets.at("images/realtime.jpg").absoluteURL())
+
+        Files.move(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING)
+      }
+
       Ok(views.html.realtimeImage(group.privilege))
   }
 
@@ -93,17 +111,6 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
       val userInfo = Security.getUserinfo(request).get
       val group = Group.getGroup(userInfo.groupID).get
 
-      def listAllFiles = {
-        //import java.io.FileFilter
-        val allFiles = new java.io.File("\\\\PC-PC\\tsmc").listFiles().toList
-        allFiles.filter(p => p != null).sortBy { f => f.lastModified() }.reverse
-      }
-      val imgFileList = listAllFiles
-      if(!imgFileList.isEmpty){
-        Logger.info(imgFileList.head.getAbsolutePath)
-        imgFileList.drop(1).foreach { f => f.delete() }
-      }
-      
       Ok(views.html.realtimeTrend(group.privilege, false))
   }
 
