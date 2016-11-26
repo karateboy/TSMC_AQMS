@@ -92,6 +92,18 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
       val group = Group.getGroup(userInfo.groupID).get
+
+      def listAllFiles = {
+        //import java.io.FileFilter
+        val allFiles = new java.io.File("Z:").listFiles().toList
+        allFiles.filter(p => p != null).sortBy { f => f.lastModified() }.reverse
+      }
+      val imgFileList = listAllFiles
+      if(!imgFileList.isEmpty){
+        Logger.info(imgFileList.head.getAbsolutePath)
+        imgFileList.drop(1).foreach { f => f.delete() }
+      }
+      
       Ok(views.html.realtimeTrend(group.privilege, false))
   }
 
