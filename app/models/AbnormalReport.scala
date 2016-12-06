@@ -57,12 +57,12 @@ object AbnormalReport {
       for (m <- Monitor.mvList) yield {
         val records = Record.getHourRecords(m, date, date + 1.day)
         def getInvalidHourDesc(mt: MonitorType.Value) = {
-          val mtRecord = records.map {hr=> (hr.date, monitorTypeProject2(mt)(hr)) }
+          val mtRecord = records.map { monitorTypeProject2(mt) }.zipWithIndex
           val invalidRecord =
             for {
               r <- mtRecord
-              hr = new DateTime(r._1).getHourOfDay
-              data = r._2 if((data._1.isEmpty || data._2.isEmpty) || (!MonitorStatus.isNormalStat(data._2.get)))
+              hr = r._2
+              data = r._1 if !(data._1.isDefined && data._2.isDefined && MonitorStatus.isNormalStat(data._2.get))
             } yield if (data._1.isEmpty || data._2.isEmpty)
               (hr, "資料遺失")
             else
