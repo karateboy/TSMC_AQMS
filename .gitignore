@@ -17,6 +17,7 @@ server.pid
 .project
 .classpath
 .cache-*
+/.idea
 /.settings
 /.sbtserver
 /conf/application.conf

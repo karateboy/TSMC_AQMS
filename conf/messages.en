@@ -1,4 +1,4 @@
-system.name=TSMC Ambient Air Quality Monitoring System
+system.name=EPA 6+1 Ambient Air Quality Monitoring System
 menu.realtime.1=Realtime Info.
 menu.realtime.2=Dashboard
 menu.realtime.3=Realtime Data
