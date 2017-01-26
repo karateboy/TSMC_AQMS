@@ -43,11 +43,16 @@ class AlarmWorker extends Actor{
       latestTime + 1.second
     }
   }
-  
+
+  import play.api.Play.current
+  import play.api.i18n.Messages.Implicits._
   //FIXME
   def sendAlarmEmail(users: List[User], alarm: Alarm2) = {
-  /* 
-    val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${alarm.src}-${alarm.info}}"
+
+    val src = Alarm2.getSrcForDisplay(alarm.src)
+    val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${src}-${alarm.info}}"
+    SmsSender.send(users, msg)
+ /*
     val htmlMsg = s"<html><body><p><b>${Monitor.map(alarm.monitor).name}-${alarm.time.toString("YYYY/MM/dd HH:mm")}:${alarm.level}:$alarm.info}</b></p></body></html>"
     val email = Email(
       s"警報: ${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${alarm.src}-${alarm.info}}",
@@ -59,7 +64,7 @@ class AlarmWorker extends Actor{
       bodyText = Some(msg),
       bodyHtml = Some(htmlMsg))
 
-    SmsSender.send(users, msg)
+
     MailerPlugin.send(email)
     * /
     */
