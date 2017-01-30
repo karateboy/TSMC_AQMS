@@ -50,8 +50,10 @@ class AlarmWorker extends Actor{
   def sendAlarmEmail(users: List[User], alarm: Alarm2) = {
 
     val src = Alarm2.getSrcForDisplay(alarm.src)
-    val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${src}-${alarm.info}}"
-    SmsSender.send(users, msg)
+    val msg = s"${Monitor.map(alarm.monitor).name}- ${alarm.time.toString("MM-dd HH:mm")} :${src}-${alarm.info}"
+    //if(alarm.level >= Level.ERR)
+    //  SmsSender.send(users, msg)
+
  /*
     val htmlMsg = s"<html><body><p><b>${Monitor.map(alarm.monitor).name}-${alarm.time.toString("YYYY/MM/dd HH:mm")}:${alarm.level}:$alarm.info}</b></p></body></html>"
     val email = Email(

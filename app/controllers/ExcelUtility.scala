@@ -99,7 +99,7 @@ object ExcelUtility {
     }
   }
 
-  def createAllDailyReport(reportDate: DateTime) = {
+  def createAllDailyReport(monitor:Monitor.Value, reportDate: DateTime) = {
     implicit val (reportFilePath, pkg, wb) = prepareTemplate("all_daily_report.xlsx")
     val format = wb.createDataFormat();
     val sheet = wb.getSheetAt(0)
@@ -165,13 +165,11 @@ object ExcelUtility {
       }
 
     }
-    for {
-      (monitor, sheetIdx) <- Monitor.mvList.zipWithIndex
-      dailyReport = Record.getDailyReport(monitor, reportDate)
-    } {
-      //wb.setSheetName(sheetIdx, Monitor.map(monitor).name)
-      fillMonitorDailyReport(monitor, dailyReport, sheetIdx)
-    }
+
+      val dailyReport = Record.getDailyReport(monitor, reportDate)
+
+      fillMonitorDailyReport(monitor, dailyReport, 0)
+
     wb.setActiveSheet(0)
     finishExcel(reportFilePath, pkg, wb)
   }

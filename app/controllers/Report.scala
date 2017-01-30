@@ -552,7 +552,7 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
               //val dailyReport = Record.getDailyReport(monitor, startTime)
               //("日報" + startTime.toString("YYYYMMdd"), ExcelUtility.createDailyReport(monitor, startTime, dailyReport))
 
-              ("日報" + startTime.toString("YYYYMMdd"), ExcelUtility.createAllDailyReport(startTime))
+              ("日報" + startTime.toString("YYYYMMdd"), ExcelUtility.createAllDailyReport(monitor, startTime))
 
             case PeriodReport.MonthlyReport =>
               val adjustStartDate = DateTime.parse(startTime.toString("YYYY-MM-1"))
