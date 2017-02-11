@@ -1,7 +1,7 @@
 
 name := """epa"""
 
-version := "1.1.8"
+version := "1.1.11"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
@@ -20,6 +20,14 @@ libraryDependencies ++= Seq(
 mappings in Universal ++=
   (baseDirectory.value / "report_template" * "*" get) map
     (x => x -> ("report_template/" + x.getName))
+
+mappings in Universal ++=
+  (baseDirectory.value / "export/hour" * "*" get) map
+    (x => x -> ("export/hour/" + x.getName))
+
+mappings in Universal ++=
+  (baseDirectory.value / "export/minute" * "*" get) map
+    (x => x -> ("export/minute/" + x.getName))
 
 PlayKeys.fileWatchService := play.runsupport.FileWatchService.sbt(2000)
 

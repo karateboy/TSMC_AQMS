@@ -18,50 +18,39 @@
 	            			<label class="col-lg-1 control-label">測站</label>
 	            			<div class="col-lg-11">
 	            				<div class="btn-group" data-toggle="buttons">	            					            				
-	            					@for(m<-Monitor.instrumentMvList(privilege)){
-	            						@if(m == Monitor.instrumentMvList(privilege).head){
-	            							<label class="btn btn-outline btn-primary dim active">
-												<input type="radio" name="monitor" id="@m" checked>@Monitor.getDisplayName(m)</label>
-	            						}else{
-	            							<label class="btn btn-outline btn-primary dim">
-												<input type="radio" name="monitor" id="@m">@Monitor.getDisplayName(m)</label>
-	            						}
-	            						
-	            					}
+	            					<label class="btn btn-outline btn-primary dim"
+	            					@@click="selectedMonitor=monitor" 
+	            					v-for="monitor in monitorList">
+									<input type="radio">{{monitor.name}}</label>
 	            				</div>
 	            			</div>	            			            		
 	                    </div>
-	                    <div class="form-group">
+	                    <div class="form-group" v-if='selectedMonitor'>
 	            			<label class="col-lg-1 control-label">儀器種類</label>
 	            			<div class="col-lg-11">
-	            				<div class="btn-group" data-toggle="buttons">	            					            				
-	            					@for(inst<-Monitor.getInstrumentList){
-            							@if(inst == Monitor.getInstrumentList.head){
-            								<label class="btn btn-outline btn-primary dim active">
-											<input type="radio" name="instrument" id="@inst" checked>@inst</label>
-            							}else{
-            								<label class="btn btn-outline btn-primary dim">
-											<input type="radio" name="instrument" id="@inst">@inst</label>
-            							}            						
-            						}
+	            				<div class="btn-group" data-toggle="buttons">
+	            				<label class="btn btn-outline btn-primary dim"
+	            					@@click="instrument=inst" 
+	            					v-for="inst in selectedMonitor.instrumentList">
+									<input type="radio">{{inst}}</label>	            					            				
 	            				</div>
 	            			</div>	            			            		
 	                    </div>
 	                    
-	                    <div class="form-group">
+	                    <div class="form-group" v-show='instrument'>
 	            			<label class="col-lg-1 control-label">查詢區間</label>	
 	            			<div class="col-lg-5">
 	            				<div class="input-daterange input-group" id="datepicker">
                     				<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                    				<input type="text" class="input-sm form-control" name="start" id="reportStart" value='@((DateTime.now-2.day).toString("YYYY-MM-dd"))' required/>
+                    				<input type="date" class="input-sm form-control" v-model="start"/>
                        				<span class="input-group-addon">至</span>
-                        			<input type="text" class="input-sm form-control" name="end" id="reportEnd" value='@(DateTime.now.toString("YYYY-MM-dd"))' required/>                        
+                        			<input type="date" class="input-sm form-control" v-model="end"/>                        
                     			</div>                        
                     		</div>
 	            		</div>
-	            		<div class="form-group">
+	            		<div class="form-group" v-show='instrument'>
 							<div class="col-lg-1 col-lg-offset-1">
-								<button type="button" class="btn btn-primary" id="queryReport">查詢</button>
+								<button type="button" class="btn btn-primary" @@click="query">查詢</button>
 							</div>							
 						</div>
             		</form>
@@ -78,73 +67,53 @@
 	</div>
 </div>
 <script>
-$(document).ready(function (){
-	$('#datepicker').datepicker({
-		format: 'yyyy-mm-dd',
-	    todayBtn: "linked",
-	    language: "zh-TW"
-	});
-	var $monitors, $instrument, reportStart, reportEnd;
-	
-	function validate(){
-		$monitors = $("input[name='monitor']:checked");
-		
-		if ($monitors.length == 0) {
-			alert("請選擇測站");
-			return false;
-		}
+	var app = new Vue({
+		  el: '#reportParam',
+		  data: {
+		    monitorList_: [],
+		    selectedMonitor:null,
+		    instrument:null,
+		    start:null,
+		    end:null			    
+		  },
+		  computed:{
+			  monitorList(){				  
+				  if(this.monitorList_.length == 0){
+					  axios.get("/MonitorInstrument").then((resp)=>{
+						  const ret = resp.data
+						  this.monitorList_.splice(0, this.monitorList_.length)
+						  for(let monitor of ret){
+							  this.monitorList_.push(monitor)
+						  }  
+					  }).catch((err)=>{
+						  alert(err)
+					  })
+				  }
+				  return this.monitorList_;
+			  }
+		  },
+		  methods:{
+			  query(){
+				  console.log(this.selectedMonitor)
+				  console.log(this.instrument)
+				  console.log(this.start)
+				  console.log(this.end)
+				  
+					$("#reportPanel").css('display','block');
+					$('#reportDiv').html('');
+					$("body").css("cursor", "progress");
 
-		$instrument = $("input[name='instrument']:checked");
-		if($instrument.length == 0){
-			alert("請選擇儀器");
-			return false;
-		}
-		
-		reportStart = $('#reportStart').val();
-		if(reportStart.length === 0){
-			alert('請選擇開始日期');
-			return false;
-		}
-		
-		reportEnd = $('#reportEnd').val();
-		if(reportEnd.length === 0){
-			alert('請選擇結束日期');
-			return false;
-		}
-
-		return true;
-	}
-	
-	$('#queryReport').click(function(){
-		if(!validate())
-			return;
-			
-		$("#reportPanel").css('display','block');
-		$('#reportDiv').html('');
-		$("body").css("cursor", "progress");
-
-			
-		var url = "/InstrumentReport/" + $monitors.prop('id') + "/" + $instrument.prop('id') + "/" + reportStart + "/" + reportEnd;
-		console.log(url);
-		$.ajax({
-			url : url,
-			data : "",
-			contentType : "application/json; charset=utf-8",
-			type : "GET",
-			cache:false,
-			dataType : "html",
-			success : function(result) {
-				$('#reportDiv').html(result);
-			},
-			error : function(xhr, status, errorThrown) {
-				console.log("錯誤訊息:" + status + "-" + errorThrown);
-			},
-
-			complete : function(xhr, status) {
-				$("body").css("cursor", "default");
-			}
-		});
-	});
-	
-});
+						
+					const url = "/InstrumentReport/" + this.selectedMonitor.id + "/" + this.instrument + "/" + this.start + "/" + this.end
+					console.log(url);
+					axios.get(url).then((resp)=>{
+						const ret = resp.data
+						$('#reportDiv').html(ret)
+						$("body").css("cursor", "default")
+					}).catch((err)=>{
+						alert(err)
+					})
+			  }
+		  }
+		});	
 </script>

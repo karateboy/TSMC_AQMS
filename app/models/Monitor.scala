@@ -1,4 +1,5 @@
 package models
+
 import scala.collection.Map
 import java.sql.Date
 import play.api.Logger
@@ -10,12 +11,14 @@ import play.api.libs.functional.syntax._
 import models.ModelHelper._
 
 case class InstrumentStatusType(key: String, addr: Int, desc: String, unit: String)
+
 case class InstrumentStatusTypeMap(instrumentId: String, statusTypeSeq: Seq[InstrumentStatusType])
 
 case class Monitor(id: String, name: String, lat: Double, lng: Double, url: String, autoAudit: AutoAudit,
                    monitorTypes: Seq[MonitorType.Value], monitorTypeStds: Seq[MonitorTypeStandard],
                    instrumentStatusTypeMapOpt: Option[Seq[InstrumentStatusTypeMap]]) {
   private val stdMap = Map(monitorTypeStds.map { r => r.id -> r.std_internal }: _*)
+
   def getStdInternal(mt: MonitorType.Value) = {
     val monitorStd = stdMap.get(mt)
     if (monitorStd.isDefined)
@@ -42,7 +45,9 @@ case class Monitor(id: String, name: String, lat: Double, lng: Double, url: Stri
       monitorTypes, monitorTypeStds, newMapOpt)
 
 }
+
 case class MonitorTypeStandard(id: MonitorType.Value, std_internal: Float)
+
 object Monitor extends Enumeration {
   implicit val mReads: Reads[Monitor.Value] = EnumUtils.enumReads(Monitor)
   implicit val mWrites: Writes[Monitor.Value] = EnumUtils.enumWrites
@@ -82,17 +87,13 @@ object Monitor extends Enumeration {
   lazy val mvList = monitorList.map { m => Monitor.withName(m.id) }
 
   def myMvList(p: Privilege) = {
-    mvList.filter { p.allowedMonitors.contains }
+    mvList.filter {
+      p.allowedMonitors.contains
+    }
   }
 
-  //FIXME 
-  def instrumentMvList(p: Privilege) = {
-    List(Monitor.withName("A013")).filter { p.allowedMonitors.contains }
-  }
-
-  //FIXME
-  def getInstrumentList() = {
-    val statusTypeMapOpt = map(Monitor.withName("A013")).instrumentStatusTypeMapOpt
+  def getInstrumentList(monitor: Monitor.Value) = {
+    val statusTypeMapOpt = map(monitor).instrumentStatusTypeMapOpt
     val mapOpt = statusTypeMapOpt.map { mapList => mapList.map { map => map.instrumentId -> map.statusTypeSeq } }.map(_.toMap)
     if (mapOpt.isDefined) {
       mapOpt.get.keys.toList.sorted
@@ -168,33 +169,38 @@ object Monitor extends Enumeration {
     val newMap = map + (m -> newM)
     map = newMap
   }
-  
-  def updateLocation(m: Monitor.Value, lat:Double, lng:Double)(implicit session: DBSession = AutoSession) = {
+
+  def updateLocation(m: Monitor.Value, lat: Double, lng: Double)(implicit session: DBSession = AutoSession) = {
     val oldM = map(m)
     val newM = Monitor(oldM.id, oldM.name, lat, lng, oldM.url, oldM.autoAudit, oldM.monitorTypes,
       oldM.monitorTypeStds, oldM.instrumentStatusTypeMapOpt)
     sql"""
         Update Monitor
-        Set monitorY=${lat}, monitorX=${lng} 
+        Set monitorY=${lat}, monitorX=${lng}
         Where DP_NO=${oldM.id}  
         """.update.apply
     val newMap = map + (m -> newM)
     map = newMap
   }
-  
+
   def getCenterLat = {
-    val monitorLatList = mvList.map{ map(_).lat}
-    monitorLatList.sum/monitorLatList.length
+    val monitorLatList = mvList.map {
+      map(_).lat
+    }
+    monitorLatList.sum / monitorLatList.length
   }
-  
+
   def getCenterLng = {
-    val monitorLngList = mvList.map{ map(_).lng}
-    monitorLngList.sum/monitorLngList.length
+    val monitorLngList = mvList.map {
+      map(_).lng
+    }
+    monitorLngList.sum / monitorLngList.length
   }
-  
+
 }
 
 import play.api.i18n._
+
 case class MonitorType(id: String, unit: String,
                        std_internal_default: Option[Float], std_law: Option[Float], std_hour: Option[Float],
                        std_day: Option[Float], std_year: Option[Float],
@@ -202,9 +208,9 @@ case class MonitorType(id: String, unit: String,
                        sd_internal: Option[Float], sd_law: Option[Float],
                        epa_mapping: Option[String],
                        prec: Int, order: Int,
-                       level1: Option[Float], level2: Option[Float], level3: Option[Float], level4: Option[Float]){
+                       level1: Option[Float], level2: Option[Float], level3: Option[Float], level4: Option[Float]) {
 
-  def desp(implicit messages:Messages)={
+  def desp(implicit messages: Messages) = {
     val key = s"mt.$id"
     Messages(key)
   }
@@ -238,11 +244,15 @@ object MonitorType extends Enumeration {
       sql"""
         Select *
         From MonitorType
-      """.map { mapper }.list.apply
+      """.map {
+        mapper
+      }.list.apply
     }
 
   var map: Map[Value, MonitorType] = Map(mtList.map { e => Value(e.id) -> e }: _*) - MonitorType.withName("A325")
-  val mtvAllList = mtList.map(mt => MonitorType.withName(mt.id)).filter { !List(MonitorType.withName("A325")).contains(_) }
+  val mtvAllList = mtList.map(mt => MonitorType.withName(mt.id)).filter {
+    !List(MonitorType.withName("A325")).contains(_)
+  }
 
   def mtvList = {
     var mtSet = Set.empty[MonitorType.Value]
@@ -250,11 +260,19 @@ object MonitorType extends Enumeration {
       mtSet = mtSet.union(Monitor.map(m).monitorTypes.toSet)
     }
 
-    mtvAllList.filter { mtSet.contains }.sortBy { map(_).order }
+    mtvAllList.filter {
+      mtSet.contains
+    }.sortBy {
+      map(_).order
+    }
   }
 
   def myMtvList(implicit p: Privilege) = {
-    mtvList.filter { p.allowedMonitorTypes.contains }.sortBy { map(_).order }
+    mtvList.filter {
+      p.allowedMonitorTypes.contains
+    }.sortBy {
+      map(_).order
+    }
   }
 
   def realtimeList = {
@@ -263,7 +281,9 @@ object MonitorType extends Enumeration {
       mtSet = mtSet.union(Monitor.map(m).monitorTypes.toSet)
     }
 
-    mtSet.toList.sortBy { map(_).order }
+    mtSet.toList.sortBy {
+      map(_).order
+    }
   }
 
   def updateMonitorType(mt: MonitorType.Value, colname: String, newValue: String) = {
@@ -291,7 +311,9 @@ object MonitorType extends Enumeration {
           Select *
           From MonitorType
           Where ITEM=${mt.toString}
-        """.map { mapper }.single.apply
+        """.map {
+          mapper
+        }.single.apply
       map = (map + (mt -> newMtOpt.get))
     }
   }
@@ -358,8 +380,10 @@ object MonitorType extends Enumeration {
   val epaMap = {
     map.filter(p => p._2.epa_mapping.isDefined).map(kv => (kv._2.epa_mapping.get, kv._1))
   }
+
   import com.github.nscala_time.time.Imports._
   import java.sql.Timestamp
+
   def getManualAuditTooltip(m: Monitor.Value, mt: MonitorType.Value, v: (Option[Float], Option[String]),
                             dataTime: DateTime, tabType: TableType.Value = TableType.Hour): String = {
     if (v._1.isEmpty || v._2.isEmpty)
@@ -384,6 +408,7 @@ object MonitorType extends Enumeration {
       data-toggle=tooltip data-container=body data-trigger=hover
       """
   }
+
   def getStyleStr(m: Monitor.Value, mt: MonitorType.Value, v: (Option[Float], Option[String])) = {
     val mtCase = map(mt)
     if (v._1.isEmpty || v._2.isEmpty)

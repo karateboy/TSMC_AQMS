@@ -24,20 +24,20 @@ import play.api.i18n._
 
 case class EditData(id: String, data: String)
 case class EpaRealtimeData(
-    siteName: String,
-    county: String,
-    psi: String,
-    so2: String,
-    co: String,
-    o3: String,
-    pm10: String,
-    pm25: String,
-    no2: String,
-    windSpeed: String,
-    windDir: String,
-    publishTime: String)
+  siteName: String,
+  county: String,
+  psi: String,
+  so2: String,
+  co: String,
+  o3: String,
+  pm10: String,
+  pm25: String,
+  no2: String,
+  windSpeed: String,
+  windDir: String,
+  publishTime: String)
 
-class Application @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport{
+class Application @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   def index = Security.Authenticated {
     implicit request =>
@@ -58,7 +58,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
       Ok(views.html.monitor(m))
   }
 
-  case class MonitorInfo(mt: Seq[MonitorType.Value], imgUrl: String, equipments: List[Equipment], location:Seq[Double])
+  case class MonitorInfo(mt: Seq[MonitorType.Value], imgUrl: String, equipments: List[Equipment], location: Seq[Double])
   implicit val equipmentWrite = Json.writes[Equipment]
   implicit val mInfoWrite = Json.writes[MonitorInfo]
 
@@ -67,8 +67,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
       val m = Monitor.withName(monitorStr)
       val mCase = Monitor.map(m)
       val info = MonitorInfo(mCase.monitorTypes, mCase.url, Equipment.map.getOrElse(m, List.empty),
-          Seq(mCase.lat,mCase.lng)
-          )
+        Seq(mCase.lat, mCase.lng))
 
       Ok(Json.toJson(info))
   }
@@ -177,7 +176,7 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
       SystemConfig.setConfig(SystemConfig.AutoAuditAsNormal, booleanStr)
       Ok(Json.obj("ok" -> true))
   }
-  
+
   def setApplyCalibration(booleanStr: String) = Security.Authenticated {
     implicit request =>
       SystemConfig.setApplyCalibration(booleanStr.toBoolean)
@@ -670,4 +669,22 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     Ok(s"匯入 $path")
   }
 
+  case class MonitorName(id: String, name: String, instrumentList: Seq[String])
+  def monitorInstrumentList() = Security.Authenticated {
+    implicit request =>
+      val userInfoOpt = Security.getUserinfo(request)
+      if (userInfoOpt.isEmpty) {
+        Forbidden("Invalid access!")
+      } else {
+        val userInfo = userInfoOpt.get
+        val user = User.getUserById(userInfo.id).get
+        val group = Group.getGroup(userInfo.groupID).get
+        val myList = Monitor.myMvList(group.privilege) map { v =>
+          MonitorName(v.toString, Monitor.map(v).name, Monitor.getInstrumentList(v))
+        }
+        
+        implicit val write = Json.writes[MonitorName]
+        Ok(Json.toJson(myList))
+      }
+  }
 }

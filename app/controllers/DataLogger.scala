@@ -1,4 +1,7 @@
 package controllers
+
+import java.io.FileOutputStream
+
 import play.api._
 import play.api.mvc._
 import play.api.Logger
@@ -8,14 +11,21 @@ import models.ModelHelper._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import javax.inject._
+
 import play.api.i18n._
 
 case class LatestRecordTime(time: Long)
+
 case class MtRecord(mtName: String, value: Double, status: String)
+
 case class RecordList(time: Long, mtDataList: Seq[MtRecord])
+
 case class CalibrationJSON(monitorType: String, startTime: Long, endTime: Long, zero_val: Option[Double],
                            span_std: Option[Double], span_val: Option[Double]) {
-  def zero_dev = zero_val map { Math.abs(_) }
+  def zero_dev = zero_val map {
+    Math.abs(_)
+  }
+
   def span_dev = {
     if (span_val.isDefined && span_std.isDefined)
       Some(Math.abs(span_val.get - span_std.get))
@@ -51,7 +61,38 @@ class DataLogger extends Controller {
   }
 
   def getHourRecordRange = getRecordRange(TableType.Hour) _
+
   def getMinRecordRange = getRecordRange(TableType.Min) _
+
+  def exportCSV(monitor: Monitor.Value)(recordList: RecordList) = {
+    import scala.collection.mutable.StringBuilder
+    val sb = new StringBuilder
+    val tm = new DateTime(recordList.time)
+    sb.append("Site,")
+    sb.append("Date,")
+    for (r <- recordList.mtDataList) {
+      r.mtName match {
+        case mt: String =>
+          sb.append(mt + ", Status,")
+      }
+    }
+    sb.deleteCharAt(sb.length - 1)
+    sb.append("\n")
+    sb.append(monitor.toString + ",")
+    sb.append(tm.toString("YYYY-MM-dd hh:mm:ss") + ",")
+    for (r <- recordList.mtDataList) {
+      r.mtName match {
+        case _: String =>
+          sb.append(r.value.toFloat)
+          sb.append(",")
+          sb.append(r.status)
+          sb.append(",")
+      }
+    }
+    sb.deleteCharAt(sb.length - 1)
+    sb.append("\n")
+    sb.toString()
+  }
 
   def toHourRecord(monitor: Monitor.Value)(recordList: RecordList) = {
     import java.sql.Timestamp
@@ -135,7 +176,9 @@ class DataLogger extends Controller {
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
         recordListSeq => {
-          val hrList = recordListSeq.map { toHourRecord(monitor) }
+          val hrList = recordListSeq.map {
+            toHourRecord(monitor)
+          }
           hrList.foreach { hr =>
             try {
               hr.save(tabType)
@@ -144,11 +187,35 @@ class DataLogger extends Controller {
                 Logger.error("Failed to insert=>", ex)
             }
           }
+          //Export
+          import play.api.Play.current
+          val path = if (tabType == TableType.Hour)
+            current.path.getAbsolutePath + "/export/hour/"
+          else
+            current.path.getAbsolutePath + "/export/minute/"
+
+          try{
+            recordListSeq map {
+              recordList =>
+                import java.io.FileOutputStream
+                val time = new DateTime(recordList.time)
+                val csvStr = exportCSV(monitor)(recordList)
+                val fileName = s"${Monitor.map(monitor).name}_${time.toString("YYMMddhhmm")}.csv"
+                val os = new FileOutputStream(path + fileName)
+                os.write(csvStr.getBytes("UTF-8"))
+                os.close()
+            }
+          }catch{
+            case ex:Throwable=>
+              Logger.error("failed to export csv", ex)
+          }
+
           Ok(Json.obj("ok" -> true))
         })
   }
 
   def insertHourRecord = insertDataRecord(TableType.Hour) _
+
   def insertMinRecord = insertDataRecord(TableType.Min) _
 
   def getCalibrationRange(monitorStr: String) = Action {
@@ -163,17 +230,32 @@ class DataLogger extends Controller {
   }
 
   import Calibration._
+
   def toCalibrationItem(json: CalibrationJSON)(monitorStr: String) = {
     val monitor = Monitor.withName(monitorStr)
     val mtCode = mapMonitorToMtCode(json.monitorType)
     val mt = MonitorType.withName(mtCode)
 
     CalibrationItem(monitor, mt,
-      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.map { _.toFloat },
-      Some(0), json.zero_val.map { _.toFloat },
-      json.zero_dev.map { _.toFloat }, Some(0),
-      json.span_std.map { _.toFloat }, json.span_val.map { _.toFloat },
-      json.span_dev.map { _.toFloat }, json.span_dev_ratio.map { _.toFloat * 100 })
+      new DateTime(json.startTime), new DateTime(json.endTime), json.span_std.map {
+        _.toFloat
+      },
+      Some(0), json.zero_val.map {
+        _.toFloat
+      },
+      json.zero_dev.map {
+        _.toFloat
+      }, Some(0),
+      json.span_std.map {
+        _.toFloat
+      }, json.span_val.map {
+        _.toFloat
+      },
+      json.span_dev.map {
+        _.toFloat
+      }, json.span_dev_ratio.map {
+        _.toFloat * 100
+      })
   }
 
   def insertCalibrationRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
@@ -185,7 +267,9 @@ class DataLogger extends Controller {
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
         recordListSeq => {
-          val calibrationList = recordListSeq.map { toCalibrationItem(_)(monitorStr) }
+          val calibrationList = recordListSeq.map {
+            toCalibrationItem(_)(monitorStr)
+          }
           calibrationList.foreach { calibration =>
             try {
               calibration.save
@@ -270,7 +354,9 @@ class DataLogger extends Controller {
         BadRequest(Json.obj("ok" -> false, "msg" -> JsError(err).toString().toString()))
       },
         alarm2JsonSeq => {
-          val alarm2Seq = alarm2JsonSeq.map { toAlarm2(_)(monitorStr) }
+          val alarm2Seq = alarm2JsonSeq.map {
+            toAlarm2(_)(monitorStr)
+          }
           Alarm2.insertAlarmSeq(alarm2Seq)
           Ok(Json.obj("ok" -> true))
         })
@@ -288,6 +374,7 @@ class DataLogger extends Controller {
   }
 
   import InstrumentStatus._
+
   def insertInstrumentStatusRecord(monitorStr: String) = Action(BodyParsers.parse.json) {
     implicit request =>
       import InstrumentStatus._
