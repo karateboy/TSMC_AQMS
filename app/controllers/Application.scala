@@ -240,7 +240,6 @@ class Application @Inject() (val messagesApi: MessagesApi) extends Controller wi
           BadRequest(Json.obj("ok" -> false, "msg" -> JsError.toJson(error).toString()))
         },
         param => {
-          Logger.debug(param.toString())
           try {
             Equipment.create(param)
           } catch {

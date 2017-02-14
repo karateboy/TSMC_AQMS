@@ -24,7 +24,6 @@ object InstrumentCommand {
   
   def takeCommand(monitor:Monitor.Value)={
     val cmdQueue = cmdQueueMap.getOrElse(monitor, Seq.empty[InstrumentCommand])
-    Logger.debug(cmdQueue.toString())
     cmdQueueMap -= monitor
     cmdQueue
   }
