@@ -42,6 +42,7 @@ menu.sys.10=User Management
 menu.sys.11=Data Transmission Summary
 menu.sys.12=EPA Realtime Data
 menu.sys.13=Event Log
+menu.sys.14=Instrument Calibration
 menu.ma.1=Maintenance
 menu.ma.2=Case Management
 menu.ma.3=Create New Case

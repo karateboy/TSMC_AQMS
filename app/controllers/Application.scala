@@ -682,9 +682,37 @@ class Application @Inject() (val messagesApi: MessagesApi) extends Controller wi
         val myList = Monitor.myMvList(group.privilege) map { v =>
           MonitorName(v.toString, Monitor.map(v).name, Monitor.getInstrumentList(v))
         }
-        
+
         implicit val write = Json.writes[MonitorName]
         Ok(Json.toJson(myList))
       }
+  }
+  
+  def instrumentCmdView = Security.Authenticated {
+    Ok(views.html.instrumentCmd())
+  }
+
+  def getInstrumentCmdList = Security.Authenticated {
+    Ok(Json.toJson(InstrumentCommand.cmdSeq))
+  }
+  
+  def getPendingInstrumentCmd(monitorStr: String) = Action {
+    val monitor = Monitor.withName(monitorStr)
+    val cmdSeq = InstrumentCommand.takeCommand(monitor)
+    Ok(Json.toJson(cmdSeq))
+  }
+
+  def postInstrumentCmd(monitorStr: String) = Security.Authenticated(BodyParsers.parse.json) {
+    implicit request =>
+      val monitor = Monitor.withName(monitorStr)
+      val ret = request.body.validate[InstrumentCommand]
+      ret.fold(err => {
+        Logger.error(JsError.toJson(err).toString())
+        BadRequest(JsError.toJson(err).toString())
+      },
+        cmd => {
+          InstrumentCommand.pushCommand(monitor, cmd)
+          Ok(Json.obj("ok" -> true))
+        })
   }
 }

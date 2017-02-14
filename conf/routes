@@ -224,3 +224,7 @@ PUT      /InstrumentStatusTypeMap/:monitor                                      
 
 #VUE	JSON
 GET      /MonitorInstrument                                                                    controllers.Application.monitorInstrumentList()
+GET      /InstrumentCmdView                                                                    controllers.Application.instrumentCmdView
+GET		 /InstrumentCmdList																		controllers.Application.getInstrumentCmdList
+GET      /InstrumentCmd/:monitor                                                               controllers.Application.getPendingInstrumentCmd(monitor)
+POST     /InstrumentCmd/:monitor                                                               controllers.Application.postInstrumentCmd(monitor)

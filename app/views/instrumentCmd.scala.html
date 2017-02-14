@@ -1,0 +1,118 @@
+@* instrument Template File *@
+@import com.github.nscala_time.time.Imports._
+@()
+<div class="row">
+   	<div class="col-lg-12">
+        	<div class="panel panel-primary" id="paramPanel">            	
+            	<ul class="nav nav-tabs">
+					<li class="active">
+						<a data-toggle="tab" href="#parameterDiv"> <span class="glyphicons glyphicons-hotspot"></span>儀器校正</a>
+					</li>
+				</ul>	
+
+            	<div class="panel-body panel-collapse in" id="reportParam">
+            		<div class="tab-content">
+					<div id="parameterDiv" class="tab-pane active">
+            		<form class="form-horizontal">
+            			<div class="form-group">
+	            			<label class="col-lg-1 control-label">測站</label>
+	            			<div class="col-lg-11">
+	            				<div class="btn-group" data-toggle="buttons">	            					            				
+	            					<label class="btn btn-outline btn-primary dim"
+	            					@@click="selectedMonitor=monitor" 
+	            					v-for="monitor in monitorList">
+									<input type="radio">{{monitor.name}}</label>
+	            				</div>
+	            			</div>	            			            		
+	                    </div>
+	                    <div class="form-group" v-if='selectedMonitor'>
+	            			<label class="col-lg-1 control-label">儀器</label>
+	            			<div class="col-lg-11">
+	            				<div class="btn-group" data-toggle="buttons">
+	            				<label class="btn btn-outline btn-primary dim"
+	            					@@click="instrument=inst" 
+	            					v-for="inst in selectedMonitor.instrumentList">
+									<input type="radio">{{inst}}</label>	            					            				
+	            				</div>
+	            			</div>	            			            		
+	                    </div>
+	                    <div class="form-group" v-if='instrument'>
+	            			<label class="col-lg-1 control-label">校正命令</label>
+	            			<div class="col-lg-11">
+	            				<div class="btn-group" data-toggle="buttons">
+	            				<label class="btn btn-outline btn-primary dim"
+	            					@@click="command=cmd" 
+	            					v-for="cmd in cmdList">
+									<input type="radio">{{cmd.name}}</label>	            					            				
+	            				</div>
+	            			</div>	            			            		
+	                    </div>
+	                    
+	            		<div class="form-group" v-show='instrument'>
+							<div class="col-lg-1 col-lg-offset-1">
+								<button type="button" class="btn btn-primary" @@click="execute">執行</button>
+							</div>							
+						</div>
+            		</form>
+            		</div>
+             		</div>
+            	</div>
+        	</div>
+	</div>
+</div>
+<script>
+	var app = new Vue({
+		  el: '#reportParam',
+		  data: {
+		    monitorList_: [],
+		    selectedMonitor:null,
+		    instrument:null,
+		    cmdList_:[],
+		    command:null
+		  },
+		  computed:{
+			  monitorList(){				  
+				  if(this.monitorList_.length == 0){
+					  axios.get("/MonitorInstrument").then((resp)=>{
+						  const ret = resp.data
+						  this.monitorList_.splice(0, this.monitorList_.length)
+						  for(let monitor of ret){
+							  this.monitorList_.push(monitor)
+						  }  
+					  }).catch((err)=>{
+						  alert(err)
+					  })
+				  }
+				  return this.monitorList_;
+			  },
+			  cmdList(){
+				  if(this.cmdList_.length == 0){
+					  axios.get("/InstrumentCmdList").then((resp)=>{
+						  const ret = resp.data
+						  this.cmdList_.splice(0, this.cmdList_.length)
+						  for(let cmd of ret){
+							  this.cmdList_.push(cmd)
+						  }
+					  }).catch((err)=>{
+						  alert(err)
+					  })
+				  }
+				  return this.cmdList_;
+			  }
+		  },
+		  methods:{
+			  execute(){				  
+				  this.command.instId = this.instrument
+				  axios.post("/InstrumentCmd/" + this.selectedMonitor.id, this.command).then((resp)=>{
+					  const ret = resp.data
+					  if(ret.ok)
+						  alert("成功")
+					  else
+						  alert("失敗")
+				  }).catch((err)=>{
+					  alert(err)
+				  })
+			  }
+		  }
+		});	
+</script>
