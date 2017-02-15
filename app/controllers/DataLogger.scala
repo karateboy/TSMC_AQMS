@@ -79,7 +79,7 @@ class DataLogger extends Controller {
     sb.deleteCharAt(sb.length - 1)
     sb.append("\n")
     sb.append(monitor.toString + ",")
-    sb.append(tm.toString("YYYY-MM-dd hh:mm:ss") + ",")
+    sb.append(tm.toString("YYYY-MM-dd HH:mm:ss") + ",")
     for (r <- recordList.mtDataList) {
       r.mtName match {
         case _: String =>
@@ -200,7 +200,7 @@ class DataLogger extends Controller {
                 import java.io.FileOutputStream
                 val time = new DateTime(recordList.time)
                 val csvStr = exportCSV(monitor)(recordList)
-                val fileName = s"${Monitor.map(monitor).name}_${time.toString("YYMMddhhmm")}.csv"
+                val fileName = s"${Monitor.map(monitor).name}_${time.toString("YYMMddHHmm")}.csv"
                 val os = new FileOutputStream(path + fileName)
                 os.write(csvStr.getBytes("UTF-8"))
                 os.close()
