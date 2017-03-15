@@ -84,6 +84,8 @@
     <script src="@routes.Assets.at("js/plugins/infobox/infobox_packed.js")"></script>
     @if(Messages.isDefinedAt("highchart_l10n.js")){
     	<script src="@routes.Assets.at("js/l10n/"+ Messages("highchart_l10n.js"))"></script>
+    }else{
+    	<script src="@routes.Assets.at("js/l10n/highchart_default.js")"></script>
     }
     <script>
     var myInterval;
