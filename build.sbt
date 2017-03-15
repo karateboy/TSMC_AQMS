@@ -29,6 +29,13 @@ mappings in Universal ++=
   (baseDirectory.value / "export/minute" * "*" get) map
     (x => x -> ("export/minute/" + x.getName))
 
+mappings in Universal ++= 
+ List(file("public/css/bootstrap.min.css") -> "public/css/bootstrap.min.css",
+ 	file("public/css/aqm.css") -> "public/css/aqm.css"
+ )
+
+
+
 PlayKeys.fileWatchService := play.runsupport.FileWatchService.sbt(2000)
 
 scalacOptions += "-feature"
