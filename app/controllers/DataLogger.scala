@@ -200,7 +200,7 @@ class DataLogger extends Controller {
                 import java.io.FileOutputStream
                 val time = new DateTime(recordList.time)
                 val csvStr = exportCSV(monitor)(recordList)
-                val fileName = s"${Monitor.map(monitor).name}_${time.toString("YYMMddHHmm")}.csv"
+                val fileName = s"${monitor.toString}_${time.toString("YYMMddHHmm")}.csv"
                 val os = new FileOutputStream(path + fileName)
                 os.write(csvStr.getBytes("UTF-8"))
                 os.close()
