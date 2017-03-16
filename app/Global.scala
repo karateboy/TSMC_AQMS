@@ -17,6 +17,9 @@ object Global extends GlobalSettings {
     
     Akka.system.scheduler.schedule(Duration(3, MINUTES), Duration(5, MINUTES), alarmActor, AlarmCheck)
     Akka.system.scheduler.schedule(Duration(3, MINUTES), Duration(10, MINUTES), alarmActor, DataCheck)
+    
+    val exporter = Akka.system.actorOf(Props[Exporter], name = "exporter")
+    Akka.system.scheduler.schedule(Duration(10, SECONDS), Duration(1, DAYS), exporter, Exporter.Export)
   }
 
   override def onStop(app: Application) {

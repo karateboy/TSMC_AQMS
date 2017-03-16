@@ -194,7 +194,7 @@ class DataLogger extends Controller {
           else
             current.path.getAbsolutePath + "/export/minute/"
 
-          try{
+          try {
             recordListSeq map {
               recordList =>
                 import java.io.FileOutputStream
@@ -205,8 +205,8 @@ class DataLogger extends Controller {
                 os.write(csvStr.getBytes("UTF-8"))
                 os.close()
             }
-          }catch{
-            case ex:Throwable=>
+          } catch {
+            case ex: Throwable =>
               Logger.error("failed to export csv", ex)
           }
 
@@ -282,6 +282,23 @@ class DataLogger extends Controller {
         })
   }
 
+
+  def exportCalibration(startStr:String, endStr:String) = Action {
+    val start = DateTime.parse(startStr)
+    val end = DateTime.parse(endStr)
+    Logger.info(s"export $start to $end")
+    
+    var current = start
+    while(current <= end){
+      Logger.info(s"export $current")
+      for(m <- Monitor.mvList){
+        exportDailyCalibrationCSV(m, current)
+      }
+      current += 1.day
+    }
+    Ok("finished!")
+  }
+  
   def mapMonitorToMtCode(mtName: String) = {
     mtName match {
       case "SO2" =>

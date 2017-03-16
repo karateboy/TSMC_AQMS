@@ -222,9 +222,10 @@ PUT      /InstrumentStatusRecord/:monitor                                       
 GET      /InstrumentStatusTypeIds/:monitor                                                     controllers.DataLogger.getInstrumentStatusTypeIds(monitor)
 PUT      /InstrumentStatusTypeMap/:monitor                                                     controllers.DataLogger.updateInstrumentStatusTypeMap(monitor)
 
+GET      /ExportCalibration/:start/:end                                                        controllers.DataLogger.exportCalibration(start, end)
 #VUE	JSON
 GET      /MonitorInstrument                                                                    controllers.Application.monitorInstrumentList()
 GET      /InstrumentCmdView                                                                    controllers.Application.instrumentCmdView
-GET		 /InstrumentCmdList																		controllers.Application.getInstrumentCmdList
+GET      /InstrumentCmdList                                                                    controllers.Application.getInstrumentCmdList
 GET      /InstrumentCmd/:monitor                                                               controllers.Application.getPendingInstrumentCmd(monitor)
 POST     /InstrumentCmd/:monitor                                                               controllers.Application.postInstrumentCmd(monitor)

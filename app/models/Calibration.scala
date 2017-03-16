@@ -178,8 +178,8 @@ object Calibration {
       val lb = resultMap.getOrElseUpdate(item.monitorType, ListBuffer.empty[(DateTime, Calibration.CalibrationItem)])
       lb.append((item.endTime, item))
     }
-    
-    resultMap.map(kv=> kv._1 -> kv._2.toList).toMap
+
+    resultMap.map(kv => kv._1 -> kv._2.toList).toMap
     /*
     val map = calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
 
@@ -191,5 +191,68 @@ object Calibration {
 
   //A293 => NO2, A296=>NMHC
   val interpolatedMonitorTypes = List(MonitorType.A293, MonitorType.A296)
+
+  def mapMonitorTypeToMtCode(mt: MonitorType.Value) = {
+    import MonitorType._
+    mt match {
+      case A222 => "SO2"
+      case A223 => "NOx"
+      case A293 => "NO2"
+      case A283 => "NO"
+      case A224 => "CO"
+      case A225 => "O3"
+      case A226 => "THC"
+      case A221 => "TS"
+      case A286 => "CH4"
+      case A296 => "NMHC"
+      case A235 => "NH3"
+      case A213 => "TSP"
+      case A214 => "PM10"
+      case A215 => "PM25"
+      case C211 => "WD_SPEED"
+      case C212 => "WD_DIR"
+      case C214 => "TEMP"
+      case C215 => "HUMID"
+      case C216 => "PRESS"
+      case C213 => "RAIN"
+    }
+  }
+
+  def exportDailyCalibrationCSV(monitor: Monitor.Value, day: DateTime) {
+
+    val calibrationList = Calibration.calibrationQueryReport(monitor, day, day + 1.day)
+    import scala.collection.mutable.StringBuilder
+    val sb = new StringBuilder
+    sb.append("Site,")
+    sb.append("MonitorType,")
+    sb.append("StartTime,")
+    sb.append("EndTime,")
+    sb.append("ZeroValue,")
+    sb.append("SpanStd,")
+    sb.append("SpanValue")
+    sb.append("\n")
+
+    for (cali <- calibrationList) {
+      sb.append(monitor.toString + ",")
+      sb.append(mapMonitorTypeToMtCode(cali.monitorType))
+      sb.append(",")
+      sb.append(cali.startTime.toString("YYYY-MM-dd HH:mm:ss") + ",")
+      sb.append(cali.endTime.toString("YYYY-MM-dd HH:mm:ss") + ",")
+      sb.append(cali.z_val.getOrElse(0f))
+      sb.append(",")
+      sb.append(cali.span.getOrElse(0f))
+      sb.append(",")
+      sb.append(cali.sd_val.getOrElse(0f))
+      sb.append("\n")
+    }
+
+    import java.io.FileOutputStream
+    import play.api.Play.current
+    val path = current.path.getAbsolutePath + "/export/calibration/"
+    val fileName = s"${monitor.toString}_${day.toString("YYMMdd")}.csv"
+    val os = new FileOutputStream(path + fileName)
+    os.write(sb.toString.getBytes("UTF-8"))
+    os.close()
+  }
 
 }
