@@ -64,10 +64,12 @@ class DataLogger extends Controller {
 
   def getMinRecordRange = getRecordRange(TableType.Min) _
 
-  def exportCSV(monitor: Monitor.Value)(recordList: RecordList) = {
+  def exportCSV(monitor: Monitor.Value, calibrated: Boolean = false)(recordList: RecordList) = {
     import scala.collection.mutable.StringBuilder
     val sb = new StringBuilder
-    val tm = new DateTime(recordList.time)
+    implicit val tm = new DateTime(recordList.time)
+    implicit val calibrationMap = Calibration.getDailyCalibrationMap(monitor, tm)
+
     sb.append("Site,")
     sb.append("Date,")
     for (r <- recordList.mtDataList) {
@@ -81,12 +83,72 @@ class DataLogger extends Controller {
     sb.append(monitor.toString + ",")
     sb.append(tm.toString("YYYY-MM-dd HH:mm:ss") + ",")
     for (r <- recordList.mtDataList) {
-      r.mtName match {
-        case _: String =>
-          sb.append(r.value.toFloat)
+      if (!calibrated) {
+        r.mtName match {
+          case _: String =>
+            sb.append(r.value.toFloat)
+            sb.append(",")
+            sb.append(r.status)
+            sb.append(",")
+        }
+      } else {
+        val mtCode = mapMonitorToMtCode(r.mtName)
+        val mt = MonitorType.withName(mtCode)
+        import Calibration._
+        implicit val v = Some(r.value.toFloat)
+
+        if (canCalibrate(mt)) {
+          val calibrated = doCalibrate(mt)
+          sb.append(calibrated.get)
           sb.append(",")
-          sb.append(r.status)
+        } else if (mt == MonitorType.A293 &&
+          canCalibrate(MonitorType.A223) && canCalibrate(MonitorType.A283)) {
+          //A293=> NO2, A223=>NOX, A283=> NO
+          val recNOxOpt = recordList.mtDataList.find { r => r.mtName == "NOx" }
+          val recNO_Opt = recordList.mtDataList.find { r => r.mtName == "NO" }
+
+          val interpolatedNO2 =
+            for {
+              recNOx <- recNOxOpt
+              recNO <- recNO_Opt
+              NOx <- doCalibrate(MonitorType.A223)(Some(recNOx.value.toFloat), tm, calibrationMap)
+              NO <- doCalibrate(MonitorType.A283)(Some(recNO.value.toFloat), tm, calibrationMap)
+            } yield NOx - NO
+
+          if (interpolatedNO2.isDefined) {
+            sb.append(interpolatedNO2.get)
+          } else {
+            sb.append(v.get)
+          }
           sb.append(",")
+        } else if (mt == MonitorType.A296 &&
+          canCalibrate(MonitorType.A286) && canCalibrate(MonitorType.A226)) {
+          //A296=>NMHC, A286=>CH4, A226=>THC
+          val recCH4Opt = recordList.mtDataList.find { r => r.mtName == "CH4" }
+          val recTHC_Opt = recordList.mtDataList.find { r => r.mtName == "THC" }
+
+          val calibratedCH4 = doCalibrate(MonitorType.A286)
+          val calibratedTHC = doCalibrate(MonitorType.A226)
+          val interpolatedNMHC =
+            for {
+              recCH4 <- recCH4Opt
+              recTHC <- recTHC_Opt
+              ch4 <- doCalibrate(MonitorType.A286)(Some(recCH4.value.toFloat), tm, calibrationMap)
+              thc <- doCalibrate(MonitorType.A226)(Some(recTHC.value.toFloat), tm, calibrationMap)
+            } yield thc - ch4
+
+          if (interpolatedNMHC.isDefined) {
+            sb.append(interpolatedNMHC.get)
+          } else {
+            sb.append(v.get)
+          }
+          sb.append(",")
+        } else {
+          sb.append(v.get)
+          sb.append(",")
+        }
+        sb.append(r.status)
+        sb.append(",")
       }
     }
     sb.deleteCharAt(sb.length - 1)
@@ -199,7 +261,7 @@ class DataLogger extends Controller {
               recordList =>
                 import java.io.FileOutputStream
                 val time = new DateTime(recordList.time)
-                val csvStr = exportCSV(monitor)(recordList)
+                val csvStr = exportCSV(monitor, SystemConfig.getApplyCalibration)(recordList)
                 val fileName = s"${monitor.toString}_${time.toString("YYMMddHHmm")}.csv"
                 val os = new FileOutputStream(path + fileName)
                 os.write(csvStr.getBytes("UTF-8"))
@@ -282,23 +344,22 @@ class DataLogger extends Controller {
         })
   }
 
-
-  def exportCalibration(startStr:String, endStr:String) = Action {
+  def exportCalibration(startStr: String, endStr: String) = Action {
     val start = DateTime.parse(startStr)
     val end = DateTime.parse(endStr)
     Logger.info(s"export $start to $end")
-    
+
     var current = start
-    while(current <= end){
+    while (current <= end) {
       Logger.info(s"export $current")
-      for(m <- Monitor.mvList){
+      for (m <- Monitor.mvList) {
         exportDailyCalibrationCSV(m, current)
       }
       current += 1.day
     }
     Ok("finished!")
   }
-  
+
   def mapMonitorToMtCode(mtName: String) = {
     mtName match {
       case "SO2" =>

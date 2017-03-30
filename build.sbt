@@ -1,7 +1,7 @@
 
 name := """epa"""
 
-version := "1.1.18"
+version := "1.1.20"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
@@ -28,6 +28,10 @@ mappings in Universal ++=
 mappings in Universal ++=
   (baseDirectory.value / "export/minute" * "*" get) map
     (x => x -> ("export/minute/" + x.getName))
+    
+mappings in Universal ++=
+  (baseDirectory.value / "export/calibration" * "*" get) map
+    (x => x -> ("export/calibration/" + x.getName))
 
 mappings in Universal ++= 
  List(file("public/css/bootstrap.min.css") -> "public/css/bootstrap.min.css",

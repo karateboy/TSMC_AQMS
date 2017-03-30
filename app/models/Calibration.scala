@@ -189,6 +189,23 @@ object Calibration {
     */
   }
 
+  def canCalibrate(mt: MonitorType.Value)(implicit date: DateTime, calibrationMap: Map[MonitorType.Value, List[(Imports.DateTime, Calibration.CalibrationItem)]]) = {
+    calibrationMap.contains(mt) &&
+      findCalibration(calibrationMap(mt)).isDefined
+  }
+
+  def findCalibration(calibrationList: List[(DateTime, Calibration.CalibrationItem)])(implicit date: DateTime, calibrationMap: Map[MonitorType.Value, List[(Imports.DateTime, Calibration.CalibrationItem)]]) = {
+    val candidate = calibrationList.takeWhile(p => p._1 < date)
+    if (candidate.length == 0)
+      None
+    else
+      Some(candidate.last)
+  }
+
+  def doCalibrate(mt: MonitorType.Value)(implicit v: Option[Float], date: DateTime, calibrationMap: Map[MonitorType.Value, List[(Imports.DateTime, Calibration.CalibrationItem)]]) = {
+    findCalibration(calibrationMap(mt)).get._2.calibrate(v)
+  }
+
   //A293 => NO2, A296=>NMHC
   val interpolatedMonitorTypes = List(MonitorType.A293, MonitorType.A296)
 

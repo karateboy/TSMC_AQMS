@@ -118,7 +118,7 @@ query.dataSet=資料集:
 query.duration=查詢區間:
 query.err.noMonitor=請選擇測站
 
-mt.A213=TSP
+mt.A213=室內溫度
 mt.A214=PM10
 mt.A215=PM2.5
 mt.A221=總硫
@@ -131,7 +131,7 @@ mt.A229=氨
 mt.A232=NOY
 mt.A233=NOY-NO
 mt.A234=H2S
-mt.A235=NH3
+mt.A235=採樣流量
 mt.A236=NOY_NT
 mt.A237=NH3_NOx
 mt.A238=NH3_NO
