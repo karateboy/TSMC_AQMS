@@ -74,6 +74,12 @@ class DataLogger extends Controller {
     sb.append("Date,")
     for (r <- recordList.mtDataList) {
       r.mtName match {
+        case "NH3" =>
+          sb.append("FLOW, Status,")
+          
+        case "TSP" =>
+          sb.append("RT, Status,")
+          
         case mt: String =>
           sb.append(mt + ", Status,")
       }
