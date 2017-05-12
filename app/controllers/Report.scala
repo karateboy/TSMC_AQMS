@@ -445,7 +445,115 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
             fileName = _ =>
               play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + startDate.toString("YYYYMM") + ".pdf", "UTF-8"))
       }
+    }
+  }
 
+  def periodHourReportForm = Security.Authenticated { implicit request =>
+    val userInfo = Security.getUserinfo(request).get
+    val group = Group.getGroup(userInfo.groupID).get
+
+    Ok(views.html.periodHourReportForm(group.privilege))
+  }
+
+  def PeriodHourReport(monitorStr: String, monitorTypeStr: String,
+                       startDateStr: String, endDateStr: String, outputTypeStr: String) = Security.Authenticated { implicit request =>
+    val monitor = Monitor.withName(monitorStr)
+    val monitorType = MonitorType.withName(monitorTypeStr)
+    val startDate = DateTime.parse(startDateStr)
+    val endDate = DateTime.parse(endDateStr)
+    val outputType = OutputType.withName(outputTypeStr)
+    val days = getDays(startDate, endDate)
+    val nDay = days.length
+    if (outputType == OutputType.excel) {
+      import java.io.File
+      import java.nio.file.Files
+      val monthlyReport = getMonthlyReport(monitor, startDate)
+
+      val (title, excelFile) = ("月報", ExcelUtility.createMonthlyReport(monitor, startDate, monthlyReport, nDay))
+      Ok.sendFile(excelFile, fileName = _ =>
+        play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + startDate.toString("YYYYMMdd") + ".xlsx", "UTF-8"),
+        onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
+    } else {
+      val dailyReports =
+        for { day <- days } yield {
+          Record.getDailyReport(monitor, day, List(monitorType))
+        }
+      val windSpeedDailyReports =
+        for { day <- days } yield {
+          Record.getDailyReport(monitor, day, List(MonitorType.C211))
+        }
+
+      def getMonthHourStats(mt: MonitorType.Value) = {
+        def getHourRecord(i: Int) = {
+          dailyReports.map { _.typeList(0).dataList(i) }
+        }
+
+        val monthHourStats =
+          for {
+            hour <- 0 to 23
+            hourRecord = getHourRecord(hour)
+            validData = hourRecord.filter { hr =>
+              hr._3 match {
+                case Some(stat) => MonitorStatus.isNormalStat(stat)
+                case _          => false
+              }
+            }.map(r => r._2.get)
+
+            count = validData.length
+            total = nDay
+            max = if (count != 0) validData.max else Float.MinValue
+            min = if (count != 0) validData.min else Float.MaxValue
+            overCount = 0
+          } yield {
+            if (count != 0) {
+              val avg = if (MonitorType.windDirList.contains(mt)) {
+                val windDir = hourRecord
+                val windSpeed = windSpeedDailyReports.map { _.typeList(0).dataList(hour) }
+                windAvg(windSpeed, windDir)
+              } else {
+                val sum = validData.sum
+                if (count != 0) sum / count else 0
+              }
+
+              Stat(Some(avg), Some(min), Some(max), count, total, overCount)
+            } else
+              Stat(None, None, None, count, total, overCount)
+          }
+        monthHourStats
+      }
+
+      val monthHourStats = getMonthHourStats(monitorType)
+      val stats = monthHourStats.filter(t => t.count != 0)
+      val count = stats.map(_.count).sum
+      val total = stats.map { _.total }.sum
+      val overallStat =
+        if (count != 0) {
+          val max = stats.map { _.max }.max
+          val min = stats.map { _.min }.min
+
+          val avg = if (MonitorType.windDirList.contains(monitorType)) {
+            val sum_sin = stats.filter { v => v.avg.isDefined }.map(v => Math.sin(Math.toRadians(v.avg.get))).sum
+            val sum_cos = stats.filter { v => v.avg.isDefined }.map(v => Math.cos(Math.toRadians(v.avg.get))).sum
+            windAvg(sum_sin, sum_cos)
+          } else {
+            stats.flatMap { _.avg }.sum / count
+          }
+          Stat(Some(avg), min, max, count, total, 0)
+        } else {
+          Stat(None, None, None, count, total, 0)
+        }
+      val result = MonthHourReport(monthHourStats.toArray, dailyReports.toArray, overallStat)
+
+      val output = views.html.periodHourReport(monitor, monitorType, startDate, endDate, result, days)
+      val title = "區間時報表"
+      outputType match {
+        case OutputType.html =>
+          Ok(output)
+        case OutputType.pdf =>
+          Ok.sendFile(creatPdfWithReportHeader(title, output),
+            fileName = _ =>
+              play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + startDate.toString("YYYYMM") + ".pdf", "UTF-8"))
+      }
     }
   }
 
@@ -601,7 +709,7 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
       val group = Group.getGroup(userInfo.groupID).get
       Ok(views.html.psiReport(group.privilege))
   }
-  
+
   def psiExplain = Security.Authenticated {
     implicit request =>
       val userInfo = Security.getUserinfo(request).get
@@ -656,6 +764,13 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
                 play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + startDate.toString("YYYYMMdd") + ".pdf", "UTF-8"))
         }
       }
+  }
+
+  def aqiExplain = Security.Authenticated {
+    implicit request =>
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
+      Ok(views.html.aqiExplain())
   }
 
   def effectiveQuery() = Security.Authenticated {

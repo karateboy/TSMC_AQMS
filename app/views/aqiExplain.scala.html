@@ -1,0 +1,269 @@
+@* psiExplain Template File *@
+@()
+<div class="row">
+   	<div class="col-lg-12">
+        	<div class="panel panel-primary">
+            	<div class="panel-heading panel-title" >
+            		<a data-toggle="collapse">AQI空氣品質指標的定義</a>	
+                </div>                
+				<div class="panel-body panel-collapse in">
+<div id="content">
+<span id="labContent"><!-- 05/12 17:03:10 --><h1>空氣品質指標</h1>
+<div class="html-content">
+<p>
+空氣品質指標為依據監測資料將當日空氣中臭氧(O<sub>3</sub>)、<span lang="zh-tw">細</span>懸浮微粒(PM<sub>2.5</sub>)、懸浮微粒(PM<sub>10</sub>)、一氧化碳(CO)、二氧化硫(SO<sub>2</sub>)及二氧化氮(NO<sub>2</sub>)濃度等數值，以其對人體健康的影響程度，分別換算出不同污染物之副指標值，再以當日各副指標之最大值為該測站當日之空氣品質指標值(AQI)。</p>
+
+<a name="t2"></a>
+<table border="1" class="DIV_CENTER ALT_TABLE_EVENT TMP1">
+	<tbody><tr class="ALT">
+		<th colspan="8" align="center">空氣品質指標(AQI)</th>
+	</tr>
+	<tr>
+		<th>AQI指標</th>
+		<th align="center">O<sub>3</sub> <br>
+		(ppm)<br>
+		<font size="2">8小時平均值</font></th>
+		<th align="center">O<sub>3</sub> <br>
+		(ppm)<br>
+		<font size="2">小時平均值</font><sup><font color="#FF0000">(1)</font></sup></th>
+		<th align="center">PM<sub>2.5</sub> <br>
+		(μg/m<sup>3</sup> )<br>
+		<font size="2">24小時平均值</font></th>
+		<th align="center">PM<sub>10</sub><br>
+		(μg/m<sup>3</sup> )<br>
+		<font size="2">24小時平均值</font></th>
+		<th align="center">CO<br>
+		(ppm)<br>
+		<font size="2">8小時平均值</font></th>
+		<th align="center">SO<sub>2</sub><br>
+		(ppb)<br>
+		<font size="2">小時平均值</font></th>
+		<th align="center">NO<sub>2</sub><br>
+		(ppb)<br>
+		<font size="2">小時平均值</font></th>
+	</tr>
+	<tr class="ALT">
+		<td class="AQI1" nowrap=""><!-- 良好 -->良好<br>
+		0～50</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.000 - 0.054</td>
+		<td align="center" style="font-size: 10pt" nowrap="">-</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.0 - 15.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0 - 54</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0 - 4.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0 - 35</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0 - 53</td>
+	</tr>
+	<tr>
+		<td class="AQI2" nowrap=""><!-- 普通 -->普通<br>
+		51～100</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.055 - 0.070</td>
+		<td align="center" style="font-size: 10pt" nowrap="">-</td>
+		<td align="center" style="font-size: 10pt" nowrap="">15.5 - 35.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">55 - 125</td>
+		<td align="center" style="font-size: 10pt" nowrap="">4.5 - 9.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">36 - 75</td>
+		<td align="center" style="font-size: 10pt" nowrap="">54 - 100</td>
+	</tr>
+	<tr class="ALT">
+		<td class="AQI3" nowrap=""><!-- 對敏感族群不健康 -->對敏感族群<br>
+		不健康<br>
+		101～150</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.071 - 0.085</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.125 - 0.164</td>
+		<td align="center" style="font-size: 10pt" nowrap="">35.5 - 54.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">126 - 254</td>
+		<td align="center" style="font-size: 10pt" nowrap="">9.5 - 12.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">76 - 185</td>
+		<td align="center" style="font-size: 10pt" nowrap="">101 - 360</td>
+	</tr>
+	<tr>
+		<td class="AQI4" nowrap=""><!-- 對所有族群不健康 -->對所有族群<br>
+		不健康<br>
+		151～200</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.086 - 0.105</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.165 - 0.204</td>
+		<td align="center" style="font-size: 10pt" nowrap="">54.5 - 150.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">255 - 354</td>
+		<td align="center" style="font-size: 10pt" nowrap="">12.5 - 15.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">186 - 304<sup><font color="#FF0000">(3)</font></sup></td>
+		<td align="center" style="font-size: 10pt" nowrap="">361 - 649</td>
+	</tr>
+	<tr class="ALT">
+		<td class="AQI5" nowrap=""><!-- 非常不健康 -->非常不健康<br>
+		201～300</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.106 - 0.200</td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.205 - 0.404</td>
+		<td align="center" style="font-size: 10pt" nowrap="">150.5 - 250.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">355 - 424</td>
+		<td align="center" style="font-size: 10pt" nowrap="">15.5 - 30.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">305 - 604<sup><font color="#FF0000">(3)</font></sup></td>
+		<td align="center" style="font-size: 10pt" nowrap="">650 - 1249</td>
+	</tr>
+	<tr>
+		<td class="AQI6" nowrap=""><!-- 危害 -->危害<br>
+		301～400</td>
+		<td align="center" style="font-size: 10pt" nowrap=""><sup><font color="#FF0000">(2)</font></sup></td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.405 - 0.504</td>
+		<td align="center" style="font-size: 10pt" nowrap="">250.5 - 350.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">425 - 504</td>
+		<td align="center" style="font-size: 10pt" nowrap="">30.5 - 40.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">605 - 804<sup><font color="#FF0000">(3)</font></sup></td>
+		<td align="center" style="font-size: 10pt" nowrap="">1250 - 1649</td>
+	</tr>
+	<tr class="ALT">
+		<td class="AQI6" nowrap=""><!-- 危害 -->危害<br>
+		401～500</td>
+		<td align="center" style="font-size: 10pt" nowrap=""><sup><font color="#FF0000">(2)</font></sup></td>
+		<td align="center" style="font-size: 10pt" nowrap="">0.505 - 0.604</td>
+		<td align="center" style="font-size: 10pt" nowrap="">350.5 - 500.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">505 - 604</td>
+		<td align="center" style="font-size: 10pt" nowrap="">40.5 - 50.4</td>
+		<td align="center" style="font-size: 10pt" nowrap="">805 - 1004<sup><font color="#FF0000">(3)</font></sup></td>
+		<td align="center" style="font-size: 10pt" nowrap="">1650 - 2049</td>
+	</tr>
+</tbody></table>
+<ol>
+	<li>一般以臭氧(O<sub>3</sub>)8小時值計算各地區之空氣品質指標(AQI)。但部分地區以臭氧(O<sub>3</sub>)小時值計算空氣品質指標(AQI)是更具有預警性，在此情況下，臭氧(O<sub>3</sub>)8小時與臭氧(O<sub>3</sub>)1小時之空氣品質指標(AQI)則皆計算之，取兩者之最大值作為空氣品質指標(AQI)。</li>
+	<li>空氣品質指標(AQI)301以上之指標值，是以臭氧(O<sub>3</sub>)小時值計算之，不以臭氧(O<sub>3</sub>)8小時值計算之。</li>
+	<li>空氣品質指標(AQI)200以上之指標值，是以二氧化硫(SO<sub>2</sub>)24小時值計算之，不以二氧化硫(SO<sub>2</sub>)小時值計算之。<br>
+　</li>
+</ol>
+<h2>空氣品質指標(AQI)與健康影響</h2>
+<table border="1" class="DIV_CENTER ALT_TABLE_EVENT">
+	<tbody><tr class="ALT">
+		<th>空氣品質<br>
+		指標<br>
+		(AQI)</th>
+		<th nowrap="">0～50</th>
+		<th>51～100</th>
+		<th>101～150</th>
+		<th>151～200</th>
+		<th>201～300</th>
+		<th>301～500</th>
+	</tr>
+	<tr class="ALT">
+		<th rowspan="2" nowrap="">對健康影響<br>
+		與活動建議</th>
+		<td align="center">良好</td>
+		<td align="center">普通</td>
+		<td align="center">對敏感族群不健康</td>
+		<td align="center">對所有族群不健康</td>
+		<td align="center">非常不健康</td>
+		<td align="center">危害</td>
+	</tr>
+	<tr class="ALT">
+		<td align="center">Good</td>
+		<td align="center">Moderate</td>
+		<td align="center">Unhealthy for Sensitive Groups</td>
+		<td align="center">Unhealthy</td>
+		<td align="center">Very Unhealthy</td>
+		<td align="center">Hazardous</td>
+	</tr>
+	<tr class="ALT">
+		<th>狀態色塊</th>
+		<td class="AQI1" align="center" style="padding-top:5px;">綠</td>
+		<td class="AQI2" align="center" style="padding-top:5px;">黃</td>
+		<td class="AQI3" align="center" style="padding-top:5px;">橘</td>
+		<td class="AQI4" align="center" style="padding-top:5px;">紅</td>
+		<td class="AQI5" align="center" style="padding-top:5px;">紫</td>
+		<td class="AQI6" align="center" style="padding-top:5px;">褐紅</td>
+	</tr>
+	<tr class="ALT">
+		<th>人體<br>
+		健康<br>
+		影響</th>
+		<td valign="top" style="font-size: 10pt">空氣品質為良好，污染程度低或無污染。</td>
+		<td valign="top" style="font-size: 10pt">空氣品質普通；但對非常少數之極敏感族群產生輕微影響。</td>
+		<td valign="top" style="font-size: 10pt">
+		空氣污染物可能會對敏感族群的健康造成影響，但是對一般大眾的影響不明顯。</td>
+		<td valign="top" style="font-size: 10pt">
+		對所有人的健康開始產生影響，對於敏感族群可能產生較嚴重的健康影響。</td>
+		<td valign="top" style="font-size: 10pt">健康警報：所有人都可能產生較嚴重的健康影響。</td>
+		<td valign="top" style="font-size: 10pt">健康威脅達到緊急，所有人都可能受到影響。</td>
+	</tr>
+	</tbody></table>
+<h2>污染物濃度與污染副指標值對照表</h2><p>　</p>	
+<h2>空氣品質指標(AQI)與活動建議</h2>
+<table border="1" class="DIV_CENTER ALT_TABLE_EVENT">
+	<tbody><tr class="ALT">
+		<th>空氣品質<br>
+		指標<br>
+		(AQI)</th>
+		<th nowrap="">0～50</th>
+		<th>51～100</th>
+		<th>101～150</th>
+		<th>151～200</th>
+		<th>201～300</th>
+		<th>301～500</th>
+	</tr>
+	<tr>
+		<th rowspan="2" nowrap="">對健康影響<br>
+		與活動建議</th>
+		<td align="center">良好</td>
+		<td align="center">普通</td>
+		<td align="center">對敏感族群不健康</td>
+		<td align="center">對所有族群不健康</td>
+		<td align="center">非常不健康</td>
+		<td align="center">危害</td>
+	</tr>
+	<tr class="ALT">
+		<td align="center">Good</td>
+		<td align="center">Moderate</td>
+		<td align="center">Unhealthy for Sensitive Groups</td>
+		<td align="center">Unhealthy</td>
+		<td align="center">Very Unhealthy</td>
+		<td align="center">Hazardous</td>
+	</tr>
+	<tr>
+		<th>狀態色塊</th>
+		<td class="AQI1" align="center" style="padding-top:5px;">綠</td>
+		<td class="AQI2" align="center" style="padding-top:5px;">黃</td>
+		<td class="AQI3" align="center" style="padding-top:5px;">橘</td>
+		<td class="AQI4" align="center" style="padding-top:5px;">紅</td>
+		<td class="AQI5" align="center" style="padding-top:5px;">紫</td>
+		<td class="AQI6" align="center" style="padding-top:5px;">褐紅</td>
+	</tr>
+	<tr class="ALT">
+		<th>一般民眾<br>
+		活動建議</th>
+		<td valign="top" style="font-size: 10pt" nowrap="">正常戶外活動。</td>
+		<td valign="top" style="font-size: 10pt" nowrap="">正常戶外活動。</td>
+		<td valign="top" style="font-size: 10pt">1.一般民眾如果有不適，如眼痛，咳嗽或喉嚨痛等，<b>應該考慮減少</b>戶外活動。<br>
+		2.學生<b>仍可進行</b>戶外活動，但<b>建議減少</b>長時間劇烈運動。</td>
+		<td valign="top" style="font-size: 10pt">1.一般民眾如果有不適，如眼痛，咳嗽或喉嚨痛等，<b>應減少</b>體力消耗，特別是減少戶外活動。<br>
+		2.學生<b>應避免</b>長時間劇烈運動，進行其他戶外活動時<b>應增加休息</b>時間。</td>
+		<td valign="top" style="font-size: 10pt">1.一般民眾<b>應減少</b>戶外活動。<br>
+		2.學生<b>應</b>立即<b>停止戶外活動</b>，並將課程調整於室內進行。</td>
+		<td valign="top" style="font-size: 10pt">1.一般民眾<b>應避免</b>戶外活動，室內應緊閉門窗，必要外出應配戴口罩等防護用具。<br>
+		2.學生應立即<b>停止戶外活動</b>，並將課程調整於室內進行。 </td>
+	</tr>
+	<tr class="ALT">
+		<th>敏感性族群<br>
+		活動建議</th>
+		<td valign="top" style="font-size: 10pt">正常戶外活動。</td>
+		<td valign="top" style="font-size: 10pt">
+		<b>極特殊敏感</b>族群建議注意可能產生的咳嗽或呼吸急促症狀，但仍可正常戶外活動。<br>
+　</td>
+		<td valign="top" style="font-size: 10pt">1.有心臟、呼吸道及心血管疾病患者、孩童及老年人，<b>建議減少</b>體力消耗活動及戶外活動，必要外出應配戴口罩。<br>
+		2.具有氣喘的人可能需增加使用吸入劑的頻率。</td>
+		<td valign="top" style="font-size: 10pt">1.有心臟、呼吸道及心血管疾病患者、孩童及老年人，<b>建議留在室內</b>並<b>減少</b>體力消耗活動，必要外出應配戴口罩。<br>
+		2.具有氣喘的人可能需增加使用吸入劑的頻率。</td>
+		<td valign="top" style="font-size: 10pt">1.有心臟、呼吸道及心血管疾病患者、孩童及老年人<b>應留在室內</b>並<b>減少</b>體力消耗活動，必要外出應配戴口罩。<br>
+		2.具有氣喘的人應增加使用吸入劑的頻率。</td>
+		<td valign="top" style="font-size: 10pt">1.有心臟、呼吸道及心血管疾病患者、孩童及老年人<b>應留在室內</b>並<b>避免</b>體力消耗活動，必要外出應配戴口罩。<br>
+		2.具有氣喘的人應增加使用吸入劑的頻率。</td>
+	</tr>
+	</tbody></table>
+</div>
+<style type="text/css">
+table.TMP1 td {font-size:12pt; padding:3px; vertical-align: middle;}
+table.TMP2 td {padding:3px;}
+</style></span>
+  <div id="content-module">
+    <p class="footText">更新日期：2017/03/27</p>
+  </div>    
+</div>
+				</div>
+			</div>
+	</div>
+</div>

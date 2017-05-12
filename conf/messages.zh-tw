@@ -5,6 +5,7 @@ menu.realtime.3=即時數據
 menu.realtime.4=即時小時趨勢圖
 menu.realtime.5=即時分鐘趨勢圖
 menu.realtime.6=即時影像
+
 menu.query.1=數據查詢
 menu.query.2=歷史資料查詢
 menu.query.3=歷史趨勢圖
@@ -16,6 +17,7 @@ menu.query.8=玫瑰圖
 menu.query.9=校正資料查詢
 menu.query.10=警報記錄查詢
 menu.query.11=PSI空氣污染指標定義
+menu.query.12=AQI空氣品質指標的定義
 menu.report.1=報表查詢
 menu.report.2=監測報表
 menu.report.3=測站數據比較報表
@@ -25,6 +27,8 @@ menu.report.6=有效率年報表
 menu.report.7=月份時報表
 menu.report.8=測站異常狀況反應表
 menu.report.9=每日監測數據註解
+menu.report.10=區間時報表
+
 menu.stat.1=統計分析
 menu.stat.2=數據統計
 menu.stat.3=數據檢核查詢
