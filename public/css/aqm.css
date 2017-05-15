@@ -141,6 +141,13 @@
 	text-shadow: 3px 3px 3px #0;
 }
 
+.html-content {
+    margin-left: 3px;
+    margin-right: 5px;
+    border: 3px double #72B5BD;
+    padding: 1em .5em 2em 1em;
+}
+
 .AQI1 {
 	color: #000;
 	background-color: #00e800

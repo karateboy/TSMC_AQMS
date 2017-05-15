@@ -69,7 +69,8 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
       val currentHr = getLatestRecordTime(TableType.Hour).getOrElse(DateTime.now.withMinuteOfHour(0): Timestamp)
       val rt_psi = getRealtimePSI(currentHr)
       val pm25Map = getRealtimePm25(currentHr)
-      val output = views.html.realtimeStatus(sub_current, rt_status, MonitorType.psiList, rt_psi, group.privilege, pm25Map)
+      val aqiMap = getRealtimeAQI(currentHr)
+      val output = views.html.realtimeStatus(sub_current, rt_status, MonitorType.psiList, rt_psi, group.privilege, pm25Map, aqiMap)
       val title = "即時資訊"
       outputType match {
         case OutputType.html =>

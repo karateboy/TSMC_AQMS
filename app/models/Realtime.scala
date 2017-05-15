@@ -12,6 +12,36 @@ import models.Record._
 case class RealtimeStatus(data: Map[Monitor.Value, Map[MonitorType.Value, (Option[Float], Option[String])]])
 //case class SixSecRecord(c911: Array[(Option[Float], Option[String])], c912: Array[(Option[Float], Option[String])])
 case class WeatherStat(windSpeed: Option[Float], windDir: Option[Float])
+
+object AQI extends Enumeration {
+  val O3_8hr = Value
+  val O3 = Value
+  val pm25 = Value
+  val pm10 = Value
+  val CO_8hr = Value
+  val SO2 = Value
+  val SO2_24hr = Value
+  val NO2 = Value
+  def desp = Map(
+    O3_8hr -> "臭氧\n(ppm)\n八小時平均值",
+    O3 -> "臭氧\n(ppb)\n小時平均值",
+    pm25 -> "PM2.5\n(μg/m3)\n平均值",
+    pm10 -> "PM10\n(μg/m3 )\n平均值",
+    CO_8hr -> "CO\n(ppm)\n8小時平均值",
+    SO2 -> "SO2\n(ppb)\n小時平均值",
+    SO2_24hr -> "SO2\n(ppb)\n24小時平均值",
+    NO2 -> "NO2\n(ppb)\n小時平均值")
+  def mtMap = Map(
+    O3_8hr -> MonitorType.A225,
+    O3 -> MonitorType.A225,
+    pm25 -> MonitorType.A215,
+    pm10 -> MonitorType.A214,
+    CO_8hr -> MonitorType.A224,
+    SO2 -> MonitorType.A222,
+    SO2_24hr -> MonitorType.A222,
+    NO2 -> MonitorType.A293)
+}
+
 object Realtime {
   def getRealtimeMinStatus(current: DateTime, privilege: Privilege) = {
 
@@ -320,6 +350,214 @@ object Realtime {
     (psi, result)
   }
 
+  def o3_8AQI(ov: Option[Float]) = {
+    if (ov.isEmpty || ov.get / 1000 > 0.2f)
+      None
+    else
+      Some {
+        val v = ov.get / 1000
+
+        if (v <= 0.054) {
+          v / 0.054f * 50
+        } else if (v <= 0.070f) {
+          51 + (v - 0.055f) / (0.070f - 0.055f) * 50
+        } else if (v <= 0.085f) {
+          101 + (v - 0.071f) / (0.085f - 0.071f) * 50
+        } else if (v <= 0.105f) {
+          151 + (v - 0.086f) / (0.105f - 0.086f) * 50
+        } else {
+          201 + (v - 0.106f) / (0.2f - 0.106f) * 100
+        }
+      }
+  }
+
+  def o3AQI(ov: Option[Float]) = {
+    if (ov.isEmpty || ov.get / 1000 < 0.125f)
+      None
+    else
+      Some {
+        val v = ov.get / 1000
+
+        if (v <= 0.164f) {
+          101 + (v - 0.125f) / (0.164f - 0.125f) * 50
+        } else if (v <= 0.204f) {
+          151 + (v - 0.165f) / (0.204f - 0.165f) * 50
+        } else if (v <= 0.404f) {
+          201 + (v - 0.205f) / (0.404f - 0.205f) * 100
+        } else if (v <= 0.504f) {
+          301 + (v - 0.405f) / (0.504f - 0.405f) * 100
+        } else {
+          401 + (v - 0.505f) / (0.604f - 0.505f) * 100
+        }
+      }
+  }
+
+  def pm25AQI(ov: Option[Float]) = {
+    if (ov.isEmpty)
+      None
+    else
+      Some {
+        val v = ov.get
+
+        if (v <= 15.4f) {
+          v / 15.4f * 50
+        } else if (v <= 35.4f) {
+          51 + (v - 15.5f) / (35.4f - 15.5f) * 50
+        } else if (v <= 54.4f) {
+          101 + (v - 35.5f) / (54.4f - 35.5f) * 50
+        } else if (v <= 150.4f) {
+          151 + (v - 54.5f) / (150.4f - 54.5f) * 50
+        } else if (v <= 250.4f) {
+          201 + (v - 150.5f) / (250.4f - 150.5f) * 100
+        } else if (v <= 350.4f) {
+          301 + (v - 250.5f) / (350.4f - 250.5f) * 10
+        } else {
+          401 + (v - 350.5f) / (500.4f - 350.5f) * 100
+        }
+      }
+  }
+
+  def pm10AQI(ov: Option[Float]) = {
+    if (ov.isEmpty)
+      None
+    else
+      Some {
+        val v = ov.get
+
+        if (v <= 54f) {
+          v / 54f * 50
+        } else if (v <= 125f) {
+          51 + (v - 55f) / (125f - 55f) * 50
+        } else if (v <= 254f) {
+          101 + (v - 126f) / (254f - 126f) * 50
+        } else if (v <= 354f) {
+          151 + (v - 255f) / (354f - 255f) * 50
+        } else if (v <= 424f) {
+          201 + (v - 355f) / (424f - 355f) * 100
+        } else if (v <= 504f) {
+          301 + (v - 425f) / (504f - 425f) * 100
+        } else {
+          401 + (v - 505f) / (604f - 505f) * 100
+        }
+      }
+  }
+
+  def co_8AQI(ov: Option[Float]) = {
+    if (ov.isEmpty)
+      None
+    else
+      Some {
+        val v = ov.get
+
+        if (v <= 4.4f) {
+          v / 4.4f * 50
+        } else if (v <= 9.4f) {
+          51 + (v - 4.5f) / (9.4f - 4.5f) * 50
+        } else if (v <= 12.4f) {
+          101 + (v - 9.5f) / (12.4f - 9.5f) * 50
+        } else if (v <= 15.4f) {
+          151 + (v - 12.5f) / (15.4f - 12.5f) * 50
+        } else if (v <= 30.4f) {
+          201 + (v - 15.5f) / (30.4f - 15.5f) * 100
+        } else if (v <= 40.4f) {
+          301 + (v - 30.5f) / (40.4f - 30.4f) * 100
+        } else {
+          401 + (v - 40.5f) / (604f - 50.4f) * 100
+        }
+      }
+  }
+
+  def so2AQI(ov: Option[Float]) = {
+    if (ov.isEmpty || ov.get >= 186)
+      None
+    else
+      Some {
+        val v = ov.get
+
+        if (v <= 35f) {
+          v / 35f * 50
+        } else if (v <= 75f) {
+          51 + (v - 36f) / (75f - 36f) * 50
+        } else {
+          101 + (v - 76f) / (185f - 76f) * 50
+        }
+      }
+  }
+
+  def so2_24AQI(ov: Option[Float]) = {
+    if (ov.isEmpty || ov.get < 186)
+      None
+    else
+      Some {
+        val v = ov.get
+
+        if (v <= 304f) {
+          151 + (v - 186f) / (304f - 186f) * 50
+        } else if (v <= 604f) {
+          201 + (v - 305f) / (604f - 305f) * 100
+        } else if (v <= 804f) {
+          301 + (v - 605f) / (804f - 605f) * 100
+        } else {
+          401 + (v - 805f) / (1004f - 805f) * 100
+        }
+      }
+  }
+
+  def no2AQI(ov: Option[Float]) = {
+    if (ov.isEmpty)
+      None
+    else
+      Some {
+        val v = ov.get
+
+        if (v <= 53f) {
+          v / 53f * 50
+        } else if (v <= 100f) {
+          51 + (v - 54f) / (100f - 54f) * 50
+        } else if (v <= 360f) {
+          101 + (v - 101f) / (360f - 101f) * 50
+        } else if (v <= 649f) {
+          151 + (v - 361f) / (649f - 361f) * 50
+        } else if (v <= 1249f) {
+          201 + (v - 650f) / (1249f - 650f) * 100
+        } else if (v <= 1649f) {
+          301 + (v - 1250f) / (1649f - 1250f) * 100
+        } else {
+          401 + (v - 1650f) / (2049f - 1650f) * 100
+        }
+      }
+  }
+
+  def getMonitorRealtimeAQI(monitor: Monitor.Value, thisHour: DateTime)(implicit session: DBSession = AutoSession) = {
+    val o3 = getMonitorTypeAvg(monitor, MonitorType.withName("A225"), thisHour, thisHour + 1.hour, 1)
+    val o3_8 = getMonitorTypeAvg(monitor, MonitorType.withName("A225"), thisHour - 7.hour, thisHour + 1.hour, 6)
+    val pm10_12 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), thisHour - 11.hour, thisHour + 1.hour, 6)
+    val pm10_4 = getMonitorTypeAvg(monitor, MonitorType.withName("A214"), thisHour - 3.hour, thisHour + 1.hour, 1)
+    val pm10 = for (v1 <- pm10_12; v2 <- pm10_4) yield (v1 + v2) / 2
+
+    val pm25_12 = getMonitorTypeAvg(monitor, MonitorType.withName("A215"), thisHour - 11.hour, thisHour + 1.hour, 6)
+    val pm25_4 = getMonitorTypeAvg(monitor, MonitorType.withName("A215"), thisHour - 3.hour, thisHour + 1.hour, 1)
+    val pm25 = for (v1 <- pm25_12; v2 <- pm25_4) yield (v1 + v2) / 2
+    
+    val co_8 = getMonitorTypeAvg(monitor, MonitorType.withName("A224"), thisHour - 7.hour, thisHour + 1.hour, 6)
+    val so2 = getMonitorTypeAvg(monitor, MonitorType.withName("A222"), thisHour, thisHour + 1.hour, 1)
+    val so2_24 = getMonitorTypeAvg(monitor, MonitorType.withName("A222"), thisHour - 23, thisHour + 1.hour, 1)
+    val no2 = getMonitorTypeAvg(monitor, MonitorType.withName("A293"), thisHour, thisHour + 1.hour, 1)
+
+    val result = Map[AQI.Value, (Option[Float], Option[Float])](
+      AQI.O3_8hr -> (o3_8, o3_8AQI(o3_8)),
+      AQI.O3 -> (o3, o3AQI(o3)),
+      AQI.pm25 -> (pm25, pm25AQI(pm25)),
+      AQI.pm10 -> (pm10, pm10AQI(pm10)),
+      AQI.CO_8hr -> (co_8, co_8AQI(co_8)),
+      AQI.SO2 -> (so2, so2AQI(so2)),
+      AQI.SO2_24hr -> (so2_24, so2_24AQI(so2_24)),
+      AQI.NO2 -> (no2, no2AQI(no2)))
+    val sub_psi = result.values.map(_._2)
+    val psi = sub_psi.toList.max
+
+    (psi, result)
+  }
   def getEpaRealtimePSI(monitor: EpaMonitor.Value, lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
 
     val pm10_12 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A214"), lastHour - 11.hour, lastHour + 1.hour), 8)
@@ -347,10 +585,9 @@ object Realtime {
   case class PsiReport(psi: Option[Float], sub_map: Map[MonitorType.Value, (Option[Float], Option[Float])])
 
   def getMonitorMonthlyPSI(monitor: Monitor.Value, start: DateTime) = {
-    val days = getPeriods(start, start+1.month, 1.day)
-    for(day<-days)
-      yield
-      getMonitorDailyPSI(monitor, day)
+    val days = getPeriods(start, start + 1.month, 1.day)
+    for (day <- days)
+      yield getMonitorDailyPSI(monitor, day)
   }
 
   def getMonitorDailyPSIfromMap(dayStartHour: Int,
@@ -467,6 +704,21 @@ object Realtime {
       "PSI5"
   }
 
+  def getAqiLevel(v: Float) = {
+    if (v <= 50)
+      "AQI1"
+    else if (v <= 100)
+      "AQI2"
+    else if (v <= 150)
+      "AQI3"
+    else if (v <= 200)
+      "AQI4"
+    else if (v <= 300)
+      "AQI5"
+    else
+      "AQI6"
+  }
+
   def getRealtimePSI(lastHour: DateTime, monitorList: List[Monitor.Value] = Monitor.mvList)(implicit session: DBSession = AutoSession) = {
     val result =
       for {
@@ -559,6 +811,16 @@ object Realtime {
         m <- Monitor.mvList
       } yield {
         m -> getMonitorRealtimePm25(m, lastHour).map { pm25 => (pm25, getPm25Level(pm25)) }
+      }
+    Map(result: _*)
+  }
+
+  def getRealtimeAQI(lastHour: DateTime)(implicit session: DBSession = AutoSession) = {
+    val result =
+      for {
+        m <- Monitor.mvList
+      } yield {
+        m -> getMonitorRealtimeAQI(m, lastHour)
       }
     Map(result: _*)
   }
