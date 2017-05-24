@@ -8,6 +8,19 @@ import ModelHelper._
 
 object Exporter{
   case object Export  
+  
+  def secondTo8Am = {
+    val today8am = DateTime.now.withMillisOfDay(0).withHourOfDay(8)
+    
+    if(DateTime.now() < today8am){
+      val duration = new Duration(DateTime.now(), today8am)
+      duration.getStandardSeconds
+    }else{
+      val tomorrow8am = DateTime.tomorrow.withMillisOfDay(0).withHourOfDay(8)
+      val duration = new Duration(DateTime.now(), tomorrow8am)
+      duration.getStandardSeconds
+    }      
+  }
 }
 
 class Exporter extends Actor{

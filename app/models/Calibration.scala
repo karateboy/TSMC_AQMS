@@ -237,36 +237,81 @@ object Calibration {
 
   def exportDailyCalibrationCSV(monitor: Monitor.Value, day: DateTime) {
 
+    def mapMonitorTypeToFullScale(mt: MonitorType.Value) = {
+      import MonitorType._
+      mt match {
+        case A222 => //"SO2"
+          250
+        case A223 => //"NOx"
+          250
+        case A293 => //"NO2"
+          250
+        case A283 => //"NO"
+          250
+        case A224 => //"CO"
+          25
+        case A225 => //"O3"
+          500
+        case A226 => //"THC"
+          20
+        case A221 => //"TS"
+          20
+        case A286 => //"CH4"
+          20
+        case A296 => //"NMHC"
+          20
+          
+        case _ => 100
+      }
+    }
+
     val calibrationList = Calibration.calibrationQueryReport(monitor, day, day + 1.day)
     import scala.collection.mutable.StringBuilder
     val sb = new StringBuilder
-    sb.append("Site,")
-    sb.append("MonitorType,")
-    sb.append("StartTime,")
-    sb.append("EndTime,")
-    sb.append("ZeroValue,")
-    sb.append("SpanStd,")
-    sb.append("SpanValue")
+    sb.append("station_id,")
+    sb.append("name,")
+    sb.append("zero_begin_time,")
+    sb.append("zero_end_time,")
+    sb.append("zero_value,")
+    sb.append("zero_std_value,")
+    sb.append("zero_allow_error,")
+    sb.append("span_begin_time,")
+    sb.append("span_end_time,")
+    sb.append("span_value,")
+    sb.append("span_std_value,")
+    sb.append("span_allow_error,")
+    sb.append("full_scale,")
+    sb.append("drift,")
+    sb.append("slope,")
+    sb.append("flag")
     sb.append("\n")
 
     for (cali <- calibrationList) {
+      val half = new Duration(cali.startTime, cali.endTime).dividedBy(2)
       sb.append(monitor.toString + ",")
-      sb.append(mapMonitorTypeToMtCode(cali.monitorType))
-      sb.append(",")
-      sb.append(cali.startTime.toString("YYYY-MM-dd HH:mm:ss") + ",")
-      sb.append(cali.endTime.toString("YYYY-MM-dd HH:mm:ss") + ",")
-      sb.append(cali.z_val.getOrElse(0f))
-      sb.append(",")
-      sb.append(cali.span.getOrElse(0f))
-      sb.append(",")
-      sb.append(cali.sd_val.getOrElse(0f))
+      sb.append(mapMonitorTypeToMtCode(cali.monitorType) + ",")
+      sb.append(cali.startTime.toString("YYYY/M/d HH:mm") + ",")
+      sb.append((cali.startTime + half).toString("YYYY/M/d HH:mm") + ",")
+      sb.append(cali.z_val.getOrElse(0f) + ",")
+      sb.append("0,")
+      sb.append("5,")
+      sb.append((cali.startTime + half).toString("YYYY/M/d HH:mm") + ",")
+      sb.append(cali.endTime.toString("YYYY/M/d HH:mm") + ",")
+      sb.append(cali.span.getOrElse(0f) + ",")
+      sb.append(cali.s_std.getOrElse(0f) + ",")
+      sb.append(cali.s_std.getOrElse(0f) * 0.07 + ",")
+      sb.append(mapMonitorTypeToFullScale(cali.monitorType) + ",")
+      val drift = (cali.span.getOrElse(0f) - cali.z_val.getOrElse(0f))/cali.s_std.getOrElse(0f)
+      sb.append(drift + ",")
+      sb.append(cali.z_val.getOrElse(0f) + ",")
+      sb.append("N,")
       sb.append("\n")
     }
 
     import java.io.FileOutputStream
     import play.api.Play.current
     val path = current.path.getAbsolutePath + "/export/calibration/"
-    val fileName = s"${monitor.toString}_${day.toString("YYMMdd")}.csv"
+    val fileName = s"${monitor.toString}_${day.toString("YYYYMMdd_hhmmss")}.csv"
     val os = new FileOutputStream(path + fileName)
     os.write(sb.toString.getBytes("UTF-8"))
     os.close()
