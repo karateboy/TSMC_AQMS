@@ -17,6 +17,8 @@ menu.query.9=Calibration Record
 menu.query.10=Alarm Record
 menu.query.11=PSI Definition
 menu.query.12=AQI Definition
+menu.query.13=AQI Query
+
 menu.report.1=Report
 menu.report.2=Terminal Report
 menu.report.3=EPA Monitor Comparison Report
@@ -27,6 +29,8 @@ menu.report.7=Monitor Monthly Hour Report
 menu.report.8=Monitor Malfunction Report
 menu.report.9=Monitor Daily Summary
 menu.report.10=Monitor Period Hourly Report
+menu.report.11=AQI Report
+
 menu.stat.1=Analysis
 menu.stat.2=Data Analysis
 menu.stat.3=Data Auditing

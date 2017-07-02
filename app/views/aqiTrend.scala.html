@@ -35,9 +35,9 @@
 	            			<div class="col-lg-11">	            				
 	            				<div class="btn-group" data-toggle="buttons">	            					            				
 	            					<label class="btn btn-outline btn-primary dim active">
-										<input type="radio" name="psiType" id="hourlyPSI" checked>小時PSI</label>
+										<input type="radio" name="aqiType" id="hourlyAQI" checked>小時AQI</label>
 									<label class="btn btn-outline btn-primary dim">
-										<input type="radio" name="psiType" id="dailyPSI">日PSI</label>
+										<input type="radio" name="aqiType" id="dailyAQI">日AQI</label>
 	            				</div>
 	            			</div>	            			            		
 	                    </div>
@@ -110,20 +110,20 @@ $( document ).ready(function() {
     	locale: "zh-TW"
 	});
 
-    $("input[name='psiType']").change(function(){
+    $("input[name='aqiType']").change(function(){
 		var me = $(this)
 		
 		//Set default date
 		var reportStartCtrl = $('#reportStart').data("DateTimePicker"); 
-		if(me.attr('id') == 'hourlyPSI'){
+		if(me.attr('id') == 'hourlyAQI'){
 			reportStartCtrl.date(moment().subtract(1, 'days'));
-		}else if(me.attr('id') == 'dailyPSI'){
+		}else if(me.attr('id') == 'dailyAQI'){
 			reportStartCtrl.date(moment().subtract(7, 'days'));
 		}
 	});
 	
 	
-	var monitors, reportStart, reportEnd, dailyPsi;
+	var monitors, reportStart, reportEnd, dailyAqi;
 	
 	function validate(){
 		monitors = $("input[name='monitor']:checked");
@@ -132,7 +132,7 @@ $( document ).ready(function() {
 			return false;
 		}
 
-		dailyPsi  = $("#dailyPSI").prop("checked");
+		dailyAqi  = $("#dailyAQI").prop("checked");
 		
 		reportStart = $('#reportStart').val();
 		if(reportStart.length === 0){
@@ -149,7 +149,7 @@ $( document ).ready(function() {
 		var start = new Date(reportStart);
 		var end = new Date(reportEnd);
 		var diff = end.getTime()-start.getTime();
-		if(dailyPsi){
+		if(dailyAqi){
 			if(diff > 31 * 24*60*60*1000){
 				alert("查詢區間必須小於一個月");
 				return false;
@@ -181,8 +181,8 @@ $( document ).ready(function() {
 				monitorParam += ':' + monitors[i].id;
 		}	
 		var chartType = $("input[name='chartType']:checked").attr('id');
-		var base_url = monitorParam + "/" + reportStart + "/" + reportEnd + "/" + dailyPsi;
-		var url = "/JSON/PsiTrend/" + base_url;
+		var base_url = monitorParam + "/" + reportStart + "/" + reportEnd + "/" + dailyAqi;
+		var url = "/JSON/AqiTrend/" + base_url;
 		
 		$.ajax({
 			url : url,
@@ -205,7 +205,7 @@ $( document ).ready(function() {
 				result.tooltip ={
 	            	valueDecimals: 2};
 	            result.legend={enabled:true};
-				result.title={text:'PSI趨勢圖'};
+				result.title={text:'AQI趨勢圖'};
 				result.credits={
 					enabled:false,
 					href:'http://www.wecc.com.tw/'
@@ -217,7 +217,7 @@ $( document ).ready(function() {
 	            	month: '%y年%b',
 	            };
 				
-				$("#downloadExcel").prop("href", "/Excel/PsiTrend/" + base_url);
+				$("#downloadExcel").prop("href", "/Excel/AqiTrend/" + base_url);
 				$('#reportDiv').highcharts(result);
 				$("#reportPanel").collapse('show');
 				

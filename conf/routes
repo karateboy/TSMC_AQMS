@@ -79,6 +79,10 @@ GET      /PsiTrend                                                              
 GET      /JSON/PsiTrend/:monitor/:start/:end/:dailyPsi                                         controllers.Query.psiTrendChart(monitor, start, end, dailyPsi:Boolean, outputType="html")
 GET      /Excel/PsiTrend/:monitor/:start/:end/:dailyPsi                                        controllers.Query.psiTrendChart(monitor, start, end, dailyPsi:Boolean, outputType="excel")
 
+GET      /AqiTrend                                                                             controllers.Query.aqiTrend
+GET      /JSON/AqiTrend/:monitor/:start/:end/:dailyAqi                                         controllers.Query.aqiTrendChart(monitor, start, end, dailyAqi:Boolean, outputType="html")
+GET      /Excel/AqiTrend/:monitor/:start/:end/:dailyAqi                                        controllers.Query.aqiTrendChart(monitor, start, end, dailyAqi:Boolean, outputType="excel")
+
 GET      /OverLawStd                                                                           controllers.Query.overLawStd
 GET      /OverLawStdReport/:monitor/:monitorType/:start/:end                                   controllers.Query.overLawStdReport(monitor, monitorType, start, end, outputTypeStr="html")
 GET      /PDF/OverLawStdReport/:monitor/:monitorType/:start/:end                               controllers.Query.overLawStdReport(monitor, monitorType, start, end, outputTypeStr="pdf")

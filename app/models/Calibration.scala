@@ -178,8 +178,8 @@ object Calibration {
       val lb = resultMap.getOrElseUpdate(item.monitorType, ListBuffer.empty[(DateTime, Calibration.CalibrationItem)])
       lb.append((item.endTime, item))
     }
-    
-    resultMap.map(kv=> kv._1 -> kv._2.toList).toMap
+
+    resultMap.map(kv => kv._1 -> kv._2.toList).toMap
     /*
     val map = calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
 
@@ -189,7 +189,50 @@ object Calibration {
     */
   }
 
+  def getCalibrationMap(monitor: Monitor.Value, startDate: DateTime, endDate: DateTime) = {
+    val begin = (startDate - 5.day).toDate
+    val end = (endDate + 1.day).toDate
+
+    val calibrationList =
+      DB readOnly { implicit session =>
+        sql"""
+      SELECT *
+      FROM Calibration
+      Where DP_NO=${monitor.toString} and S_DateTime between ${begin} and ${end}
+      Order by S_DateTime
+      """.map { mapper }.list.apply
+
+      }
+
+    import scala.collection.mutable._
+    val resultMap = Map.empty[MonitorType.Value, ListBuffer[(DateTime, Calibration.CalibrationItem)]]
+    for (item <- calibrationList.filter { _.success } if item.monitorType != MonitorType.A293) {
+      val lb = resultMap.getOrElseUpdate(item.monitorType, ListBuffer.empty[(DateTime, Calibration.CalibrationItem)])
+      lb.append((item.endTime, item))
+    }
+
+    resultMap.map(kv => kv._1 -> kv._2.toList).toMap
+  }
+
   //A293 => NO2, A296=>NMHC
   val interpolatedMonitorTypes = List(MonitorType.A293, MonitorType.A296)
+
+  import Record._
+  def canCalibrate(mt: MonitorType.Value, rs: HourRecord)(implicit calibrationMap: Map[MonitorType.Value, List[(DateTime, CalibrationItem)]]) = {
+    calibrationMap.contains(mt) &&
+      findCalibration(rs, calibrationMap(mt)).isDefined
+  }
+
+  def findCalibration(rs: HourRecord, calibrationList: List[(DateTime, CalibrationItem)]) = {
+    val candidate = calibrationList.takeWhile(p => p._1 < rs.date)
+    if (candidate.length == 0)
+      None
+    else
+      Some(candidate.last)
+  }
+
+  def doCalibrate(mt: MonitorType.Value, rs: HourRecord)(implicit calibrationMap: Map[MonitorType.Value, List[(DateTime, CalibrationItem)]]) = {
+    findCalibration(rs, calibrationMap(mt)).get._2.calibrate(monitorTypeProject2(mt)(rs)._1)
+  }
 
 }

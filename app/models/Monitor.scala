@@ -332,6 +332,7 @@ object MonitorType extends Enumeration {
   val A245 = MonitorType.withName("A245")
 
   val psiList = List(A214, A222, A224, A225, A293)
+  val aqiList = List(A214, A215, A222, A224, A225, A293)
   val windDirList = List(MonitorType.withName("C212"))
 
   /*  val monitorReportList = 

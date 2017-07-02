@@ -464,16 +464,8 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
     val outputType = OutputType.withName(outputTypeStr)
     val days = getDays(startDate, endDate)
     val nDay = days.length
-    if (outputType == OutputType.excel) {
-      import java.io.File
-      import java.nio.file.Files
-      val monthlyReport = getMonthlyReport(monitor, startDate)
 
-      val (title, excelFile) = ("月報", ExcelUtility.createMonthlyReport(monitor, startDate, monthlyReport, nDay))
-      Ok.sendFile(excelFile, fileName = _ =>
-        play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + title + startDate.toString("YYYYMMdd") + ".xlsx", "UTF-8"),
-        onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
-    } else {
+    def getHourReport() = {
       val dailyReports =
         for { day <- days } yield {
           Record.getDailyReport(monitor, day, List(monitorType))
@@ -542,7 +534,21 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
         } else {
           Stat(None, None, None, count, total, 0)
         }
-      val result = MonthHourReport(monthHourStats.toArray, dailyReports.toArray, overallStat)
+      MonthHourReport(monthHourStats.toArray, dailyReports.toArray, overallStat)
+    }
+
+    if (outputType == OutputType.excel) {
+      import java.io.File
+      import java.nio.file.Files
+      val excelFile = ExcelUtility.createPeriodHourReport(monitor, getHourReport(), startDate, endDate, days)
+
+      Ok.sendFile(excelFile, fileName = _ =>
+        play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + "區間時報表" + 
+            startDate.toString("YYYYMMdd") + "_" + endDate.toString("MMdd") + ".xlsx", "UTF-8"),
+        onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
+    } else {
+      
+      val result = getHourReport()
 
       val output = views.html.periodHourReport(monitor, monitorType, startDate, endDate, result, days)
       val title = "區間時報表"

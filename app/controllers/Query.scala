@@ -442,6 +442,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       val outputType = OutputType.withName(outputTypeStr)
 
       var timeSet = Set[DateTime]()
+
       val pairs =
         for {
           m <- monitors
@@ -449,7 +450,41 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
             Record.getHourRecords(m, start, end)
           else
             Record.getMinRecords(m, start, end)
-          mtRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(monitorType)(rs)) }
+
+          t = Record.monitorTypeProject2(monitorType)
+          calibrationMap = Calibration.getCalibrationMap(m, start, end)
+
+          mtRecords = records.map { rs =>
+            import Calibration._
+            if (SystemConfig.getApplyCalibration && canCalibrate(monitorType, rs)(calibrationMap)) {
+              val calibrated = doCalibrate(monitorType, rs)(calibrationMap)
+              (Record.timeProjection(rs).toDateTime, (calibrated, t(rs)._2))
+            } else if (SystemConfig.getApplyCalibration && monitorType == MonitorType.A293 &&
+              canCalibrate(MonitorType.A223, rs)(calibrationMap) &&
+              canCalibrate(MonitorType.A283, rs)(calibrationMap)) {
+              //A293=> NO2, A223=>NOX, A283=> NO
+              val calibratedNOx = doCalibrate(MonitorType.A223, rs)(calibrationMap)
+              val calibratedNO = doCalibrate(MonitorType.A283, rs)(calibrationMap)
+              val interpolatedNO2 =
+                for (NOx <- calibratedNOx; NO <- calibratedNO)
+                  yield NOx - NO
+
+              (Record.timeProjection(rs).toDateTime, (interpolatedNO2, t(rs)._2))
+            } else if (SystemConfig.getApplyCalibration && monitorType == MonitorType.A296 &&
+              canCalibrate(MonitorType.A286, rs)(calibrationMap) && canCalibrate(MonitorType.A226, rs)(calibrationMap)) {
+              //A296=>NMHC, A286=>CH4, A226=>THC
+              val calibratedCH4 = doCalibrate(MonitorType.A286, rs)(calibrationMap)
+              val calibratedTHC = doCalibrate(MonitorType.A226, rs)(calibrationMap)
+              val interpolatedNMHC =
+                for (ch4 <- calibratedCH4; thc <- calibratedTHC)
+                  yield thc - ch4
+
+              (Record.timeProjection(rs).toDateTime, (interpolatedNMHC, t(rs)._2))
+            } else
+              (Record.timeProjection(rs).toDateTime, t(rs))
+
+            //(Record.timeProjection(rs).toDateTime, t(rs))
+          }
           timeMap = Map(mtRecords: _*)
         } yield {
           timeSet ++= timeMap.keySet
@@ -623,15 +658,13 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         getPeriods(start, end, 1.hour)
 
       val monitorPsiPair =
-      for (m <- monitors) yield
-        m -> getPsiMap(m)
-      
-      val monitorPsiMap = monitorPsiPair.toMap 
+        for (m <- monitors) yield m -> getPsiMap(m)
 
-      val epaPsiPair = 
-      for (m <- epaMonitors) yield
-        m -> getEpaPsiMap(m)
-      
+      val monitorPsiMap = monitorPsiPair.toMap
+
+      val epaPsiPair =
+        for (m <- epaMonitors) yield m -> getEpaPsiMap(m)
+
       val epaPsiMap = epaPsiPair.toMap
 
       val title = "PSI歷史趨勢圖"
@@ -668,6 +701,157 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
 
       val timeStrSeq =
         if (isDailyPsi)
+          timeSeq.map(_._1.toString("YY/MM/dd"))
+        else
+          timeSeq.map(_._1.toString("MM/dd HH:00"))
+
+      val chart = HighchartData(
+        scala.collection.immutable.Map("type" -> "column"),
+        scala.collection.immutable.Map("text" -> title),
+        XAxis(None),
+        Seq(YAxis(None, AxisTitle(Some(Some(""))), None)),
+        series ++ epaSeries)
+
+      if (outputType == OutputType.excel) {
+        val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1))
+        Results.Ok.sendFile(excelFile, fileName = _ =>
+          play.utils.UriEncoding.encodePathSegment(chart.title("text") + ".xlsx", "UTF-8"),
+          onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
+      } else {
+        Results.Ok(Json.toJson(chart))
+      }
+
+  }
+
+  def aqiTrend = Security.Authenticated {
+    implicit request =>
+      val userInfo = Security.getUserinfo(request).get
+      val group = Group.getGroup(userInfo.groupID).get
+      Ok(views.html.aqiTrend(group.privilege))
+  }
+
+  def aqiTrendChart(monitorStr: String, startStr: String, endStr: String, isDailyAqi: Boolean, outputTypeStr: String) = Security.Authenticated {
+    implicit request =>
+      import scala.collection.JavaConverters._
+      val monitorStrArray = monitorStr.split(':')
+      val monitors = monitorStrArray.flatMap { name =>
+        try {
+          Some(Monitor.withName(name))
+        } catch {
+          case _: Throwable =>
+            None
+        }
+      }
+
+      val epaMonitors = monitorStrArray.flatMap { name =>
+        try {
+          Some(EpaMonitor.withName(name))
+        } catch {
+          case _: Throwable =>
+            None
+        }
+      }
+
+      val start = DateTime.parse(startStr)
+      val end = DateTime.parse(endStr) + 1.day
+      val outputType = OutputType.withName(outputTypeStr)
+
+      def getAqiMap(m: Monitor.Value) = {
+        import models.Realtime._
+        var current = start
+
+        if (isDailyAqi) {
+          import scala.collection.mutable.Map
+          val map = Map.empty[DateTime, Float]
+          while (current < end) {
+            val v = AQI.getMonitorDailyAQI(m, current)
+            if (v.psi.isDefined) {
+              val psi = v.psi.get
+              map += (current -> psi)
+            }
+            current += 1.day
+          }
+          map
+        } else {
+          AQI.getRealtimeAqiTrend(m, start, end)
+        }
+      }
+
+      def getEpaAqiMap(m: EpaMonitor.Value) = {
+        import models.Realtime._
+        var current = start
+        import scala.collection.mutable.Map
+
+        val map = Map.empty[DateTime, Float]
+        while (current < end) {
+          if (isDailyAqi) {
+            val v = AQI.getEpaDailyAQI(m, current)
+            if (v.psi.isDefined) {
+              val psi = v.psi.get
+              map += (current -> psi)
+            }
+            current += 1.day
+          } else {
+            val v = AQI.getEpaRealtimeAQI(m, current)
+            if (v._1.isDefined) {
+              val psi = v._1.get
+              map += (current -> psi)
+            }
+            current += 1.hour
+          }
+        }
+        map
+      }
+
+      val timeSet = if (isDailyAqi)
+        getPeriods(start, end, 1.day)
+      else
+        getPeriods(start, end, 1.hour)
+
+      val monitorPsiPair =
+        for (m <- monitors) yield m -> getAqiMap(m)
+
+      val monitorPsiMap = monitorPsiPair.toMap
+
+      val epaPsiPair =
+        for (m <- epaMonitors) yield m -> getEpaAqiMap(m)
+
+      val epaPsiMap = epaPsiPair.toMap
+
+      val title = "AQI歷史趨勢圖"
+      val timeSeq = timeSet.zipWithIndex
+      import Realtime._
+
+      val series = for {
+        m <- monitors
+        timeData = timeSeq.map { t =>
+          val time = t._1
+          val x = t._2
+          if (monitorPsiMap(m).contains(time))
+            Seq(Some(time.getMillis.toDouble), Some(monitorPsiMap(m)(time).toDouble))
+          else
+            Seq(Some(time.getMillis.toDouble), None)
+        }
+      } yield {
+        seqData(Monitor.map(m).name, timeData)
+      }
+
+      val epaSeries = for {
+        m <- epaMonitors
+        timeData = timeSeq.map { t =>
+          val time = t._1
+          val x = t._2
+          if (epaPsiMap(m).contains(time))
+            Seq(Some(time.getMillis.toDouble), Some(epaPsiMap(m)(time).toDouble))
+          else
+            Seq(Some(time.getMillis.toDouble), None)
+        }
+      } yield {
+        seqData(EpaMonitor.map(m).name, timeData)
+      }
+
+      val timeStrSeq =
+        if (isDailyAqi)
           timeSeq.map(_._1.toString("YY/MM/dd"))
         else
           timeSeq.map(_._1.toString("MM/dd HH:00"))
