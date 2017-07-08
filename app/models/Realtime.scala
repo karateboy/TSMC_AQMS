@@ -12,7 +12,7 @@ import models.Record._
 case class RealtimeStatus(data: Map[Monitor.Value, Map[MonitorType.Value, (Option[Float], Option[String])]])
 //case class SixSecRecord(c911: Array[(Option[Float], Option[String])], c912: Array[(Option[Float], Option[String])])
 case class WeatherStat(windSpeed: Option[Float], windDir: Option[Float])
-case class AqiReport(psi: Option[Float], sub_map: Map[AQI.Value, (Option[Float], Option[Float])])
+case class AqiReport(aqi: Option[Float], sub_map: Map[AQI.Value, (Option[Float], Option[Float])])
 
 object AQI extends Enumeration {
   val O3_8hr = Value
@@ -23,9 +23,9 @@ object AQI extends Enumeration {
   val SO2 = Value
   val SO2_24hr = Value
   val NO2 = Value
-  def desp = Map(
+  def desc = Map(
     O3_8hr -> "臭氧\n(ppm)\n八小時平均值",
-    O3 -> "臭氧\n(ppb)\n小時平均值",
+    O3 -> "臭氧\n(ppm)\n小時平均值",
     pm25 -> "PM2.5\n(μg/m3)\n平均值",
     pm10 -> "PM10\n(μg/m3 )\n平均值",
     CO_8hr -> "CO\n(ppm)\n8小時平均值",
@@ -42,6 +42,9 @@ object AQI extends Enumeration {
     SO2_24hr -> MonitorType.A222,
     NO2 -> MonitorType.A293)
 
+  val realtimeList = List(O3_8hr, O3, pm25, pm10, CO_8hr, SO2, SO2_24hr, NO2)
+  val dailyList = List(O3_8hr, O3, pm25, pm10, CO_8hr, SO2, NO2)
+  
   def o3_8AQI(ov: Option[Float]) = {
     if (ov.isEmpty || ov.get / 1000 > 0.2f)
       None

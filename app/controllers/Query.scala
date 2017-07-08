@@ -765,9 +765,9 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
           val map = Map.empty[DateTime, Float]
           while (current < end) {
             val v = AQI.getMonitorDailyAQI(m, current)
-            if (v.psi.isDefined) {
-              val psi = v.psi.get
-              map += (current -> psi)
+            if (v.aqi.isDefined) {
+              val aqi = v.aqi.get
+              map += (current -> aqi)
             }
             current += 1.day
           }
@@ -786,9 +786,9 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         while (current < end) {
           if (isDailyAqi) {
             val v = AQI.getEpaDailyAQI(m, current)
-            if (v.psi.isDefined) {
-              val psi = v.psi.get
-              map += (current -> psi)
+            if (v.aqi.isDefined) {
+              val aqi = v.aqi.get
+              map += (current -> aqi)
             }
             current += 1.day
           } else {

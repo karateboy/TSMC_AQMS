@@ -48,7 +48,12 @@ GET      /PDF/PsiQueryReport/:monitor/:reportType/:start                        
 GET      /Excel/PsiQueryReport/:monitor/:reportType/:start                                     controllers.Report.psiReportReport(monitor, reportType, start, outputTypeStr="excel")
 GET      /PsiExplain                                                                           controllers.Report.psiExplain
 
+GET      /AqiReportPrompt                                                                      controllers.Report.aqiReportPrompt
+GET      /AqiReport/:monitor/:reportType/:start                                                controllers.Report.aqiReport(monitor, reportType, start, outputTypeStr="html")
+GET      /PDF/AqiReport/:monitor/:reportType/:start                                            controllers.Report.aqiReport(monitor, reportType, start, outputTypeStr="pdf")
+GET      /Excel/AqiReport/:monitor/:reportType/:start                                          controllers.Report.aqiReport(monitor, reportType, start, outputTypeStr="excel")
 GET      /AqiExplain                                                                           controllers.Report.aqiExplain
+
 GET      /EffectiveQuery                                                                       controllers.Report.effectiveQuery
 GET      /EffectiveAnnualReport/:reportType/:start/:param                                      controllers.Report.effectiveAnnualReport(reportType, start, param, outputTypeStr="html")
 GET      /PDF/EffectiveAnnualReport/:reportType/:start/:param                                  controllers.Report.effectiveAnnualReport(reportType, start, param, outputTypeStr="pdf")
@@ -231,3 +236,10 @@ GET      /InstrumentStatusRange/:monitor                                        
 PUT      /InstrumentStatusRecord/:monitor                                                      controllers.DataLogger.insertInstrumentStatusRecord(monitor)
 GET      /InstrumentStatusTypeIds/:monitor                                                     controllers.DataLogger.getInstrumentStatusTypeIds(monitor)
 PUT      /InstrumentStatusTypeMap/:monitor                                                     controllers.DataLogger.updateInstrumentStatusTypeMap(monitor)
+
+#VUE	JSON
+#GET      /MonitorInstrument                                                                    controllers.Application.monitorInstrumentList()
+#GET      /InstrumentCmdView                                                                    controllers.Application.instrumentCmdView
+#GET      /InstrumentCmdList                                                                    controllers.Application.getInstrumentCmdList
+GET      /InstrumentCmd/:monitor                                                               controllers.Application.getPendingInstrumentCmd(monitor)
+#POST     /InstrumentCmd/:monitor                                                               controllers.Application.postInstrumentCmd(monitor)

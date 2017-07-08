@@ -669,5 +669,11 @@ class Application @Inject()(val messagesApi: MessagesApi) extends Controller wit
     Epa100Importer.importData(path)
     Ok(s"匯入 $path")
   }
+  
+  case class InstrumentCommand(cmd:String, var name:String, var instId:String)
 
+  def getPendingInstrumentCmd(monitorStr: String) = Action {
+    implicit val writer = Json.writes[InstrumentCommand]
+    Ok(Json.toJson(Seq.empty[InstrumentCommand]))
+  }
 }

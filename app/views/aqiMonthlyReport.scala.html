@@ -1,0 +1,60 @@
+@* dailyReport Template File *@
+@import models.Realtime._
+@import com.github.nscala_time.time.Imports._
+@(monitor: Monitor.Value, reportDate:DateTime, aqiDailyList: List[AqiReport], nDays: Int)(implicit messages:Messages)
+
+
+<h3>空氣品質AQI月報表</h3>
+<h4>監測站:@Monitor.map(monitor).name</h4>
+<h4>日期:@reportDate.toString("yyyy年MM月")</h4>
+
+<table id="reportTable" class="table" cellspacing="0" width="100%">
+<thead>
+	<tr>
+		<td rowspan='2'>日</td>
+		<td rowspan='2'>AQI指標</td>
+		@for(aqi<-AQI.dailyList){
+			<td colspan='2'>@MonitorType.map(AQI.mtMap(aqi)).desp</td>		
+		}		
+	</tr>
+	<tr>
+		@for(aqi<-AQI.dailyList){
+			<td>副指標</td>
+			<td>@AQI.desc(aqi)</td>	
+		}
+	</tr>
+</thead>
+<tbody>
+	@for(i<-0 to nDays-1){
+		<tr>
+			<th>@(i+1)</th>
+		@if(aqiDailyList(i).aqi.isDefined){
+			<td class="@getAqiLevel(aqiDailyList(i).aqi.get)">@("%.0f".format(aqiDailyList(i).aqi.get))</td>
+			
+			@for(aqi<-AQI.dailyList){
+				@if(aqiDailyList(i).sub_map(aqi)._2.isDefined){
+					<td>@("%.0f".format(aqiDailyList(i).sub_map(aqi)._2.get))</td>	
+				}else{
+					<td>-</td>
+				}
+				@if(aqiDailyList(i).sub_map(aqi)._1.isDefined){
+					<td>@("%.2f".format(aqiDailyList(i).sub_map(aqi)._1.get))</td>	
+				}else{
+					<td>-</td>
+				}				
+			}
+		}else{
+			<td>-</td>
+			@for(aqi<-AQI.dailyList){
+				<td>-</td>
+				<td>-</td>
+			}
+		}
+		</tr>	
+	}	
+</tbody>
+</table> 
+<script>
+
+</script>           		
+ 
