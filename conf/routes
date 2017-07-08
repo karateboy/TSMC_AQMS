@@ -144,6 +144,9 @@ GET      /epaCompareReport/:monitor/:epaMonitor/:reportDate                     
 GET      /PDF/epaCompareReport/:monitor/:epaMonitor/:reportDate                                controllers.Report.epaCompareReport(monitor, epaMonitor, reportDate, outputType="pdf")
 GET      /Excel/epaCompareReport/:monitor/:epaMonitor/:reportDate                              controllers.Report.epaCompareReport(monitor, epaMonitor, reportDate, outputType="excel")
 
+GET      /DownloadAllReportPrompt                                                              controllers.Report.allReportForm
+GET      /AllReportExcel/:monitor/:start/:end                                                  controllers.Report.allReportExcel(monitor, start, end)
+
 GET      /UserManagement                                                                       controllers.Application.userManagement
 PUT      /User                                                                                 controllers.Application.newUser
 GET      /User                                                                                 controllers.Application.getAllUsers

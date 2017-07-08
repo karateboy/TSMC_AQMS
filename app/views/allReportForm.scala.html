@@ -1,0 +1,118 @@
+@* allReportForm Template File *@
+@import com.github.nscala_time.time.Imports._
+@(privilege: Privilege)(implicit messages:Messages)
+
+<div class="row">
+   	<div class="col-lg-12">
+        	<div class="panel panel-primary" id="paramPanel">
+            	<div class="panel-heading panel-title" >
+            		<a data-toggle="collapse" data-parent="#accordion" href="#reportParam">查詢參數</a>	
+                </div>
+            	<div class="panel-body panel-collapse in" id="reportParam">
+            		<form class="form-horizontal">
+            			<div class="form-group">
+	            			<label class="col-lg-1 control-label">@Messages("query.monitor")</label>
+	            			<div class="col-lg-11">
+	            				<div class="btn-group" data-toggle="buttons">	            					            				
+	            					@for(m<-Monitor.myMvList(privilege)){
+	            						@if(m == Monitor.myMvList(privilege).head){
+	            							<label class="btn btn-outline btn-primary dim active">
+											<input type="radio" name="monitor" id="@m" checked>@Monitor.getDisplayName(m)</label>	
+	            						}else{
+	            							<label class="btn btn-outline btn-primary dim">
+											<input type="radio" name="monitor" id="@m">@Monitor.getDisplayName(m)</label>
+	            						}	            						
+	            					}
+	            				</div>
+	            			</div>	            			            		
+	                    </div>
+	                    <div class="form-group">
+	            			<label class="col-lg-1 control-label">@Messages("query.duration")</label>	
+	            			<div class="col-lg-5">
+	            				<div class="input-daterange input-group" id="datepicker">
+                    			<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" class="input-sm form-control" name="start" id="reportStart" required/>
+                       			<span class="input-group-addon">~</span>
+                        		<input type="text" class="input-sm form-control" name="end" id="reportEnd" required/>                        
+                    		</div>
+	            			</div>												
+	                    </div>
+	                    <div class="form-group">
+							<div class="col-lg-1 col-lg-offset-1">
+								<button type="button" class="btn btn-primary" id="queryReport">@Messages("query.query")</button>
+							</div>							
+						</div>
+            		</form>
+            	</div>
+        	</div>        	
+        	<div class="panel panel-success" style="display:none" id="reportPanel">
+             	<div class="panel-body panel-collapse" id="monitorReport">
+            		<div align="right">
+            			<label class="btn btn-outline" data-toggle="tooltip" data-placement="bottom" title="PDF"><a href="#" id="downloadPDF"><i class="fa fa-file-pdf-o fa-2x pdf"></i></a></label>
+            			<label class="btn btn-outline" data-toggle="tooltip" data-placement="bottom" title="Excel"><a href="#" id="downloadExcel"><i class="fa fa-file-excel-o fa-2x"></i></a></label>            			
+                	</div>
+            		
+					<div id="reportDiv" align="center" style="overflow-x:auto">
+            		</div>
+            	</div>
+        	</div>
+	</div>
+</div>
+<script>
+	var l10n_url = '@routes.Assets.at("localization/zh_tw.json")';
+	var swf_path = "@routes.Assets.at("js/plugins/dataTables/swf/copy_csv_xls_pdf.swf")";
+</script>
+<script>
+$( document ).ready(function() {	
+	$('#reportStart').datetimepicker({
+		format: 'YYYY-M-D',
+		defaultDate: moment().subtract(1, 'months'),
+    	locale: "zh-TW"
+	});
+	
+	$('#reportEnd').datetimepicker({
+		format: 'YYYY-M-D',
+		defaultDate: moment(),
+    	locale: "zh-TW"
+	});
+	
+	let monitor, reportStart, reportEnd;
+	
+	function validate(){
+		monitor = $("input[name='monitor']:checked").attr('id');
+		if (!monitor) {
+			alert('請選擇測站');
+			return false;
+		}
+				
+		reportStart = $('#reportStart').val();
+		if(reportStart.length === 0){
+			alert('請選擇開始日期');
+			return false;
+		}
+		
+		reportEnd = $('#reportEnd').val();
+		if(reportStart.length === 0){
+			alert('請選擇結束日期');
+			return false;
+		}
+
+		var start = new Date(reportStart);
+		var end = new Date(reportEnd);
+		var diff = end.getTime()-start.getTime();
+		if(diff > 35 * 24*60*60*1000){
+			alert("查詢區間必須小於5週");
+			return false;
+		}				
+		
+		return true;
+	}
+	
+	$('#queryReport').click(function(){
+		if(!validate())
+			return;
+				
+		let url=`/AllReportExcel/${monitor}/${reportStart}/${reportEnd}`;
+        window.open(url)
+	});
+});
+</script>

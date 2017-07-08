@@ -1,7 +1,7 @@
 
 name := """tsmc"""
 
-version := "1.2.4"
+version := "1.2.5"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 

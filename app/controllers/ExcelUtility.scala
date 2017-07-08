@@ -1446,6 +1446,65 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
+  def exportMonitorRecord(monitor: Monitor.Value, start: DateTime, end: DateTime,
+                          mtRecordMap: Map[MonitorType.Value, Map[DateTime, (Option[Float], Option[String])]])(implicit messages: Messages) = {
+
+    val (reportFilePath, pkg, wb) = prepareTemplate("allReport.xlsx")
+    val evaluator = wb.getCreationHelper().createFormulaEvaluator()
+    val format = wb.createDataFormat();
+
+    val sheet = wb.getSheetAt(0)
+    sheet.getRow(0).createCell(1).setCellValue(Monitor.map(monitor).name)
+    sheet.getRow(1).createCell(1).setCellValue(s"${start.toString("YYYY/MM/dd")}-${end.toString("YYYY/MM/dd")}")
+    val timeSeq = getPeriods(start, end, 1.hour)
+    
+    val precArray = Monitor.map(monitor).monitorTypes.map { mt => MonitorType.map(mt).prec }
+    val styles = precArray.map { prec =>
+      val format_str = "0." + "0" * prec
+      val style = wb.createCellStyle();
+      style.setDataFormat(format.getFormat(format_str))
+      style
+    }
+    
+    val promptRow = sheet.getRow(2)
+    for {
+      mt_idx <- Monitor.map(monitor).monitorTypes.zipWithIndex
+      mt = mt_idx._1
+      idx = mt_idx._2
+    } {
+      promptRow.createCell(idx * 2 + 1).setCellValue(s"${MonitorType.map(mt).desp}(${MonitorType.map(mt).unit})")
+      promptRow.createCell(idx * 2 + 2).setCellValue("狀態碼")
+    }
+
+    for {
+      time_idx <- timeSeq.zipWithIndex
+      time = time_idx._1
+      rowN = time_idx._2 + 3
+      row = sheet.createRow(rowN)
+    } {
+      row.createCell(0).setCellValue(time.toString("YYYY/MM/dd HH:mm"))
+      for {
+        mt_idx <- Monitor.map(monitor).monitorTypes.zipWithIndex
+        mt = mt_idx._1
+        idx = mt_idx._2
+      } {
+        val recordOpt = mtRecordMap(mt).get(time)
+        if (recordOpt.isEmpty) {
+          row.createCell(idx * 2 + 1).setCellValue("-")
+          row.createCell(idx * 2 + 2).setCellValue("-")
+        } else {
+          val record = recordOpt.get
+          val valueCell = row.createCell(idx * 2 + 1)
+          valueCell.setCellStyle(styles(idx))
+          valueCell.setCellValue(record._1.get)
+          row.createCell(idx * 2 + 2).setCellValue(record._2.get)
+        }
+      }
+    }
+
+    finishExcel(reportFilePath, pkg, wb)
+  }
+
   def exportChartData(chart: HighchartData, monitorTypes: Array[MonitorType.Value]): File = {
     val precArray = monitorTypes.map { mt => MonitorType.map(mt).prec }
     exportChartData(chart, precArray)

@@ -563,6 +563,37 @@ class Report @Inject() (val messagesApi: MessagesApi) extends Controller with I1
     }
   }
 
+  def allReportForm = Security.Authenticated { implicit request =>
+    val userInfo = Security.getUserinfo(request).get
+    val group = Group.getGroup(userInfo.groupID).get
+
+    Ok(views.html.allReportForm(group.privilege))
+  }
+
+  def allReportExcel(monitorStr: String, startStr: String, endStr: String) = Security.Authenticated {    
+    val monitor = Monitor.withName(monitorStr)
+    val startDate = DateTime.parse(startStr)
+    val endDate = DateTime.parse(endStr) + 1.day
+
+    val records = Record.getHourRecords(monitor, startDate, endDate)
+    val mtRecordPairs =
+      for {
+        mt <- Monitor.map(monitor).monitorTypes
+        mtRecords = records.map { rs => (Record.timeProjection(rs).toDateTime, Record.monitorTypeProject2(mt)(rs)) }
+      } yield {
+        mt -> mtRecords.toMap
+      }
+
+    val mtRecordMap = mtRecordPairs.toMap
+
+    val excelFile = ExcelUtility.exportMonitorRecord(monitor, startDate, endDate, mtRecordMap)        
+        
+    Ok.sendFile(excelFile, fileName = _ =>
+      play.utils.UriEncoding.encodePathSegment(Monitor.map(monitor).name + "全測項報表" +
+        startDate.toString("YYYYMMdd") + "_" + endDate.toString("MMdd") + ".xlsx", "UTF-8"),
+      onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
+
+  }
   implicit val readsUserInfo: Reads[ReportInfo] =
     ((__ \ "monitor").read[String] and (__ \ "reportType").read[String]
       and (__ \ "startTime").read[String])(ReportInfo.apply _)
