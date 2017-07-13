@@ -6,7 +6,9 @@
 GET      /                                                                                     controllers.Application.index
 
 # Map static resources from the /public folder to the /assets URL path
+GET      /realtime/realtime.jpg                                                                controllers.Realtime.realtimeJPG
 GET      /assets/*file                                                                         controllers.Assets.at(path="/public", file)
+
 
 GET      /login                                                                                controllers.Login.prompt
 GET      /logout                                                                               controllers.Login.logout

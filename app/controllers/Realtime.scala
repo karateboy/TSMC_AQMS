@@ -100,13 +100,20 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
         imgFileList.drop(1).foreach { f => f.delete() }
 
-        val realtimeImgPath = s"${current.path.getAbsolutePath}/public/images/realtime.jpg"
+        val realtimeImgPath = s"${current.path.getAbsolutePath}/importEPA/realtime.jpg"
         val destPath = Paths.get(realtimeImgPath)
 
         Files.move(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING)
       }
 
       Ok(views.html.realtimeImage(group.privilege))
+  }
+  def realtimeJPG = Security.Authenticated {
+    val realtimeImgPath = s"${current.path.getAbsolutePath}/importEPA/realtime.jpg"
+    import java.io.File
+    val jpg = new File(realtimeImgPath)
+    Ok.sendFile(jpg, fileName = _ =>
+              play.utils.UriEncoding.encodePathSegment("realtime.jpg", "UTF-8"))
   }
 
   def realtimeTrend() = Security.Authenticated {
