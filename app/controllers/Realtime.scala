@@ -84,12 +84,16 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
   def realtimeImg = Security.Authenticated {
     implicit request =>
+      import java.io.File
       val userInfo = Security.getUserinfo(request).get
       val group = Group.getGroup(userInfo.groupID).get
       def listAllFiles = {
         //import java.io.FileFilter
-        val allFiles = new java.io.File("\\\\PC-PC\\tsmc\\").listFiles().toList
-        allFiles.filter(p => p != null).sortBy { f => f.lastModified() }.reverse
+        val allFiles = new java.io.File("\\\\PC-PC\\tsmc\\").listFiles()
+        if (allFiles != null)
+          allFiles.filter(p => p != null).sortBy { f => f.lastModified() }.reverse
+        else
+          Array.empty[File]
       }
       val imgFileList = listAllFiles
       if (!imgFileList.isEmpty) {
@@ -113,7 +117,7 @@ class Realtime @Inject() (val messagesApi: MessagesApi) extends Controller with 
     import java.io.File
     val jpg = new File(realtimeImgPath)
     Ok.sendFile(jpg, fileName = _ =>
-              play.utils.UriEncoding.encodePathSegment("realtime.jpg", "UTF-8"))
+      play.utils.UriEncoding.encodePathSegment("realtime.jpg", "UTF-8"))
   }
 
   def realtimeTrend() = Security.Authenticated {

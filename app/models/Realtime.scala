@@ -44,7 +44,7 @@ object AQI extends Enumeration {
 
   val realtimeList = List(O3_8hr, O3, pm25, pm10, CO_8hr, SO2, SO2_24hr, NO2)
   val dailyList = List(O3_8hr, O3, pm25, pm10, CO_8hr, SO2, NO2)
-  
+
   def o3_8AQI(ov: Option[Float]) = {
     if (ov.isEmpty || ov.get / 1000 > 0.2f)
       None
@@ -289,10 +289,10 @@ object AQI extends Enumeration {
     val pm10 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A214"), current, current + 1.day), 16)
     val so2 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A222"), current, current + 1.day), 16)
     val no2 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A293"), current, current + 1.day), 16)
-    
+
     val o3 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A225"), current, current + 1.day), 16)
-    val o3_8 = getEpa8HourAvgMax(getEpaHourRecord(monitor, MonitorType.withName("A225"), current, current + 1.day), current, current + 1.day)    
-    val co_8 = getEpa8HourAvgMax(getEpaHourRecord(monitor, MonitorType.withName("A224"), current, current + 1.day), current, current + 1.day) 
+    val o3_8 = getEpa8HourAvgMax(getEpaHourRecord(monitor, MonitorType.withName("A225"), current, current + 1.day), current, current + 1.day)
+    val co_8 = getEpa8HourAvgMax(getEpaHourRecord(monitor, MonitorType.withName("A224"), current, current + 1.day), current, current + 1.day)
 
     val result = Map[AQI.Value, (Option[Float], Option[Float])](
       AQI.O3_8hr -> (o3_8, o3_8AQI(o3_8)),
@@ -322,7 +322,7 @@ object AQI extends Enumeration {
         Some(sum / total)
       }
     }
-    
+
     def getMonitorTypeMax(mt: MonitorType.Value,
                           start: Int, end: Int, validMin: Int) = {
       val records = map(mt).slice(start, end)
@@ -334,7 +334,7 @@ object AQI extends Enumeration {
         Some(validValues.max)
     }
 
-    def getMonitorType8HourAvgMax(mt: MonitorType.Value, start: Int, end: Int) = {
+    def getMonitorType8HourAvgAvg(mt: MonitorType.Value, start: Int, end: Int) = {
       def get8hrAvg(data: List[(Option[Float], Option[String])]) = {
         val validValues = data.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
         val total = validValues.length
@@ -351,17 +351,23 @@ object AQI extends Enumeration {
           data = records.slice(start, start + 8)
         } yield get8hrAvg(data)
 
-      movingAvg.max
+      val sum = movingAvg.flatMap { x => x }.sum
+      val count = movingAvg.count { _.isDefined }
+      if (count != 0)
+        Some(sum / count)
+      else
+        None
+
     }
 
-    val pm25 = getMonitorTypeMax(MonitorType.withName("A215"), dayStartHour, dayStartHour + 24, 16)
-    val pm10 = getMonitorTypeMax(MonitorType.withName("A214"), dayStartHour, dayStartHour + 24, 16)
-    val so2 = getMonitorTypeMax(MonitorType.withName("A222"), dayStartHour, dayStartHour + 24, 16)
-    val no2 = getMonitorTypeMax(MonitorType.withName("A293"), dayStartHour, dayStartHour + 24, 16)
-    
-    val o3 = getMonitorTypeMax(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24, 16)
-    val o3_8 = getMonitorType8HourAvgMax(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24)    
-    val co_8 = getMonitorType8HourAvgMax(MonitorType.withName("A224"), dayStartHour, dayStartHour + 24)
+    val pm25 = getMonitorTypeAvg(MonitorType.withName("A215"), dayStartHour, dayStartHour + 24, 16)
+    val pm10 = getMonitorTypeAvg(MonitorType.withName("A214"), dayStartHour, dayStartHour + 24, 16)
+    val so2 = getMonitorTypeAvg(MonitorType.withName("A222"), dayStartHour, dayStartHour + 24, 16)
+    val no2 = getMonitorTypeAvg(MonitorType.withName("A293"), dayStartHour, dayStartHour + 24, 16)
+
+    val o3 = getMonitorTypeAvg(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24, 16)
+    val o3_8 = getMonitorType8HourAvgAvg(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24)
+    val co_8 = getMonitorType8HourAvgAvg(MonitorType.withName("A224"), dayStartHour, dayStartHour + 24)
 
     val result = Map[AQI.Value, (Option[Float], Option[Float])](
       AQI.O3_8hr -> (o3_8, o3_8AQI(o3_8)),

@@ -1505,13 +1505,13 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def exportChartData(chart: HighchartData, monitorTypes: Array[MonitorType.Value]): File = {
+  def exportChartData(chart: HighchartData, monitorTypes: Array[MonitorType.Value], templateFileName:String = "chart_export.xlsx"): File = {
     val precArray = monitorTypes.map { mt => MonitorType.map(mt).prec }
-    exportChartData(chart, precArray)
+    exportChartData(chart, precArray, templateFileName)
   }
 
-  def exportChartData(chart: HighchartData, precArray: Array[Int]) = {
-    val (reportFilePath, pkg, wb) = prepareTemplate("chart_export.xlsx")
+  def exportChartData(chart: HighchartData, precArray: Array[Int], templateFileName:String) = {
+    val (reportFilePath, pkg, wb) = prepareTemplate(templateFileName)
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
     val format = wb.createDataFormat();
 

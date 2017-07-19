@@ -556,7 +556,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
       if (outputType == OutputType.excel) {
         val mts = monitors.flatMap { _ => monitorTypes.toList }
         val epaMts = epaMonitors.flatMap { _ => monitorTypes.toList }
-        val excelFile = ExcelUtility.exportChartData(chart, mts ++ epaMts)
+        val excelFile = ExcelUtility.exportChartData(chart, mts ++ epaMts, "historyTrend.xlsx")
         val downloadFileName =
           if (chart.downloadFileName.isDefined)
             chart.downloadFileName.get
@@ -713,7 +713,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         series ++ epaSeries)
 
       if (outputType == OutputType.excel) {
-        val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1))
+        val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1), "psiTrend.xlsx")
         Results.Ok.sendFile(excelFile, fileName = _ =>
           play.utils.UriEncoding.encodePathSegment(chart.title("text") + ".xlsx", "UTF-8"),
           onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
@@ -864,7 +864,7 @@ class Query @Inject() (val messagesApi: MessagesApi) extends Controller with I18
         series ++ epaSeries)
 
       if (outputType == OutputType.excel) {
-        val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1))
+        val excelFile = ExcelUtility.exportChartData(chart, Array(0, monitors.length + 1), "aqiTrend.xlsx")
         Results.Ok.sendFile(excelFile, fileName = _ =>
           play.utils.UriEncoding.encodePathSegment(chart.title("text") + ".xlsx", "UTF-8"),
           onClose = () => { Files.deleteIfExists(excelFile.toPath()) })
