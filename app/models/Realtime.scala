@@ -46,43 +46,43 @@ object AQI extends Enumeration {
   val dailyList = List(O3_8hr, O3, pm25, pm10, CO_8hr, SO2, NO2)
 
   def o3_8AQI(ov: Option[Float]) = {
-    if (ov.isEmpty || ov.get / 1000 > 0.2f)
+    if (ov.isEmpty || ov.get > 200)
       None
     else
       Some {
-        val v = ov.get / 1000
+        val v = ov.get
 
-        if (v <= 0.054) {
-          v / 0.054f * 50
-        } else if (v <= 0.070f) {
-          51 + (v - 0.055f) / (0.070f - 0.055f) * 50
-        } else if (v <= 0.085f) {
-          101 + (v - 0.071f) / (0.085f - 0.071f) * 50
-        } else if (v <= 0.105f) {
-          151 + (v - 0.086f) / (0.105f - 0.086f) * 50
+        if (v <= 54) {
+          v / 54f * 50
+        } else if (v <= 70f) {
+          51 + (v - 55f) / (70f - 55f) * 50
+        } else if (v <= 85f) {
+          101 + (v - 71f) / (85f - 71f) * 50
+        } else if (v <= 105f) {
+          151 + (v - 86f) / (105f - 86f) * 50
         } else {
-          201 + (v - 0.106f) / (0.2f - 0.106f) * 100
+          201 + (v - 106f) / (200f - 106f) * 100
         }
       }
   }
 
   def o3AQI(ov: Option[Float]) = {
-    if (ov.isEmpty || ov.get / 1000 < 0.125f)
+    if (ov.isEmpty || ov.get < 125f)
       None
     else
       Some {
-        val v = ov.get / 1000
+        val v = ov.get
 
-        if (v <= 0.164f) {
-          101 + (v - 0.125f) / (0.164f - 0.125f) * 50
-        } else if (v <= 0.204f) {
-          151 + (v - 0.165f) / (0.204f - 0.165f) * 50
-        } else if (v <= 0.404f) {
-          201 + (v - 0.205f) / (0.404f - 0.205f) * 100
-        } else if (v <= 0.504f) {
-          301 + (v - 0.405f) / (0.504f - 0.405f) * 100
+        if (v <= 164f) {
+          101 + (v - 125f) / (164f - 125f) * 50
+        } else if (v <= 204f) {
+          151 + (v - 165f) / (204f - 165f) * 50
+        } else if (v <= 404f) {
+          201 + (v - 205f) / (404f - 205f) * 100
+        } else if (v <= 504f) {
+          301 + (v - 405f) / (504f - 405f) * 100
         } else {
-          401 + (v - 0.505f) / (0.604f - 0.505f) * 100
+          401 + (v - 505f) / (604f - 505f) * 100
         }
       }
   }
@@ -105,7 +105,7 @@ object AQI extends Enumeration {
         } else if (v <= 250.4f) {
           201 + (v - 150.5f) / (250.4f - 150.5f) * 100
         } else if (v <= 350.4f) {
-          301 + (v - 250.5f) / (350.4f - 250.5f) * 10
+          301 + (v - 250.5f) / (350.4f - 250.5f) * 100
         } else {
           401 + (v - 350.5f) / (500.4f - 350.5f) * 100
         }
@@ -285,8 +285,8 @@ object AQI extends Enumeration {
   }
 
   def getEpaDailyAQI(monitor: EpaMonitor.Value, current: DateTime)(implicit session: DBSession = AutoSession) = {
-    val pm25 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A215"), current, current + 1.day), 16)
-    val pm10 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A214"), current, current + 1.day), 16)
+    val pm25 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A215"), current, current + 1.day), 16)
+    val pm10 = getEpaMTypeAvg(getEpaHourRecord(monitor, MonitorType.withName("A214"), current, current + 1.day), 16)
     val so2 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A222"), current, current + 1.day), 16)
     val no2 = getEpaMTypeMax(getEpaHourRecord(monitor, MonitorType.withName("A293"), current, current + 1.day), 16)
 
@@ -324,17 +324,17 @@ object AQI extends Enumeration {
     }
 
     def getMonitorTypeMax(mt: MonitorType.Value,
-                          start: Int, end: Int, validMin: Int) = {
+                          start: Int, end: Int) = {
       val records = map(mt).slice(start, end)
       val validValues = records.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
       val total = validValues.length
-      if (total < validMin)
+      if (total == 0)
         None
       else
         Some(validValues.max)
     }
 
-    def getMonitorType8HourAvgAvg(mt: MonitorType.Value, start: Int, end: Int) = {
+    def getMonitorType8HourAvgMax(mt: MonitorType.Value, start: Int, end: Int) = {
       def get8hrAvg(data: List[(Option[Float], Option[String])]) = {
         val validValues = data.filter(statusFilter(MonitorStatusFilter.ValidData)).map(_._1.get)
         val total = validValues.length
@@ -354,7 +354,7 @@ object AQI extends Enumeration {
       val sum = movingAvg.flatMap { x => x }.sum
       val count = movingAvg.count { _.isDefined }
       if (count != 0)
-        Some(sum / count)
+        movingAvg.max
       else
         None
 
@@ -362,12 +362,12 @@ object AQI extends Enumeration {
 
     val pm25 = getMonitorTypeAvg(MonitorType.withName("A215"), dayStartHour, dayStartHour + 24, 16)
     val pm10 = getMonitorTypeAvg(MonitorType.withName("A214"), dayStartHour, dayStartHour + 24, 16)
-    val so2 = getMonitorTypeAvg(MonitorType.withName("A222"), dayStartHour, dayStartHour + 24, 16)
-    val no2 = getMonitorTypeAvg(MonitorType.withName("A293"), dayStartHour, dayStartHour + 24, 16)
+    val so2 = getMonitorTypeMax(MonitorType.withName("A222"), dayStartHour, dayStartHour + 24)
+    val no2 = getMonitorTypeMax(MonitorType.withName("A293"), dayStartHour, dayStartHour + 24)
 
-    val o3 = getMonitorTypeAvg(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24, 16)
-    val o3_8 = getMonitorType8HourAvgAvg(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24)
-    val co_8 = getMonitorType8HourAvgAvg(MonitorType.withName("A224"), dayStartHour, dayStartHour + 24)
+    val o3 = getMonitorTypeMax(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24)
+    val o3_8 = getMonitorType8HourAvgMax(MonitorType.withName("A225"), dayStartHour, dayStartHour + 24)
+    val co_8 = getMonitorType8HourAvgMax(MonitorType.withName("A224"), dayStartHour, dayStartHour + 24)
 
     val result = Map[AQI.Value, (Option[Float], Option[Float])](
       AQI.O3_8hr -> (o3_8, o3_8AQI(o3_8)),
@@ -608,7 +608,7 @@ object Realtime {
       if (start + 8.hour >= end)
         Nil
       else
-        getMonitorTypeAvg(monitor, monitorType, start, start + 8.hour, 8) :: EightHourAvg(start + 1.hours)
+        getMonitorTypeAvg(monitor, monitorType, start, start + 8.hour, 6) :: EightHourAvg(start + 1.hours)
     }
 
     val avgs = EightHourAvg(start)
