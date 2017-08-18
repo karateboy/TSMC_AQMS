@@ -174,19 +174,16 @@ object Calibration {
 
     import scala.collection.mutable._
     val resultMap = Map.empty[MonitorType.Value, ListBuffer[(DateTime, Calibration.CalibrationItem)]]
-    for (item <- calibrationList.filter { _.success } if item.monitorType != MonitorType.A293) {
+    for (item <- calibrationList.filter { _.success }) {
       val lb = resultMap.getOrElseUpdate(item.monitorType, ListBuffer.empty[(DateTime, Calibration.CalibrationItem)])
       lb.append((item.endTime, item))
     }
 
-    resultMap.map(kv => kv._1 -> kv._2.toList).toMap
-    /*
-    val map = calibrationList.filter { _.success }.map { cali => cali.monitorType -> cali }.toMap
+    val map = resultMap.map(kv => kv._1 -> kv._2.toList).toMap
 
-    //Remove NO2
-    map - MonitorType.A293
-    * 
-    */
+    //Remove NO2 & NMHC
+    map - MonitorType.A293 - MonitorType.A296
+    
   }
 
   def canCalibrate(mt: MonitorType.Value)(implicit date: DateTime, calibrationMap: Map[MonitorType.Value, List[(Imports.DateTime, Calibration.CalibrationItem)]]) = {
