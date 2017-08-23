@@ -779,12 +779,6 @@ object Record {
         else
           usedMonitoredTypes
 
-      val interpolatedMonitorTypes = List(
-        //A293=> NO2, A223=>NOX, A283=> NO
-        (MonitorType.A293, (MonitorType.A223, MonitorType.A283)),
-        //A296=>NMHC, A286=>CH4, A226=>THC
-        (MonitorType.A296, (MonitorType.A286, MonitorType.A226)))
-
       val typeResultList =
         for {
           mt <- includeTypes
@@ -796,10 +790,14 @@ object Record {
                 findCalibration(calibrationMap(mt)).isDefined
             }
 
-            def doCalibrate(mt:MonitorType.Value)={
-              findCalibration(calibrationMap(mt)).get._2.calibrate(monitorTypeProject2(mt)(rs)._1)
+            def doCalibrate(mt: MonitorType.Value) = {
+              val isTHCcalibrated = Play.current.configuration.getBoolean("THC.calibrated").getOrElse(true)
+              if (!isTHCcalibrated && mt == MonitorType.A226) {
+                monitorTypeProject2(mt)(rs)._1
+              } else
+                findCalibration(calibrationMap(mt)).get._2.calibrate(monitorTypeProject2(mt)(rs)._1)
             }
-            
+
             def findCalibration(calibrationList: List[(DateTime, Calibration.CalibrationItem)]) = {
               val candidate = calibrationList.takeWhile(p => p._1 < rs.date)
               if (candidate.length == 0)
@@ -826,6 +824,7 @@ object Record {
               //A296=>NMHC, A286=>CH4, A226=>THC
               val calibratedCH4 = doCalibrate(MonitorType.A286)
               val calibratedTHC = doCalibrate(MonitorType.A226)
+
               val interpolatedNMHC =
                 for (ch4 <- calibratedCH4; thc <- calibratedTHC)
                   yield thc - ch4
