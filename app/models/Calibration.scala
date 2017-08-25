@@ -294,7 +294,7 @@ object Calibration {
       sb.append("5,")
       sb.append((cali.startTime + half).toString("YYYY/M/d HH:mm") + ",")
       sb.append(cali.endTime.toString("YYYY/M/d HH:mm") + ",")
-      sb.append(cali.span.getOrElse(0f) + ",")
+      sb.append(cali.s_sval.getOrElse(0f) + ",")
       sb.append(cali.s_std.getOrElse(0f) + ",")
       sb.append(cali.s_std.getOrElse(0f) * 0.07 + ",")
       sb.append(mapMonitorTypeToFullScale(cali.monitorType) + ",")
