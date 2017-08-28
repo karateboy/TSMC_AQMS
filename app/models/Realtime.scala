@@ -341,9 +341,9 @@ object AQI extends Enumeration {
         if (total < 6)
           None
         else
-          Some(validValues.max)
+          Some(validValues.sum / total)
       }
-
+      
       val records = map(mt).slice(start, end)
       val movingAvg =
         for {
@@ -622,7 +622,7 @@ object Realtime {
         Nil
       else {
         val recs = records.filter { r => r.time >= start && r.time < start + 8.hour }
-        getEpaMTypeMax(recs, 8) :: EightHourAvg(start + 1.hours)
+        getEpaMTypeAvg(recs, 6) :: EightHourAvg(start + 1.hours)
       }
     }
 
