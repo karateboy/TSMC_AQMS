@@ -298,8 +298,11 @@ object Calibration {
       sb.append(cali.s_std.getOrElse(0f) + ",")
       sb.append(cali.s_std.getOrElse(0f) * 0.07 + ",")
       sb.append(mapMonitorTypeToFullScale(cali.monitorType) + ",")
-      val drift = (cali.span.getOrElse(0f) - cali.z_val.getOrElse(0f))/cali.s_std.getOrElse(0f)
-      sb.append(drift + ",")
+      val drift = (cali.s_std.getOrElse(0f) - cali.z_val.getOrElse(0f))/cali.s_sval.getOrElse(0f)
+      if(drift.isInfinite()||drift.isNaN())
+        sb.append("-,")
+      else
+        sb.append(drift + ",")
       sb.append(cali.z_val.getOrElse(0f) + ",")
       sb.append("N,")
       sb.append("\n")
