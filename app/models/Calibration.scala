@@ -200,7 +200,11 @@ object Calibration {
   }
 
   def doCalibrate(mt: MonitorType.Value)(implicit v: Option[Float], date: DateTime, calibrationMap: Map[MonitorType.Value, List[(Imports.DateTime, Calibration.CalibrationItem)]]) = {
-    findCalibration(calibrationMap(mt)).get._2.calibrate(v)
+    val isTHCcalibrated = Play.current.configuration.getBoolean("THC.calibrated").getOrElse(true)
+    if (!isTHCcalibrated && mt == MonitorType.A226) {
+      v
+    } else
+      findCalibration(calibrationMap(mt)).get._2.calibrate(v)
   }
 
   //A293 => NO2, A296=>NMHC
