@@ -106,7 +106,9 @@ object Record {
       var h2s_so2: Option[Float] = None,
       var h2s_so2_stat: Option[String] = None,
       var h2s: Option[Float] = None,
-      var h2s_stat: Option[String] = None) {
+      var h2s_stat: Option[String] = None,
+      var lat:Option[Double]=None,
+      var lng:Option[Double]=None) {
 
     def save(tab: TableType.Value) {
       val tab_name = Record.getTabName(tab)

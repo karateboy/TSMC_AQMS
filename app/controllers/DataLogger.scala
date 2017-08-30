@@ -121,6 +121,10 @@ class DataLogger extends Controller {
         case "RAIN" =>
           hr.rain = Some(r.value.toFloat)
           hr.rain_stat = Some(r.status)
+        case "LAT" =>
+          hr.lat = Some(r.value)
+        case "LNG"=>
+          hr.lng = Some(r.value)
       }
     }
     hr
@@ -139,6 +143,13 @@ class DataLogger extends Controller {
           hrList.foreach { hr =>
             try {
               hr.save(tabType)
+              if(tabType == TableType.Min && hr.lat.isDefined && hr.lng.isDefined){
+                val lastUpdate = Monitor.locationUpdateTimeMap.getOrElse(monitor, DateTime.now - 1.hour)
+                if(hr.date.toDateTime > lastUpdate){
+                  Monitor.updateLocation(monitor, hr.lat.get, hr.lng.get)
+                  Monitor.locationUpdateTimeMap = Monitor.locationUpdateTimeMap + (monitor -> hr.date.toDateTime())
+                }
+              }
             } catch {
               case ex: Throwable =>
                 Logger.error("Failed to insert=>", ex)

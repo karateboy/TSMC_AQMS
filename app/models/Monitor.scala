@@ -192,6 +192,8 @@ object Monitor extends Enumeration {
     monitorLngList.sum/monitorLngList.length
   }
   
+  import com.github.nscala_time.time.Imports._
+  var locationUpdateTimeMap = Map.empty[Monitor.Value, DateTime]
 }
 
 import play.api.i18n._
