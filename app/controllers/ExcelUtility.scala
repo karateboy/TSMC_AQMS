@@ -1457,7 +1457,7 @@ object ExcelUtility {
     sheet.getRow(0).createCell(1).setCellValue(Monitor.map(monitor).name)
     sheet.getRow(1).createCell(1).setCellValue(s"${start.toString("YYYY/MM/dd")}-${end.toString("YYYY/MM/dd")}")
     val timeSeq = getPeriods(start, end, 1.hour)
-    
+
     val precArray = Monitor.map(monitor).monitorTypes.map { mt => MonitorType.map(mt).prec }
     val styles = precArray.map { prec =>
       val format_str = "0." + "0" * prec
@@ -1465,7 +1465,7 @@ object ExcelUtility {
       style.setDataFormat(format.getFormat(format_str))
       style
     }
-    
+
     val promptRow = sheet.getRow(2)
     for {
       mt_idx <- Monitor.map(monitor).monitorTypes.zipWithIndex
@@ -1505,12 +1505,15 @@ object ExcelUtility {
     finishExcel(reportFilePath, pkg, wb)
   }
 
-  def exportChartData(chart: HighchartData, monitorTypes: Array[MonitorType.Value], templateFileName:String = "chart_export.xlsx"): File = {
+  val exportStatus = false
+  def exportChartData(chart: HighchartData, monitorTypes: Array[MonitorType.Value],
+                      templateFileName: String = "chart_export.xlsx"): File = {
     val precArray = monitorTypes.map { mt => MonitorType.map(mt).prec }
     exportChartData(chart, precArray, templateFileName)
   }
 
-  def exportChartData(chart: HighchartData, precArray: Array[Int], templateFileName:String) = {
+  def exportChartData(chart: HighchartData, precArray: Array[Int],
+                      templateFileName: String) = {
     val (reportFilePath, pkg, wb) = prepareTemplate(templateFileName)
     val evaluator = wb.getCreationHelper().createFormulaEvaluator()
     val format = wb.createDataFormat();
@@ -1526,7 +1529,7 @@ object ExcelUtility {
     } {
       headerRow.createCell(pos + 1).setCellValue(series.name)
       pos += 1
-      if (series.status.isDefined) {
+      if (series.status.isDefined && exportStatus) {
         headerRow.createCell(pos + 1).setCellValue("狀態碼")
         pos += 1
       }
@@ -1590,7 +1593,7 @@ object ExcelUtility {
             cell.setCellValue(pair(1).get)
           }
 
-          if (series.status.isDefined) {
+          if (series.status.isDefined && exportStatus) {
             val statusCell = thisRow.createCell(pos + 1)
             pos += 1
             val statusOpt = series.status.get(row - 1)
