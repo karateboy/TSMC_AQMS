@@ -1604,7 +1604,7 @@ object ExcelUtility {
         }
       }
     }
-
+    wb.setForceFormulaRecalculation(true)
     finishExcel(reportFilePath, pkg, wb)
   }
 
