@@ -31,6 +31,7 @@ object ExcelUtility {
   }
 
   def finishExcel(reportFilePath: Path, pkg: OPCPackage, wb: XSSFWorkbook) = {
+    wb.setForceFormulaRecalculation(true)
     val out = new FileOutputStream(reportFilePath.toAbsolutePath().toString());
     wb.write(out);
     out.close();
@@ -1604,7 +1605,6 @@ object ExcelUtility {
         }
       }
     }
-    wb.setForceFormulaRecalculation(true)
     finishExcel(reportFilePath, pkg, wb)
   }
 
