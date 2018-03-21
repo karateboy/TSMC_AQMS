@@ -518,7 +518,11 @@ class Maintance @Inject()(val messagesApi: MessagesApi) extends Controller with 
   def dutySchedule = Security.Authenticated {
     Ok(views.html.dutySchedule(""))
   }
-  
+
+  def dutyContact = Security.Authenticated {
+    Ok(views.html.dutyContact(""))
+  }
+
   def downloadNotification = Security.Authenticated {
     Ok(views.html.downloadNotification())
   }
