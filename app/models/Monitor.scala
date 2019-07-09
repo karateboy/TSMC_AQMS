@@ -355,6 +355,15 @@ object MonitorType extends Enumeration {
   val epaList =
     List(A214, A215, A222, A223, A224, A225, A226, A283, A286, A293, A296, C211, C212, C213, C214, C215)
 
+  val eapIdMap = {
+    val pairs = 
+      for(epaMt <- epaList if MonitorType.map(epaMt).epa_mapping.isDefined)
+        yield {
+        MonitorType.map(epaMt).epa_mapping.get.toInt -> epaMt
+      }
+    pairs.toMap
+  }
+  
   val epaReportList =
     List(C212, C211, A222, A293, A224, A225, A214, A226, A296)
 

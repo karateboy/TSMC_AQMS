@@ -9,12 +9,12 @@ import models._
 import play.api.i18n._
 
 case class Stat(
-    avg: Option[Float],
-    min: Option[Float],
-    max: Option[Float],
-    count: Int,
-    total: Int,
-    overCount: Int) {
+  avg:       Option[Float],
+  min:       Option[Float],
+  max:       Option[Float],
+  count:     Int,
+  total:     Int,
+  overCount: Int) {
   val effectPercent = if (total != 0) Some(count.toFloat * 100 / total) else None
   val overPercent = if (total != 0) Some(overCount.toFloat * 100 / total) else None
 }
@@ -38,77 +38,77 @@ object TableType extends Enumeration {
 
 object Record {
   case class HourRecord(
-      name: String,
-      date: Timestamp,
-      var chk: Option[String] = None,
-      var tsp: Option[Float] = None,
-      var tsp_stat: Option[String] = None,
-      var pm10: Option[Float] = None,
-      var pm10_stat: Option[String] = None,
-      var pm25: Option[Float] = None,
-      var pm25_stat: Option[String] = None,
-      var s: Option[Float] = None,
-      var s_stat: Option[String] = None,
-      var so2: Option[Float] = None,
-      var so2_stat: Option[String] = None,
-      var nox: Option[Float] = None,
-      var nox_stat: Option[String] = None,
-      var co: Option[Float] = None,
-      var co_stat: Option[String] = None,
-      var o3: Option[Float] = None,
-      var o3_stat: Option[String] = None,
-      var thc: Option[Float] = None,
-      var thc_stat: Option[String] = None,
-      var ammonia: Option[Float] = None,
-      var ammonia_stat: Option[String] = None,
-      var noy: Option[Float] = None,
-      var noy_stat: Option[String] = None,
-      var noy_no: Option[Float] = None,
-      var noy_no_stat: Option[String] = None,
-      var nh3: Option[Float] = None,
-      var nh3_stat: Option[String] = None,
-      var no: Option[Float] = None,
-      var no_stat: Option[String] = None,
-      var ch4: Option[Float] = None,
-      var ch4_stat: Option[String] = None,
-      var monitor_humid: Option[Float] = None,
-      var monitor_humid_stat: Option[String] = None,
-      var monitor_temp: Option[Float] = None,
-      var monitor_temp_stat: Option[String] = None,
-      var no2: Option[Float] = None,
-      var no2_stat: Option[String] = None,
-      var nmhc: Option[Float] = None,
-      var nmhc_stat: Option[String] = None,
-      var wind_speed: Option[Float] = None,
-      var wind_speed_stat: Option[String] = None,
-      var wind_dir: Option[Float] = None,
-      var wind_dir_stat: Option[String] = None,
-      var rain: Option[Float] = None,
-      var rain_stat: Option[String] = None,
-      var temp: Option[Float] = None,
-      var temp_stat: Option[String] = None,
-      var humid: Option[Float] = None,
-      var humid_stat: Option[String] = None,
-      var air_pressure: Option[Float] = None,
-      var air_pressure_stat: Option[String] = None,
-      var noy_dif: Option[Float] = None,
-      var noy_dif_stat: Option[String] = None,
-      var nh3_nt: Option[Float] = None,
-      var nh3_nt_stat: Option[String] = None,
-      var nh3_nox: Option[Float] = None,
-      var nh3_nox_stat: Option[String] = None,
-      var nh3_no: Option[Float] = None,
-      var nh3_no_stat: Option[String] = None,
-      var nh3_no2: Option[Float] = None,
-      var nh3_no2_stat: Option[String] = None,
-      var h2s_cs: Option[Float] = None,
-      var h2s_cs_stat: Option[String] = None,
-      var h2s_so2: Option[Float] = None,
-      var h2s_so2_stat: Option[String] = None,
-      var h2s: Option[Float] = None,
-      var h2s_stat: Option[String] = None,
-      var lat:Option[Double]=None,
-      var lng:Option[Double]=None) {
+    name:                   String,
+    date:                   Timestamp,
+    var chk:                Option[String] = None,
+    var tsp:                Option[Float]  = None,
+    var tsp_stat:           Option[String] = None,
+    var pm10:               Option[Float]  = None,
+    var pm10_stat:          Option[String] = None,
+    var pm25:               Option[Float]  = None,
+    var pm25_stat:          Option[String] = None,
+    var s:                  Option[Float]  = None,
+    var s_stat:             Option[String] = None,
+    var so2:                Option[Float]  = None,
+    var so2_stat:           Option[String] = None,
+    var nox:                Option[Float]  = None,
+    var nox_stat:           Option[String] = None,
+    var co:                 Option[Float]  = None,
+    var co_stat:            Option[String] = None,
+    var o3:                 Option[Float]  = None,
+    var o3_stat:            Option[String] = None,
+    var thc:                Option[Float]  = None,
+    var thc_stat:           Option[String] = None,
+    var ammonia:            Option[Float]  = None,
+    var ammonia_stat:       Option[String] = None,
+    var noy:                Option[Float]  = None,
+    var noy_stat:           Option[String] = None,
+    var noy_no:             Option[Float]  = None,
+    var noy_no_stat:        Option[String] = None,
+    var nh3:                Option[Float]  = None,
+    var nh3_stat:           Option[String] = None,
+    var no:                 Option[Float]  = None,
+    var no_stat:            Option[String] = None,
+    var ch4:                Option[Float]  = None,
+    var ch4_stat:           Option[String] = None,
+    var monitor_humid:      Option[Float]  = None,
+    var monitor_humid_stat: Option[String] = None,
+    var monitor_temp:       Option[Float]  = None,
+    var monitor_temp_stat:  Option[String] = None,
+    var no2:                Option[Float]  = None,
+    var no2_stat:           Option[String] = None,
+    var nmhc:               Option[Float]  = None,
+    var nmhc_stat:          Option[String] = None,
+    var wind_speed:         Option[Float]  = None,
+    var wind_speed_stat:    Option[String] = None,
+    var wind_dir:           Option[Float]  = None,
+    var wind_dir_stat:      Option[String] = None,
+    var rain:               Option[Float]  = None,
+    var rain_stat:          Option[String] = None,
+    var temp:               Option[Float]  = None,
+    var temp_stat:          Option[String] = None,
+    var humid:              Option[Float]  = None,
+    var humid_stat:         Option[String] = None,
+    var air_pressure:       Option[Float]  = None,
+    var air_pressure_stat:  Option[String] = None,
+    var noy_dif:            Option[Float]  = None,
+    var noy_dif_stat:       Option[String] = None,
+    var nh3_nt:             Option[Float]  = None,
+    var nh3_nt_stat:        Option[String] = None,
+    var nh3_nox:            Option[Float]  = None,
+    var nh3_nox_stat:       Option[String] = None,
+    var nh3_no:             Option[Float]  = None,
+    var nh3_no_stat:        Option[String] = None,
+    var nh3_no2:            Option[Float]  = None,
+    var nh3_no2_stat:       Option[String] = None,
+    var h2s_cs:             Option[Float]  = None,
+    var h2s_cs_stat:        Option[String] = None,
+    var h2s_so2:            Option[Float]  = None,
+    var h2s_so2_stat:       Option[String] = None,
+    var h2s:                Option[Float]  = None,
+    var h2s_stat:           Option[String] = None,
+    var lat:                Option[Double] = None,
+    var lng:                Option[Double] = None) {
 
     def save(tab: TableType.Value) {
       val tab_name = Record.getTabName(tab)
@@ -344,12 +344,12 @@ object Record {
   }
 
   case class SixSecRecord(
-    monitor: Monitor.Value,
-    time: DateTime,
-    winSpeed: Seq[Option[Float]],
+    monitor:       Monitor.Value,
+    time:          DateTime,
+    winSpeed:      Seq[Option[Float]],
     winSpeed_stat: Seq[Option[String]],
-    winDir: Seq[Option[Float]],
-    winDir_stat: Seq[Option[String]])
+    winDir:        Seq[Option[Float]],
+    winDir_stat:   Seq[Option[String]])
 
   type MinRecord = HourRecord
 
@@ -590,7 +590,7 @@ object Record {
 
   case class RecordValidationReport(start: DateTime, end: DateTime,
                                     hourReport: Map[Monitor.Value, Int],
-                                    minReport: Map[Monitor.Value, Int])
+                                    minReport:  Map[Monitor.Value, Int])
 
   def getRecordValidationReport(start: DateTime, end: DateTime) = {
     DB readOnly { implicit session =>
@@ -747,7 +747,7 @@ object Record {
                      monitorStatusFilter: MonitorStatusFilter.Value = MonitorStatusFilter.ValidData) = {
 
     DB readOnly { implicit session =>
-      //Apply calibration 
+      //Apply calibration
       val calibrationMap = Calibration.getDailyCalibrationMap(monitor, start)
 
       val originalList = getHourRecords(monitor, start, start + 1.day)
@@ -798,10 +798,10 @@ object Record {
                 findCalibration(calibrationMap(mt)).isDefined
             }
 
-            def doCalibrate(mt:MonitorType.Value)={
+            def doCalibrate(mt: MonitorType.Value) = {
               findCalibration(calibrationMap(mt)).get._2.calibrate(monitorTypeProject2(mt)(rs)._1)
             }
-            
+
             def findCalibration(calibrationList: List[(DateTime, Calibration.CalibrationItem)]) = {
               val candidate = calibrationList.takeWhile(p => p._1 < rs.date)
               if (candidate.length == 0)
@@ -1083,7 +1083,8 @@ object Record {
         Where MStation=${monitorId} and MItem=${monitorTypeStr} and MDate >= ${start} and MDate < ${end}
         ORDER BY MDate ASC
       """.map {
-        rs => EpaHourRecord(EpaMonitor.idMap(rs.int(2)), rs.timestamp(3), MonitorType.epaMap(rs.string(4)), rs.float(5))
+        rs =>
+          EpaHourRecord(EpaMonitor.idMap(rs.int(1)), rs.jodaDateTime(2), MonitorType.epaMap(rs.string(3)), rs.float(4))
       }.list().apply()
     }
   }

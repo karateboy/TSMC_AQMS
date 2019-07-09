@@ -28,6 +28,7 @@ object EpaMonitor extends Enumeration{
   )
   
   val idMap = map.map(r=>(r._2.id, r._1))
+  val nameMap = map.map(r=>(r._2.name, r._1))
   
   val epaList = values.toList.sorted
 }

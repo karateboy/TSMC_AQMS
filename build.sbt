@@ -1,18 +1,18 @@
 
 name := """tsmc"""
 
-version := "1.2.17"
+version := "1.2.18"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.11"
 
 libraryDependencies ++= Seq(
   jdbc,  
   cache,
   ws,
-  "org.scalikejdbc" %% "scalikejdbc"                  % "2.4.1",
-  "org.scalikejdbc" %% "scalikejdbc-config"           % "2.4.1",
+  "org.scalikejdbc" %% "scalikejdbc"                  % "2.5.2",
+  "org.scalikejdbc" %% "scalikejdbc-config"           % "2.5.2",
   "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.5.1",
   "com.github.nscala-time" %% "nscala-time" % "2.16.0",
   "io.github.cloudify" %% "spdf" % "1.3.1"

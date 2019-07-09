@@ -22,38 +22,38 @@ object ModelHelper {
   implicit def getDateTime(d: java.sql.Date) = {
     new DateTime(d)
   }
-  
+
   implicit def getDateTime(t: java.sql.Time) = {
     new DateTime(t)
   }
-  
-  implicit def getSqlDate(d:DateTime) = {
-    new java.sql.Date(d.getMillis)  
+
+  implicit def getSqlDate(d: DateTime) = {
+    new java.sql.Date(d.getMillis)
   }
-  
-  implicit def getSqlTime(d:DateTime) = {
+
+  implicit def getSqlTime(d: DateTime) = {
     new java.sql.Time(d.getMillis)
   }
-  
+
   def main(args: Array[String]) {
     val timestamp = DateTime.parse("2015-04-01")
     println(timestamp.toString())
   }
-  
-  def formatOptStr(strOpt : Option[String])={
-    if(strOpt.isDefined)
+
+  def formatOptStr(strOpt: Option[String]) = {
+    if (strOpt.isDefined)
       strOpt.get
     else
       "-"
   }
-  
-  def formatOptBool(boolOpt : Option[Boolean])={
-    if(boolOpt.isDefined){
-      if(boolOpt.get)
+
+  def formatOptBool(boolOpt: Option[Boolean]) = {
+    if (boolOpt.isDefined) {
+      if (boolOpt.get)
         "是"
       else
         "否"
-    }else
+    } else
       "否"
   }
 
@@ -69,11 +69,28 @@ object ModelHelper {
 
     buf.toList
   }
-  
+
   def errorHandler(prompt: String = "Error=>"): PartialFunction[Throwable, Any] = {
     case ex: Throwable =>
       Logger.error(prompt, ex)
       throw ex
+  }
+
+  import scala.concurrent._
+
+  def waitReadyResult[T](f: Future[T]) = {
+    import scala.concurrent.duration._
+    import scala.util._
+
+    val ret = Await.ready(f, Duration.Inf).value.get
+
+    ret match {
+      case Success(t) =>
+        t
+      case Failure(ex) =>
+        Logger.error(ex.getMessage, ex)
+        throw ex
+    }
   }
 }
 
