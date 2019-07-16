@@ -1099,8 +1099,8 @@ object Record {
         Select * 
         From hour_data
         Where MStation in ${mStr} and MItem in ${mtStr} and MDate = ${time: Timestamp}
-      """.map {
-        rs => EpaHourRecord(EpaMonitor.idMap(rs.int(2)), rs.timestamp(3), MonitorType.epaMap(rs.string(4)), rs.float(5))
+      """.map { rs => 
+        EpaHourRecord(EpaMonitor.idMap(rs.int(1)), rs.jodaDateTime(2), MonitorType.epaMap(rs.string(3)), rs.float(4))
       }.list().apply()
 
     var recordMap = Map.empty[EpaMonitor.Value, Map[MonitorType.Value, Float]]

@@ -160,7 +160,7 @@ class OpenDataReceiver extends Actor with ActorLogging {
       val start = SystemConfig.getEpaLast
       val end = DateTime.now().withMillisOfDay(0)
       if (start < end) {
-        getEpaHourData(start, end)
+        getEpaHourData(start - 7.day, end)
       }
   }
 

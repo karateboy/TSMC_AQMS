@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object Global extends GlobalSettings {
   override def onStart(app: Application) {
     Logger.info("Application has started")
-    //DBs.setupAll()
+    
     super.onStart(app)
     val alarmActor = Akka.system.actorOf(Props[AlarmMaster], name = "AlarmMaster")
 
@@ -22,7 +22,6 @@ object Global extends GlobalSettings {
 
   override def onStop(app: Application) {
     Logger.info("Application shutdown...")
-    //DBs.closeAll()
     super.onStop(app)
   }
 }
