@@ -61,6 +61,7 @@ menu.ma.10=Part Management
 menu.ma.11=Duty Schedule
 menu.ma.12=EPB Notification Form
 menu.ma.13=Terminal Maintenance Schedule
+menu.ma.14=Monitor Schedule
 menu.logout=Logout
 login.email_account=E-mail Account
 login.password=Password
